@@ -30,9 +30,12 @@
         <a href="{{ post.url | relative_url }}" rel="permalink">{{ title }}</a>
       {% endif %}
     </h2>
+    <p class="page__meta">
+      <i class="far fa-calendar-alt" aria-hidden="true"></i> {{ post.date | date: '%B %d, %Y' }}&nbsp;
     {% if post.read_time %}
-      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>
+      <i class="far fa-clock" aria-hidden="true"></i> {% include read-time.html %}&nbsp;
     {% endif %}
-    {% if post.excerpt %}<p class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify | strip_html | truncate: 160 }}</p>{% endif %}
+  </p>
+  {% if post.excerpt %}<p class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify | strip_html | truncate: 160 }}</p>{% endif %}
   </article>
 </div>

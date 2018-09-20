@@ -57,7 +57,7 @@ twitter:
 analytics:
   provider               : google
   google:
-    tracking_id          :
+    tracking_id          : UA-93366112-4
     anonymize_ip         : false
 
 
@@ -224,6 +224,7 @@ defaults:
       layout: single
       author_profile: true
       read_time: true
+      toc: true
       comments: # true
       share: true
       related: true
