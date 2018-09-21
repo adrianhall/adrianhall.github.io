@@ -11,6 +11,7 @@
 [Amazon DynamoDB]: https://aws.amazon.com/dynamodb
 [Amazon Pinpoint]: https://aws.amazon.com/pinpoint
 [Amazon S3]: https://aws.amazon.com/s3
+[Amazon Translate]: https://aws.amazon.com/translate
 
 <!-- My Links -->
 [Twitter]: https://twitter.com/FizzyInTheHall
