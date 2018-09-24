@@ -12,7 +12,7 @@ tags:
 This will be an in-depth series on authentication with AWS Amplify. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
 
 * The basics — a username/password system.
-* Customizing the UI.
+* [Customizing the UI]({% post_url 2018-09-23-auth-with-aws-amplify-customizing-the-ui.md %}).
 * Authenticating with Facebook.
 * Authenticating with Google.
 * Using third-party authentication providers.
