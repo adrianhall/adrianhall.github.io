@@ -11,7 +11,7 @@ tags:
 
 This will be an in-depth series on authentication with AWS Amplify. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
 
-* [The basics - a username/password system]({% post_url 2018-09-18-auth-with-aws-amplify-1.md %}).
+* [The basics - a username/password system]({% post_url 2018-09-18-auth-with-aws-amplify-1 %}).
 * Customizing the UI.
 * Authenticating with Facebook.
 * Authenticating with Google.
@@ -22,7 +22,7 @@ This will be an in-depth series on authentication with AWS Amplify. Here are the
 
 This is part 2 - customizing the UI. It was originally published as a standalone article in April 2018, and has been updated to use [Android Architecture Components](https://developer.android.com/topic/libraries/architecture), a part of [Android Jetpack](https://developer.android.com/jetpack/).
 
-In [the previous article]({% post_url 2018-09-18-auth-with-aws-amplify-1.md %}), I introduced you to the basics of setting up an authentication UI with username and password by integrating a simple (provided) UI with a component called `IdentityManager` from the AWS Mobile SDK to provide the authentication screens. It's nice and simple. 
+In [the previous article]({% post_url 2018-09-18-auth-with-aws-amplify-1 %}), I introduced you to the basics of setting up an authentication UI with username and password by integrating a simple (provided) UI with a component called `IdentityManager` from the AWS Mobile SDK to provide the authentication screens. It's nice and simple. 
 
 It's also a very generic UI. Sure, you can change the colors, fonts, and logo. However, you will want to change out the UI for your own pretty quickly. In addition, it doesn't play well with dependency injection. That means you can't swap out the Amazon Cognito version for a mock version very easily for development and testing.
 
@@ -30,7 +30,7 @@ It's also a very generic UI. Sure, you can change the colors, fonts, and logo. H
 
 Authentication is a series of flows. Each stage in the flow requires some information that is submitted to the backend. The backend will then return a request for more information or a success/failure indicator. When you are dealing with a username/password set of flows (such as provided by Amazon Cognito user pools), the list is extensive:
 
-![](/assets/images/2018-09-23-image1.png)
+![](/assets/images/2018-09-23-image1.png){: .center-image}
 
 In general, each flow is made up of one or more activities. You initiate the flow by calling a method within Amazon Cognito with a callback. The callback is called when more information is needed to fulfill the request. Eventually you are deposited into a success/failure callback, depending on the result of the authentication.
 
@@ -40,7 +40,7 @@ The default screens provided by `IdentityManager` and the suite of associated cl
 
 Of course, you can't go haring off to write some custom layouts these days. Android has settled on MVVM as an architecture, and Android Architecture Components as the method for implementing that. That means I need to set up a stack of services, repositories and view models before I can work on the activities.
 
-![](/assets/images/2018-09-23-image2.png)
+![](/assets/images/2018-09-23-image2.png){: .center-image}
 
 I already have the `AWSService` and the analytics side of things. However, I need to cover the `IdentityRepository` and the AWS implementation of that before I can begin on the activities and view models.
 
@@ -232,7 +232,7 @@ I'm going to implement the forced new password prompt and the multi-factor authe
 * A method of initiating the forgot password and sign-up flows
 * A username and password
 
-![](/assets/images/2018-09-23-image3.png)
+![](/assets/images/2018-09-23-image3.png){: .center-image}
 
 You can check out the final layouts in [my GitLab project](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/custom-auth). Let's take a look at the pieces for the actual Authenticator. The important piece is the event handler for the submit button (which is called when you click on _Sign In_):
 
@@ -342,3 +342,5 @@ I'm using the [Anko library](https://github.com/Kotlin/anko) for starting activi
 The basic UI that the AWS Mobile SDK provides gets you started very quickly. However, you will want to implement your own custom UI. With these techniques, you can get your authentication UI working rapidly as well. the AWS Amplify CLI will get the backend set up in no time, allowing you to spend your time on the front end code.
 
 Check out the code for my app so far on [my GitLab repository](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/custom-auth).
+
+{% include links.md %}
