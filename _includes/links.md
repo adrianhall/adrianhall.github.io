@@ -15,3 +15,4 @@
 
 <!-- My Links -->
 [Twitter]: https://twitter.com/FizzyInTheHall
+[GraphQL]: https://graphql.org/learn
