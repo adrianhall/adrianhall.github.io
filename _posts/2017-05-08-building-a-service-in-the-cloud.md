@@ -1,5 +1,5 @@
 ---
-title: "The Six Mobile Apps You Should Write"
+title: "Building a service in the Cloud"
 categories:
   - Mobile
 tags:
