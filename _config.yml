@@ -41,7 +41,7 @@ twitter:
 
 # Analytics
 analytics:
-  provider               : "gtag"
+  provider               : "google-gtag"
   google:
     tracking_id          : "UA-93366112-4"
 
