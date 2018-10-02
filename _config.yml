@@ -41,10 +41,9 @@ twitter:
 
 # Analytics
 analytics:
-  provider               : gtag
+  provider               : "gtag"
   google:
-    tracking_id          : UA-93366112-4
-    anonymize_ip         : false
+    tracking_id          : "UA-93366112-4"
 
 
 # Site Author
