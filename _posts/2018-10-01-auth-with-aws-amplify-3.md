@@ -14,7 +14,7 @@ This will be an in-depth series on authentication with AWS Amplify. Here are the
 * [The basics - a username/password system]({% post_url 2018-09-18-auth-with-aws-amplify-1 %}).
 * [Customizing the UI]({% post_url 2018-09-23-auth-with-aws-amplify-2 %}).
 * [Authenticating with Facebook]({% post_url 2018-10-01-auth-with-aws-amplify-3 %}).
-* Authenticating with Google.
+* [Authenticating with Google]({% post_url 2018-10-08-auth-with-aws-amplify-4 %}).
 * Using third-party authentication providers.
 * Using Time-based One-time passwords (TOTP).
 * Using Biometric authentication.
