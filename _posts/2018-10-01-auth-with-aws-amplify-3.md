@@ -9,13 +9,13 @@ tags:
   - Amazon Cognito
 ---
 
-This will be an in-depth series on authentication with AWS Amplify. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
+This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
 
 * [The basics - a username/password system]({% post_url 2018-09-18-auth-with-aws-amplify-1 %}).
 * [Customizing the UI]({% post_url 2018-09-23-auth-with-aws-amplify-2 %}).
 * [Authenticating with Facebook]({% post_url 2018-10-01-auth-with-aws-amplify-3 %}).
 * [Authenticating with Google]({% post_url 2018-10-08-auth-with-aws-amplify-4 %}).
-* Using third-party authentication providers.
+* [Using third-party authentication providers]({ post_url 2018-10-15-auth-with-aws-amplify-5 }).
 * Using Time-based One-time passwords (TOTP).
 * Using Biometric authentication.
 * Doing fraud protection and analytics.
