@@ -229,7 +229,7 @@ The final edit is to add the new OIDC provider to the identity pool:
     DependsOn: OpenIdLambdaInputs
 {% endhighlight %}
 
-The additional line is line 27, and references the section we added immediately prior. Now, deploy this backend:
+The additional line is line 24, and references the section we added immediately prior. Now, deploy this backend:
 
 ```bash
 amplify push
