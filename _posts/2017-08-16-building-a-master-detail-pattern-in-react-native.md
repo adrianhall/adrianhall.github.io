@@ -4,6 +4,7 @@ categories:
   - Mobile
 tags:
   - React Native
+  - TypeScript
 ---
 
 I’m in the middle of writing a simple Notes app in React Native. Thus far, I’ve:

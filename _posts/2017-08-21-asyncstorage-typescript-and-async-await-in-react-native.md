@@ -4,6 +4,7 @@ categories:
   - Mobile
 tags:
   - React Native
+  - TypeScript
 ---
 
 In the last few posts, I’ve been working on a Notes app in a master-detail pattern for React Native using TypeScript. This is the last post about that project. So far, I’ve:

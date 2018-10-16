@@ -4,6 +4,7 @@ categories:
   - Mobile
 tags:
   - React Native
+  - TypeScript
 ---
 
 One of the things I really miss from [React Native](https://facebook.github.io/react-native/) was the support for [TypeScript](http://www.typescriptlang.org/). TypeScript helps me immensely, but it really comes into its own with React programming as the PropTypes are specified for you (no more propTypes static). I’m also getting into [MobX](https://mobx.js.org/) as a flux implementation and that uses decorators, which is native in TypeScript. There is lots to love in TypeScript.
