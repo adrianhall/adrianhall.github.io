@@ -57,7 +57,7 @@ Setting up TOTP is easily accomplished when using `amplify add auth` with the fo
 
 ![](/assets/images/2018-10-22-image1.png){: .center-image}
 
-The important question here is _For user login, select the MFA types_. You can select SMS and TOTP. You can express a preference for the type on a per-user basis.
+The important question here is "_For user login, select the MFA types_". You can select SMS and TOTP. You can express a preference for the type on a per-user basis.
 
 ## Front end -- the process
 
