@@ -17,7 +17,7 @@ This will be an in-depth series on authentication with [AWS Amplify]. Here are t
 * [Authenticating with Google]({% post_url 2018-10-08-auth-with-aws-amplify-4 %}).
 * [Using third-party authentication providers]({ post_url 2018-10-15-auth-with-aws-amplify-5 }).
 * [Using Time-based One-time passwords (TOTP)]({ post_url 2018-10-22-auth-with-aws-amplify-6 }).
-* Using Biometric authentication.
+* [Using Biometric authentication]({ post_url 2018-10-29-auth-with-aws-amplify-7 }).
 * Doing fraud protection and analytics.
 
 This is part 4 — authenticating with Google. It builds on what we have done in parts 1 and 2. If you haven’t looked at the identity repository and how to build a custom UI, you should definitely go do that first.

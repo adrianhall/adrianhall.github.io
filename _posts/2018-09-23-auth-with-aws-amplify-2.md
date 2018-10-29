@@ -17,7 +17,7 @@ This will be an in-depth series on authentication with [AWS Amplify]. Here are t
 * [Authenticating with Google]({% post_url 2018-10-08-auth-with-aws-amplify-4 %}).
 * [Using third-party authentication providers]({ post_url 2018-10-15-auth-with-aws-amplify-5 }).
 * [Using Time-based One-time passwords (TOTP)]({ post_url 2018-10-22-auth-with-aws-amplify-6 }).
-* Using Biometric authentication.
+* [Using Biometric authentication]({ post_url 2018-10-29-auth-with-aws-amplify-7 }).
 * Doing fraud protection and analytics.
 
 This is part 2 - customizing the UI. It was originally published as a standalone article in April 2018, and has been updated to use [Android Architecture Components](https://developer.android.com/topic/libraries/architecture), a part of [Android Jetpack](https://developer.android.com/jetpack/).
