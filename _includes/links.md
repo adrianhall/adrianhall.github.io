@@ -7,6 +7,7 @@
 [AWS Lambda]: https://aws.amazon.com/lambda
 [Amazon API Gateway]: https://aws.amazon.com/api-gateway/
 [Amazon CloudFront]: https://aws.amazon.com/cloudfront
+[Amazon CloudWatch]: https://aws.amazon.com/cloudwatch
 [Amazon Cognito]: https://aws.amazon.com/cognito
 [Amazon DynamoDB]: https://aws.amazon.com/dynamodb
 [Amazon Pinpoint]: https://aws.amazon.com/pinpoint

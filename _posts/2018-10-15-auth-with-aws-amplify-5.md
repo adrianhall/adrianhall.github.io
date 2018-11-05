@@ -18,7 +18,7 @@ This will be an in-depth series on authentication with [AWS Amplify]. Here are t
 * [Using third-party authentication providers]({ post_url 2018-10-15-auth-with-aws-amplify-5 }).
 * [Using Time-based One-time passwords (TOTP)]({ post_url 2018-10-22-auth-with-aws-amplify-6 }).
 * [Using Biometric authentication]({ post_url 2018-10-29-auth-with-aws-amplify-7 }).
-* Doing fraud protection and analytics.
+* [Doing fraud protection and analytics]({ post_url 2018-11-05-auth-with-aws-amplify-8 }).
 
 In the last two articles, I've covered Facebook and Google - probably the most important authentication providers that there are out there and for which there is specific support in Amazon Cognito. However, that is not always the case. You might want to authenticate against Salesforce, GitHub, or other OpenID Connect (OIDC) providers - providers that aren't directly supported by Amazon Cognito. In fact, you could [write your own OIDC provider](https://www.scottbrady91.com/OpenID-Connect/Getting-Started-with-oidc-provider), although I would not recommend it. Use a service!
 

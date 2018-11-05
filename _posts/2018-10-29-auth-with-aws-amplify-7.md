@@ -18,7 +18,7 @@ This will be an in-depth series on authentication with [AWS Amplify]. Here are t
 * [Using third-party authentication providers]({ post_url 2018-10-15-auth-with-aws-amplify-5 }).
 * [Using Time-based One-time passwords (TOTP)]({ post_url 2018-10-22-auth-with-aws-amplify-6 }).
 * [Using Biometric authentication]({ post_url 2018-10-29-auth-with-aws-amplify-7 }).
-* Doing fraud protection and analytics.
+* [Doing fraud protection and analytics]({ post_url 2018-11-05-auth-with-aws-amplify-8 }).
 
 This is the seventh in the series covering how to authenticate with the backend service using Biometrics - specifically, fingerprints. 
 
