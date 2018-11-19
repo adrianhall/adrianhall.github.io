@@ -100,3 +100,5 @@ The top take-aways:
 * Always enable adaptive security features when they are available.
 
 Thanks for reading!
+
+{% include links.md %}
