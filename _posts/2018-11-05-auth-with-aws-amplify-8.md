@@ -15,10 +15,10 @@ This will be an in-depth series on authentication with [AWS Amplify]. Here are t
 * [Customizing the UI]({% post_url 2018-09-23-auth-with-aws-amplify-2 %}).
 * [Authenticating with Facebook]({% post_url 2018-10-01-auth-with-aws-amplify-3 %}).
 * [Authenticating with Google]({% post_url 2018-10-08-auth-with-aws-amplify-4 %}).
-* [Using third-party authentication providers]({ post_url 2018-10-15-auth-with-aws-amplify-5 }).
-* [Using Time-based One-time passwords (TOTP)]({ post_url 2018-10-22-auth-with-aws-amplify-6 }).
-* [Using Biometric authentication]({ post_url 2018-10-29-auth-with-aws-amplify-7 }).
-* [Doing fraud protection and analytics]({ post_url 2018-11-05-auth-with-aws-amplify-8 }).
+* [Using third-party authentication providers]({% post_url 2018-10-15-auth-with-aws-amplify-5 %}).
+* [Using Time-based One-time passwords (TOTP)]({% post_url 2018-10-22-auth-with-aws-amplify-6 %}).
+* [Using Biometric authentication]({% post_url 2018-10-29-auth-with-aws-amplify-7 %}).
+* [Doing fraud protection and analytics]({% post_url 2018-11-05-auth-with-aws-amplify-8 %}).
 
 Over the last seven articles, I've covered pretty much all the ways you can authenticate your users to Amazon Cognito and use those credentials to access AWS service. This article, the final one in the series, covers a fairly advanced topic, but one that is important: How do you protect your users from fraud?
 

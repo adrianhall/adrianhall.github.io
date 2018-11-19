@@ -15,10 +15,10 @@ This will be an in-depth series on authentication with [AWS Amplify]. Here are t
 * [Customizing the UI]({% post_url 2018-09-23-auth-with-aws-amplify-2 %}).
 * [Authenticating with Facebook]({% post_url 2018-10-01-auth-with-aws-amplify-3 %}).
 * [Authenticating with Google]({% post_url 2018-10-08-auth-with-aws-amplify-4 %}).
-* [Using third-party authentication providers]({ post_url 2018-10-15-auth-with-aws-amplify-5 }).
-* [Using Time-based One-time passwords (TOTP)]({ post_url 2018-10-22-auth-with-aws-amplify-6 }).
-* [Using Biometric authentication]({ post_url 2018-10-29-auth-with-aws-amplify-7 }).
-* [Doing fraud protection and analytics]({ post_url 2018-11-05-auth-with-aws-amplify-8 }).
+* [Using third-party authentication providers]({% post_url 2018-10-15-auth-with-aws-amplify-5 %}).
+* [Using Time-based One-time passwords (TOTP)]({% post_url 2018-10-22-auth-with-aws-amplify-6 %}).
+* [Using Biometric authentication]({% post_url 2018-10-29-auth-with-aws-amplify-7 %}).
+* [Doing fraud protection and analytics]({% post_url 2018-11-05-auth-with-aws-amplify-8 %}).
 
 Over the last five articles, I've covered several methods of authenticating your users. With this article, I'm forgetting Facebook, Google, and OIDC exist and concentrating on a basic username / password system. Specifically, I'm going to start talking about security and how to ensure your users credentials are protected. 
 
