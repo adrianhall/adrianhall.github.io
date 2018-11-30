@@ -1,5 +1,5 @@
 ---
-title: "Building a GraphQL API by Example: Restaurant Reviews"
+title: "Building a GraphQL API by Example: Restaurant Reviews (part 1: The Schema)"
 categories:
   - AWS
 tags:
