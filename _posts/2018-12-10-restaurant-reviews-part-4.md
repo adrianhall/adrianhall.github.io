@@ -9,7 +9,7 @@ tags:
 I am building a GraphQL API for a restaurant review app, and thus far, I’ve:
 
 * [Designed the schema]({% post_url 2018-11-15-restaurant-reviews %}).
-* [Developed a suitable data layer backend]({% post_url 2018-11-20-restaurant-reviews-part-2 %}).
+* [Developed a suitable data layer backend]({% post_url 2018-11-30-restaurant-reviews-part-2 %}).
 * [Developed “most” of the resolvers for the queries and mutations]({% post_url 2018-12-06-restaurant-reviews-part-3 %}).
 
 When developing the resolvers in the last blog post, I left out what is probably the most complex and useful of the queries — the _findLocation_ query. This query is central to my app and involves geospatial searching. I included an ElasticSearch instance in my data layer backend purely for this capability.
