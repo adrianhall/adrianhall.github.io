@@ -14,6 +14,11 @@
 [Amazon S3]: https://aws.amazon.com/s3
 [Amazon Translate]: https://aws.amazon.com/translate
 
+<!-- Consoles -->
+[AWS AppSync console]: https://console.aws.amazon.com/appsync/home
+[AWS Lambda console]: https://console.aws.amazon.com/lambda/home
+
 <!-- My Links -->
 [Twitter]: https://twitter.com/FizzyInTheHall
 [GraphQL]: https://graphql.org/learn
+[Serverless Framework]: https://serverless.com/framework/docs/providers/aws/guide/quick-start/
