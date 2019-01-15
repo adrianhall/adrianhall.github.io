@@ -36,6 +36,6 @@
       <i class="far fa-clock" aria-hidden="true"></i> {% include read-time.html %}&nbsp;
     {% endif %}
   </p>
-  {% if post.excerpt %}<p class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify | strip_html | truncate: 160 }}</p>{% endif %}
+  <p class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify | strip_html | truncate: 500 }}</p>
   </article>
 </div>
