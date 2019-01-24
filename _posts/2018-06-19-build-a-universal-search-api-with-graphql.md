@@ -1,11 +1,10 @@
 ---
 title: "Build a Universal Search API with GraphQL and AWS AppSync"
 categories:
-  - Mobile
+  - AWS
 tags:
   - GraphQL
-  - AWS
-  - AWS AppSync
+  - "AWS AppSync"
 ---
 
 Have you ever looked at a feature of a mobile app and wondered how they do something? Me too! I like to figure out how they built those features and build them into my own apps. Take, as an example, universal search. You can find this sort of search box at the top of the Facebook app. So, how do they implement it? I’ve not seen their codebase, but I imagine it’s something similar to the following proof of concept.

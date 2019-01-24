@@ -1,12 +1,12 @@
 ---
 title: "Backend GraphQL: How to trigger an AWS AppSync mutation from AWS Lambda"
 categories:
-  - Mobile
-tags:
-  - AWS Lambda
   - AWS
-  - AWS Amplify
-  - Amazon Cognito
+tags:
+  - "AWS Lambda"
+  - "AWS Amplify"
+  - "AWS AppSync"
+  - "Amazon Cognito"
 ---
 
 This blog will explore a technique that opens up a whole new world of possibilities for notifying clients of results within a serverless application.

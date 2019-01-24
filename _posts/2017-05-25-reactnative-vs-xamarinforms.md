@@ -3,7 +3,7 @@ title: "Which is better - React Native or Xamarin Forms?"
 categories:
   - Mobile
 tags:
-  - React Native
+  - "React Native"
   - Xamarin
 ---
 

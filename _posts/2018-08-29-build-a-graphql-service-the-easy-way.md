@@ -1,12 +1,11 @@
 ---
 title: "Build a GraphQL Service the easy way with AWS Amplify Model Transforms"
 categories:
-  - Mobile
+  - AWS
 tags:
   - GraphQL
-  - AWS
-  - AWS AppSync
-  - AWS Amplify
+  - "AWS AppSync"
+  - "AWS Amplify"
 ---
 
 Creating a functional GraphQL API is hard. You have to create a GraphQL schema, decide on authentication and database structures, implement the schema in a GraphQL service, wire up the authentication, hook up the database sources, ensure the whole thing is scalable, worry about logging and monitoring, and then write your app.

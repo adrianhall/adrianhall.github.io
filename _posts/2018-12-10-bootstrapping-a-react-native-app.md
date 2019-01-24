@@ -3,7 +3,7 @@ title: "Bootstrapping a React Native App: A Comparison"
 categories:
   - Mobile
 tags:
-  - React Native
+  - "React Native"
 ---
 
 It's been a while since I have worked on a React Native app. In that time, `create-react-native-app` (CRNA) has been deprecated, and `expo-cli` has taken its place as the advised route. There is still `react-native init`, and Infinite Red has `ignite`. That is four different ways of bootstrapping a React Native app.

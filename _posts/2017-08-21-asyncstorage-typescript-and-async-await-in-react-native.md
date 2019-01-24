@@ -3,7 +3,7 @@ title: "AsyncStorage, TypeScript, and Async/await in React Native"
 categories:
   - Mobile
 tags:
-  - React Native
+  - "React Native"
   - TypeScript
 ---
 

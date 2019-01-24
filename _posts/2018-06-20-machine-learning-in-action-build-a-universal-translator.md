@@ -2,10 +2,10 @@
 title: "Machine Learning in Action: Build a Universal Translator App for Android with Kotlin"
 categories:
   - Android
+  - AWS
 tags:
   - Kotlin
-  - Machine Learning
-  - AWS
+  - "Machine Learning"
 ---
 
 I’ve started playing with some of the machine learning APIs that AWS provides. One of these is [Amazon Translate] — a service that translates from English to a variety of other languages. So I thought I would make an app that uses the on-board speech recognition of an Android app, then translates it to a new language.

@@ -4,7 +4,7 @@ categories:
   - AWS
 tags:
   - GraphQL
-  - AWS AppSync
+  - "AWS AppSync"
 ---
 
 [AWS AppSync] is a managed [GraphQL] service that can (and probably should) act as the data layer for your app. I'm not going to go into the details of how to configure it since I've gone through that in excruciating detail recently (see blog [#1], [#2], [#3], and [#4]). Rather, I want to take a look at how you can send a query to AWS AppSync from your React (or React Native) app.

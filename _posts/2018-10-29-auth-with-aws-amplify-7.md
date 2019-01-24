@@ -2,11 +2,11 @@
 title: "Authentication with AWS Amplify and Android: Integrating Biometrics"
 categories:
   - Android
+  - AWS
 tags:
   - Kotlin
-  - AWS
-  - AWS Amplify
-  - Amazon Cognito
+  - "AWS Amplify"
+  - "Amazon Cognito"
 ---
 
 This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.

@@ -3,8 +3,8 @@ title: "Learn to build mobile and web apps with AWS Amplify and Serverless Frame
 categories:
   - Mobile
 tags:
-  - AWS Amplify
-  - Serverless Framework
+  - "AWS Amplify"
+  - "Serverless Framework"
 ---
 
 There has always been a bit of a problem between deploying your backend and then integrating that same backend with your front end code. The front end needs to know where the back end is located. The traditional approach is to create a configuration file for the purpose. But how?

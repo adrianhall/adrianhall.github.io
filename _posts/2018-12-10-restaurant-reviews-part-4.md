@@ -4,6 +4,7 @@ categories:
   - AWS
 tags:
   - GraphQL
+  - "AWS AppSync"
 ---
 
 I am building a GraphQL API for a restaurant review app, and thus far, I’ve:

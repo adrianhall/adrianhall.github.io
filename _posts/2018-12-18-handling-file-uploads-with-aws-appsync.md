@@ -4,6 +4,8 @@ categories:
   - AWS
 tags:
   - GraphQL
+  - "AWS AppSync"
+  - "Amazon S3"
 ---
 
 GraphQL does not handle files.

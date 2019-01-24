@@ -1,12 +1,11 @@
 ---
 title: "How developers can authenticate and authorize users with AWS AppSync"
 categories:
-  - Mobile
+  - AWS
 tags:
   - GraphQL
-  - AWS
-  - Amazon Cognito
-  - AWS AppSync
+  - "Amazon Cognito"
+  - "AWS AppSync"
 ---
 
 > AWS AppSync provides four distinct methods of authorizing users to optimize and restrict data being transferred

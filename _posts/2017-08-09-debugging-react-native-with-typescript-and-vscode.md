@@ -3,7 +3,7 @@ title: "Debugging React Native with TypeScript and Visual Studio Code"
 categories:
   - Mobile
 tags:
-  - React Native
+  - "React Native"
   - TypeScript
 ---
 

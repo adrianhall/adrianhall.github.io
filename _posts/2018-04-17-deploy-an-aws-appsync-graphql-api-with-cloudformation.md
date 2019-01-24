@@ -1,12 +1,11 @@
 ---
 title: "Deploy an AWS AppSync GraphQL API with CloudFormation"
 categories:
-  - Mobile
+  - AWS
 tags:
   - GraphQL
-  - AWS
-  - AWS CloudFormation
-  - AWS AppSync
+  - "AWS CloudFormation"
+  - "AWS AppSync"
 ---
 There are lots of tutorials about creating an [AWS AppSync] API from the ground up using the console. However, sooner or later, you are going to want to create an API for production.
 
