@@ -1,5 +1,5 @@
 ---
-title: "Documenting open-source projects"
+title: "Building an efficient Logger in TypeScript"
 categories:
   - Development
 tags:
