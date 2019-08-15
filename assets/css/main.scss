@@ -7,7 +7,9 @@
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
 @import "minimal-mistakes"; // main partials
 
-.center-image {
+.page__inner-wrap > section img {
   margin: 0 auto;
   display: block;
 }
+
+

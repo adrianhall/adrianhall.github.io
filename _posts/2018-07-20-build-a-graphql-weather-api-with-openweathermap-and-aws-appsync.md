@@ -1,10 +1,10 @@
 ---
 title: "Build a GraphQL Weather API with OpenWeatherMap and AWS AppSync"
 categories:
-  - AWS
+  - Cloud
 tags:
   - GraphQL
-  - "AWS AppSync"
+  - "zCloud:AWS"
 ---
 
 I love GraphQL even for the small apps. Generating a simple API allows me to change out back end details without re-compiling my front end. It also allows me to rotate API keys easily, handle authentication, and get in depth monitoring of the individual fields being used. So, naturally, when I am building a new weather app (don’t judge — everyone makes one), I naturally want to use a weather API based on GraphQL.

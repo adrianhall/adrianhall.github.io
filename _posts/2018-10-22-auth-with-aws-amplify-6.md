@@ -2,11 +2,9 @@
 title: "Authentication with AWS Amplify and Android: Integrating TOTP"
 categories:
   - Android
-  - AWS
 tags:
   - Kotlin
-  - "AWS Amplify"
-  - "Amazon Cognito"
+  - "zCloud:AWS"
 ---
 
 This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
@@ -55,7 +53,7 @@ $ amplify push
 
 Setting up TOTP is easily accomplished when using `amplify add auth` with the following answers:
 
-![](/assets/images/2018-10-22-image1.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-10-22-image1.png)
 
 The important question here is "_For user login, select the MFA types_". You can select SMS and TOTP. You can express a preference for the type on a per-user basis.
 

@@ -1,5 +1,5 @@
 ---
-title: "Lessons in Kotlin Threading: An Animated Splash Screen"
+title: "Lessons in Kotlin: Toolbar Icons and Reflection"
 categories:
   - Android
 tags:

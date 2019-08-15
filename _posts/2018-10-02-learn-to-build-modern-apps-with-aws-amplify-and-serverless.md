@@ -3,7 +3,8 @@ title: "Learn to build mobile and web apps with AWS Amplify and Serverless Frame
 categories:
   - Mobile
 tags:
-  - "AWS Amplify"
+  - "zCloud:AWS"
+  - Deployment
   - "Serverless Framework"
 ---
 

@@ -1,9 +1,9 @@
 ---
 title: "Handling orientation changes in React Native"
 categories:
-  - Mobile
-tags:
   - "React Native"
+tags:
+  - "Mobile Development"
 ---
 
 I’ve just returned to my JavaScript days and am trying to learn React Native again. One of the things I like to do is to produce a “perfect” app – one that will work on both tablet and phone in any orientation and that includes all the best practices. Things like my Notes App on Android, for example, took me off to learn content providers. React Native is no different. There are a bunch of things you just have to know.
@@ -106,7 +106,7 @@ render() {
 
 And this produces output like this:
 
-![](/assets/images/2017-07-26-image1.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2017-07-26-image1.png)
 
 Hold on though. Try to rotate that device – it does not re-render the react tree, which means I don’t have orientation detection. To handle that case, I need to add state to the top level react component that detects the orientation. I use the following:
 

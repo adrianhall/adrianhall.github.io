@@ -1,9 +1,9 @@
 ---
 title: "Bootstrapping a React Native App: A Comparison"
 categories:
-  - Mobile
-tags:
   - "React Native"
+tags:
+  - "Mobile Development"
 ---
 
 It's been a while since I have worked on a React Native app. In that time, `create-react-native-app` (CRNA) has been deprecated, and `expo-cli` has taken its place as the advised route. There is still `react-native init`, and Infinite Red has `ignite`. That is four different ways of bootstrapping a React Native app.
@@ -45,7 +45,7 @@ $ react-native init RNIApp
 
 Here, `RNIApp` is the name of the directory (and the app) that I am developing. When done, here is what the layout looks like:
 
-![](/assets/images/2018-12-10-picture1.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-12-10-picture1.png)
 
 There are minimal opinions here and all are easily changeable:
 
@@ -86,7 +86,7 @@ $ expo init ExpoApp
 
 This gives you a choice. Do you want a minimal setup (which is much like the CRNA option) or a better setup with tabs and react-navigation. I opted for the minimal setup to see what that looks like first:
 
-![](/assets/images/2018-12-10-picture2.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-12-10-picture2.png)
 
 In the minimal configuration, there is very little opinion:
 
@@ -105,7 +105,7 @@ The Bad Things:
 
 The "tabs" template gives you more stuff:
 
-![](/assets/images/2018-12-10-picture3.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-12-10-picture3.png)
 
 This template adds `@expo/samples` as a dependency, which has no GitHub repository (so I can't check out the source code prior to downloading) and no README. I had to go and check out what was in it in the `node_modules` directory. It's not a particularly big nor important dependency, but the lack of transparency is disturbing. Other than this glaring point, it also adds react-navigation, which is fairly standard as the screen navigation solution.
 
@@ -141,7 +141,7 @@ Gone is the minimal look - you get **Andross** (which includes React Navigat
 
 The ignition process also asks you about which libraries you want to use, with (in general) only one supported, so you get to include it or not. After all is done (and it takes a long time), this is what the file structure looks like:
 
-![](/assets/images/2018-12-10-picture4.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-12-10-picture4.png)
 
 Pre-installed dependencies (not including the libraries that you asked for during the ignition process) include:
 * apisauce (Axios plus request/response transforms)

@@ -1,10 +1,10 @@
 ---
 title: "Building a GraphQL API by Example: Restaurant Reviews (part 4: Geospatial Search)"
 categories:
-  - AWS
+  - Cloud
 tags:
   - GraphQL
-  - "AWS AppSync"
+  - "zCloud:AWS"
 ---
 
 I am building a GraphQL API for a restaurant review app, and thus far, I’ve:

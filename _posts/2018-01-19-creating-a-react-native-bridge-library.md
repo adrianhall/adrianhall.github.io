@@ -1,9 +1,10 @@
 ---
 title: "Creating a React Native bridge library"
 categories:
-  - Mobile
-tags:
   - "React Native"
+tags:
+  - "Mobile Development"
+  - "Library Development"
 ---
 
 React Native is really good at straddling the line between native and JavaScript. There is a bridge between the two that allows you to call native code from JavaScript. This is awesome for including things that require a special touch. Most React Native developers will never need to worry about the bridge because libraries exist to wrap a lot of the common native libraries that you see in Android and iOS.
@@ -30,7 +31,7 @@ react-native-create-library --package-identifier com.shellmonger.reactnative --p
 
 This is not quite right, but it’s close. Here is the tree structure that is created:
 
-![](/assets/images/2018-01-19-image1.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-01-19-image1.png)
 
 There are a couple of points here.
 

@@ -1,11 +1,10 @@
 ---
 title: "Handling File Uploads with AWS AppSync"
 categories:
-  - AWS
+  - Cloud
 tags:
   - GraphQL
-  - "AWS AppSync"
-  - "Amazon S3"
+  - "zCloud:AWS"
 ---
 
 GraphQL does not handle files.
@@ -16,7 +15,7 @@ In this article, I’m going to present one way that you can handle the upload a
 
 To do this, I’m going to implement a feature — profile pictures — in my Restaurant Reviews app. Any user can download a profile picture, but only the owner of a profile can upload the profile picture. Here is the architecture:
 
-![](/assets/images/2018-12-18-picture1.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-12-18-picture1.png)
 
 1. The client app asks AWS AppSync (via GraphQL) for an upload URL.
 2. AWS AppSync invokes an [AWS Lambda] function to generate a pre-signed URL for upload purposes and returns it to the client. A pre-signed URL grants temporary permissions for the operation.
@@ -251,7 +250,7 @@ This indicates that the Lambda function is being called and that it is returning
 * Click the log group (there should only be one at this point — if not, click the latest one).
 * You will see (once all the logs are expanded) something akin to this:
 
-![](/assets/images/2018-12-18-picture2.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-12-18-picture2.png)
 
 The only real thing to note is this: nothing from the GraphQL context is passed into the Lambda context by default. It does not know about the identity of the calling user nor the source object, both of which are required for the functionality I want to provide. You need to specify what is passed in within the request mapping template. In this case, I need `$context.source` and `$context.identity` to be passed into the AWS Lambda function:
 
@@ -343,7 +342,7 @@ We can, of course, read the identity of the user from the `$context.identity`. H
 
 We can fix this by converting the User queries to pipeline resolvers.
 
-![](/assets/images/2018-12-18-picture3.jpg){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-12-18-picture3.jpg)
 
 In our scenario, we would define two functions:
 

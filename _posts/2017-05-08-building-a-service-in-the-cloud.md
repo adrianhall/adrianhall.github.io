@@ -1,7 +1,7 @@
 ---
 title: "Building a service in the Cloud"
 categories:
-  - Mobile
+  - Cloud
 tags:
   - Serverless
 ---

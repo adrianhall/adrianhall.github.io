@@ -1,9 +1,10 @@
 ---
 title: "Build and publish a Jekyll powered blog easily with AWS Amplify"
 categories:
-  - AWS
+  - Cloud
 tags:
-  - "AWS Amplify"
+  - Jekyll
+  - "zCloud:AWS"
 ---
 
 I have a couple of blogs. Firstly, I consolidate all the blogs that I write centrally on [my own github.io](https://adrianhall.github.io) site, and secondly, I run [a weekly link consolidation blog](https://adrianhall.gitlab.io/awsmobile-weekly/) that lets developers like you know what is going on in the world of AWS Amplify. Both of these are currently written using the Jekyll platform using the hosting of their respective source code control platforms, but I want to move them. Firstly, the Github and Gitlab hosting facilities have a limited set of plugins, whereas Jekyll supports many more plugins (and I want to use some of them), and secondly, I’d like to move them onto their own domains, decoupling them from where the blogs are stored.

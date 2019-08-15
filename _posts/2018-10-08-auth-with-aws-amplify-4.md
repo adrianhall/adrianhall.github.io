@@ -1,12 +1,10 @@
 ---
 title: "Authentication with AWS Amplify and Android: Google Login"
 categories:
-  - AWS
   - Android
 tags:
   - Kotlin
-  - "AWS Amplify"
-  - "Amazon Cognito"
+  - "zCloud:AWS"
 ---
 
 This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
@@ -49,7 +47,7 @@ The first step in this process is always to set up the third party authenticatio
 * On the next page, click the **Create Credentials** button.
 * You want to create a Client ID for the identity pool next. This is a choice in the menu:
 
-![](/assets/images/2018-10-08-image1.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-10-08-image1.png)
 
 * Click the **Configure Consent Screen** button.
 * Enter the name of your app in the **Product name to be shown to users** box, then click **Save**.
@@ -71,7 +69,7 @@ keytool -exportcert -keystore ~/.android/debug.keystore -list -v
 
 The output will be similar to the following:
 
-![](/assets/images/2018-10-08-image2.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-10-08-image2.png)
 
 Note the highlighted area. You should copy this as you will soon need it.
 

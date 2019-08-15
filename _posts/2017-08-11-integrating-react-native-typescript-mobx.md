@@ -1,8 +1,9 @@
 ---
 title: "Integrating React Native, TypeScript, and MobX"
 categories:
-  - Mobile
+  - "React Native"
 tags:
+  - MobX
   - "React Native"
   - TypeScript
 ---

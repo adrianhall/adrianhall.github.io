@@ -214,7 +214,7 @@ class SplashActivity : AppCompatActivity() {
 
 The injection is at line 10.  Once injected, I can use it anywhere.  You can now run your app and you’ll see the same analytics as you previously had. If you look at the debugging, you might see the following:
 
-![](/assets/images/2018-04-06-image1.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2018-04-06-image1.png)
 
 You can clearly see here that the `AnalyticsService` was resolved, but that caused an additional resolution for the context. The context that was provided was the application context.
 

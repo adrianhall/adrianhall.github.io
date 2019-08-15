@@ -1,7 +1,7 @@
 ---
 title: "Documenting open-source projects"
 categories:
-  - Development
+  - Documentation
 ---
 
 Over the last 25 years, I've contributed to and written a lot of technical documentation, whether it is in the form of official documentation, blogs, tutorials, or books. Tech writers, who have nothing but access to engineers to work with, turn conversations into a guide that is equally suitable for a complete beginner and an expert. If you are an engineer, you definitely need to institute a "Tech Writer Appreciation Day".
@@ -15,7 +15,7 @@ So how do I do it?
 
 I categorize students into five groups.
 
-![](assets/2019-02-11-image2.png)
+![]({{ site.baseurl }}/assets/images/2019-02-11-image2.png) {: .center-image}
 
 I didn't come by this list by accident. A long time ago, I read a [research article written by Stuart and Hubert Dreyfus](https://apps.dtic.mil/dtic/tr/fulltext/u2/a084551.pdf) about how airforce pilots can learn a new skill. (You can read the short PDF for yourself). The paper itself is from 1980 and a really good read, but I treat it as source material and have adjusted my view over the years. Everyone goes through similar phases when learning something new. Instruction and practice - a lot of practice - are required to move along the curve towards mastery.
 

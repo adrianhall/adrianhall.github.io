@@ -50,8 +50,8 @@ analytics:
 author:
   name             : *name
   avatar           : "/assets/images/adrian-hall.jpg"
-  bio              : "Developer Advocate for AWS Mobile, covering Android & Kotlin development."
-  location         : "Seattle, WA"
+  bio              : "Microsoft Program Manager by day; Mobile Developer by night"
+  location         : "Kirkland, WA"
   email            : "photoadrian@outlook.com"
   links:
     - label: "Website"
@@ -142,7 +142,7 @@ sass:
 
 
 # Outputting
-permalink: /:categories/:title/
+permalink: pretty
 paginate: 5 # amount of posts to show
 paginate_path: /page:num/
 timezone: "US/Pacific"

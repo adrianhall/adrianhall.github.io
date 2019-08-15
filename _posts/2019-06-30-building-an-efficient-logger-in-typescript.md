@@ -1,7 +1,7 @@
 ---
 title: "Building an efficient Logger in TypeScript"
 categories:
-  - Development
+  - Cloud
 tags:
   - TypeScript
 ---

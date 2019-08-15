@@ -1,7 +1,7 @@
 ---
 title: "The React Toolbox - 2018 Edition"
 categories:
-  - Web Development
+  - "Web Development"
 tags:
   - React
   - JavaScript

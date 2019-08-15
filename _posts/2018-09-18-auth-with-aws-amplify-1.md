@@ -2,11 +2,9 @@
 title: "Authentication with AWS Amplify and Android: The Basics"
 categories:
   - Android
-  - AWS
 tags:
   - Kotlin
-  - "AWS Amplify"
-  - "Amazon Cognito"
+  - "zCloud:AWS"
 ---
 
 This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
