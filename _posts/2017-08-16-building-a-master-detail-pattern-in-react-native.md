@@ -3,7 +3,6 @@ title: "Building a Master-Detail Pattern in React Native"
 categories:
   - "React Native"
 tags:
-  - "Mobile Development"
   - TypeScript
 ---
 

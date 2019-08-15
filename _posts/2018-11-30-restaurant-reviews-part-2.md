@@ -4,7 +4,6 @@ categories:
   - Cloud
 tags:
   - GraphQL
-  - "zCloud:AWS"
 ---
 
 I'm currently in the middle of building a restaurant review API driven by GraphQL. So far, I've [looked at the needs of the front end and developed the schema]({% post_url 2018-11-15-restaurant-reviews %}). Now, I need to take a look at the back end. I'm building the API within the AWS cloud. How do I store the data?

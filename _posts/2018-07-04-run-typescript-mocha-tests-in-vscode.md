@@ -1,7 +1,7 @@
 ---
 title: "Run TypeScript Mocha Tests in Visual Studio Code"
 categories:
-  - "Web Development"
+  - Web
 tags:
   - Testing
   - TypeScript

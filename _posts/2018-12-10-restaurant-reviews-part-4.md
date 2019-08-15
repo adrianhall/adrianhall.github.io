@@ -4,7 +4,6 @@ categories:
   - Cloud
 tags:
   - GraphQL
-  - "zCloud:AWS"
 ---
 
 I am building a GraphQL API for a restaurant review app, and thus far, I’ve:

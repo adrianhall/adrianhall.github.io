@@ -1,10 +1,9 @@
 ---
 title: "The things I like (and don't like) about Swift?"
 categories:
-  - Swift
-tags:
   - iOS
-  - "Mobile Development"
+tags:
+  - Swift
 ---
 
 Recently, I’ve given myself the task of learning the “native” mobile development platforms.  That means Java or Kotlin for Android and Swift or Objective-C for iOS development.  Kotlin is a ways behind Java for Android development and I already knew (somewhat) the Java language, so that one was relatively easy.  Swift is the new kid on the block, but it’s obviously the way to go for iOS Development.

@@ -4,7 +4,6 @@ categories:
   - Cloud
 tags:
   - GraphQL
-  - "zCloud:AWS"
 ---
 
 I’m loving [GraphQL](https://graphql.org/) for my apps. It removes the ever shifting requirements that I implemented when I was doing “REST-like” backends and removes the complexity of having to do BFF ([Backend for your Frontend](https://samnewman.io/patterns/architectural/bff/)) and the maintenance headaches that come with such architectures.

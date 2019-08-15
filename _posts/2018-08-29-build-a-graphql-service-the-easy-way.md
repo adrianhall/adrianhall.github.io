@@ -4,7 +4,6 @@ categories:
   - Cloud
 tags:
   - GraphQL
-  - "zCloud:AWS"
   - Deployment
 ---
 

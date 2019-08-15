@@ -2,8 +2,6 @@
 title: "Handling orientation changes in React Native"
 categories:
   - "React Native"
-tags:
-  - "Mobile Development"
 ---
 
 I’ve just returned to my JavaScript days and am trying to learn React Native again. One of the things I like to do is to produce a “perfect” app – one that will work on both tablet and phone in any orientation and that includes all the best practices. Things like my Notes App on Android, for example, took me off to learn content providers. React Native is no different. There are a bunch of things you just have to know.

@@ -4,7 +4,6 @@ categories:
   - Cloud
 tags:
   - GraphQL
-  - "zCloud:AWS"
 ---
 
 I'm in the middle of building a GraphQL API for a restaurant review app that I'm building. Thus far, I've produced the schema and built the backend. However, the two don't know how to talk to one another. Specifically, how does the GraphQL insert a new location into DynamoDB, or do a geospatial search across ElasticSearch? This is the job of the resolvers - turn a GraphQL query into something that the back end data plane can understand.

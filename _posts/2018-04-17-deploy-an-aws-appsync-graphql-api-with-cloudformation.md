@@ -4,7 +4,6 @@ categories:
   - Cloud
 tags:
   - GraphQL
-  - "zCloud:AWS"
 ---
 There are lots of tutorials about creating an [AWS AppSync] API from the ground up using the console. However, sooner or later, you are going to want to create an API for production.
 

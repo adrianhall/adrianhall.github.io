@@ -4,7 +4,6 @@ categories:
   - "React Native"
 tags:
   - "Async Programming"
-  - "Mobile Development"
   - TypeScript
 ---
 

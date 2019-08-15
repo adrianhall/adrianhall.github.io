@@ -1,10 +1,10 @@
 ---
 title: "Which is better - React Native or Xamarin Forms?"
 categories:
-  - Mobile
-tags:
   - "React Native"
   - Xamarin
+tags:
+  - Comparisons
 ---
 
 Let’s talk about a loaded question.  After my recent forays into both React Native and Xamarin Forms, I got asked on Twitter – which is better, React Native or Xamarin Forms?  Further, I should answer this for JavaScript experts, C# XAML experts and for developers with experience in both.  After all, both produce native apps and both use a common codebase.

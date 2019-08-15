@@ -4,7 +4,6 @@ categories:
   - Android
 tags:
   - Kotlin
-  - "zCloud:AWS"
 ---
 
 I’ve become a big fan of [Kotlin development](https://kotlinlang.org/) for my Android apps. I also think that analytics should be integrated into every single app I write. I’ve covered integrating Amazon Pinpoint before via AWS Mobile Hub. Recently, [AWS Amplify] announced an updated CLI that provides support for native applications and bypasses the need to use the AWS web console for creating resources. Naturally, [I wanted to try it out]({% post_url 2018-08-27-native-development-with-aws-amplify %}). Integrating analytics is now really easy. Here is how I do it:

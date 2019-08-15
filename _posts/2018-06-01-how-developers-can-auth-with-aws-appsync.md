@@ -4,7 +4,6 @@ categories:
   - Cloud
 tags:
   - GraphQL
-  - "zCloud:AWS"
 ---
 
 > AWS AppSync provides four distinct methods of authorizing users to optimize and restrict data being transferred

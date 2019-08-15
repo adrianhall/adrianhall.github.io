@@ -2,8 +2,6 @@
 title: "What AWS service should you use to publish a web site?"
 categories:
   - Cloud
-tags:
-  - "zCloud:AWS"
 ---
 
 There are at least five different services you can use to publish a web site on AWS:
