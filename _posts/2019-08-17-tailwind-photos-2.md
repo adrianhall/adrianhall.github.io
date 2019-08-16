@@ -41,7 +41,7 @@ What you will get next is a step-by-step process for integrating the Facebook Bu
 
 Hmm - how can we do this from Android Studio?  The easiest way is to add some code temporarily to the `SplashActivity` class:
 
-```kotlin
+{% highlight kotlin %}
 class SplashActivity : AppCompatActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -65,19 +65,19 @@ class SplashActivity : AppCompatActivity() {
 		}
 	}
 }
-```
+{% endhighlight %}
 
 > **DO NOT** leave this code in your application.  It's a deprecated security risk.  There is also a command line version (which the instructions provide) if you never want to include temporary code in your app.  Always get the release key hash using the command line tool.
 
 Run your app and watch the LogCat window:
 
-```text
+{% highlight text %}
 2019-08-15 11:35:45.656 2990-2990/? I/InstantRun: starting instant run server: is main process
 2019-08-15 11:35:45.890 2990-2990/? D/KeyHash:: HXObbXXX8wVtfDHiT6jm14bCCC0=
 2019-08-15 11:35:46.520 2990-2990/? W/wind.app.photo: Accessing hidden method Landroid/view/View;->computeFitSystemWindows(Landroid/graphics/Rect;Landroid/graphics/Rect;)Z (light greylist, reflection)
 2019-08-15 11:35:46.520 2990-2990/? W/wind.app.photo: Accessing hidden method Landroid/view/ViewGroup;->makeOptionalFitsSystemWindows()V (light greylist, reflection)
 2019-08-15 11:35:46.883 2990-2990/com.tailwind.app.photos W/wind.app.photo: Accessing hidden method Landroid/graphics/FontFamily;-><init>()V (light greylist, reflection)
-```
+{% endhighlight %}
 
 The second line contains the development key hash.  Copy it into the box provided, then click **Save** followed by **Continue**.  Don't forget to remove this code from your application.
 
@@ -103,7 +103,7 @@ You're basically done with the Facebook side of things.  Everything else is done
 
 This step was #2 in the list! Edit the project-level `build.gradle`:
 
-```gradle hl_lines="6,19"
+{% highlight gradle hl_lines="6,19" %}
 buildscript {
 	ext.kotlin_version = '1.3.41'
 	repositories {
@@ -129,11 +129,11 @@ allprojects {
 task clean(type: Delete) {
 	delete rootProject.buildDir
 }
-```
+{% endhighlight %}
 
 Don't click **Sync now** just yet.  We need to add dependencies first.  Next, edit the module-level `build.gradle` file.  Add the Facebook SDK to the `dependencies` section:
 
-```gradle hl_lines="8"
+{% highlight gradle hl_lines="8" %}
 dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -143,7 +143,7 @@ dependencies {
 	implementation 'androidx.cardview:cardview:1.0.0'
 	implementation 'com.facebook.android:facebook-android-sdk:[5,6)'
 }
-```
+{% endhighlight %}
 
 Now you can use that **Sync now** button.
 
@@ -171,7 +171,7 @@ Finally, let's get to some code.  "Register a Callback" really means "write all 
 
 Here is my `AuthenticatorActivity` class:
 
-```kotlin hl_lines="2,8-14,19"
+{% highlight kotlin hl_lines="2,8-14,19" %}
 class AuthenticatorActivity : AppCompatActivity() {
 	private val fbManager = FacebookManager()
 
@@ -213,11 +213,11 @@ class AuthenticatorActivity : AppCompatActivity() {
 		alert.show()
 	}
 }
-```
+{% endhighlight %}
 
 I can probably implement the same API surface for the other three providers.  In addition, I can likely take the `FacebookManager` with me to other applications.  Code re-use is a wonderful thing.  The `onSuccess` callback returns with an `AuthenticatedUser` object:
 
-```kotlin
+{% highlight kotlin %}
 package com.tailwind.app.photos.models
 
 enum class AuthenticationProvider {
@@ -232,13 +232,13 @@ data class AuthenticatedUser(
 	val authProvider: AuthenticationProvider,
     val fullname: String,
 	val emailAddress: String)
-```
+{% endhighlight %}
 
 In Kotlin parlance, the `AuthenticatedUser` is a common DTO.  Using a data class means I get several methods created for me.  I may decide to change it to a class since I don't actually need the extra methods that are generated on a DTO.  However, the savings are not significant in doing that.
 
 Back to the problem at hand - I now have to write the `FacebookManager` that conforms to the API surface I've described.  Since the `FacebookManager` is only used once, I don't need to use a singleton.  I'm interested in the `AuthenticatedUser` class since I'm abstracting away authentication provider.  If I were repeatedly using the access token and data returned by Facebook, I'd make this class a singleton so that the data is available across multiple activities.
 
-```kotlin
+{% highlight kotlin %}
 typealias OnSuccessCallback = (AuthenticatedUser) -> Unit
 typealias OnCancelCallback = () -> Unit
 typealias OnFailureCallback = (Exception?) -> Unit
@@ -305,7 +305,7 @@ class FacebookManager {
 		fbCallbackManager.onActivityResult(requestCode, resultCode, data)
 	}
 }
-```
+{% endhighlight %}
 
 Let's go through it:
 
