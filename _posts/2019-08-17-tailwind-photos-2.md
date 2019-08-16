@@ -103,7 +103,7 @@ You're basically done with the Facebook side of things.  Everything else is done
 
 This step was #2 in the list! Edit the project-level `build.gradle`:
 
-{% highlight gradle hl_lines="6,19" %}
+{% highlight gradle %}
 buildscript {
 	ext.kotlin_version = '1.3.41'
 	repositories {
@@ -133,7 +133,7 @@ task clean(type: Delete) {
 
 Don't click **Sync now** just yet.  We need to add dependencies first.  Next, edit the module-level `build.gradle` file.  Add the Facebook SDK to the `dependencies` section:
 
-{% highlight gradle hl_lines="8" %}
+{% highlight gradle %}
 dependencies {
 	implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -171,7 +171,7 @@ Finally, let's get to some code.  "Register a Callback" really means "write all 
 
 Here is my `AuthenticatorActivity` class:
 
-{% highlight kotlin hl_lines="2,8-14,19" %}
+{% highlight kotlin %}
 class AuthenticatorActivity : AppCompatActivity() {
 	private val fbManager = FacebookManager()
 
