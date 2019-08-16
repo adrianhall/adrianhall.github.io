@@ -476,6 +476,4 @@ This technique opens up a whole host of possibilities for notifying clients of r
 * Let your clients subscribe to changes in the GraphQL API.
 * Then use GraphQL mutations to communicate with them from within AWS Lambda.
 
-You can find the code I developed for this post in [my GitLab repository](https://gitlab.com/adrianhall/aws-mobile-android-chatql).
-
 {% include links.md %}

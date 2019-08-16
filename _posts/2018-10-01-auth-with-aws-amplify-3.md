@@ -249,4 +249,4 @@ There is a lot more to do here and subtleties with the Facebook authentication t
 * In an emulator, you don’t have Facebook installed, so you will be prompted for a username and password (and potentially a code). However, in a “real world” scenario, the app will switch to Facebook, ask you to approve the app login, then switch back to your app.
 * If you are using the Amazon `auth-ui` package and the basic UI, then you can easily add Facebook authentication with just a couple of lines of code. Check [the documentation](https://docs.aws.amazon.com/aws-mobile/latest/developerguide/add-aws-mobile-user-sign-in.html) for detailed instructions.
 
-Next time, I’ll be covering Google authentication, which looks remarkably similar. In the interim, check out the source code on [my GitLab repository](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/facebook-auth).
+Next time, I’ll be covering Google authentication, which looks remarkably similar. 

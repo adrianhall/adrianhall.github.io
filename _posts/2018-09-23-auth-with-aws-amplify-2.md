@@ -102,7 +102,7 @@ Each flow is initiated via an `initiate` method and there is one for each flow. 
 
 In addition, the interface sports a `currentUser` which is an observable for whether we are signed in or not, and a `storedUsername` which is a peek into the shared preferences for storing the username. That way we can "remember" the username for later.
 
-The [AWS Implementation](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/blob/custom-auth/app/src/main/java/com/amazonaws/mobile/samples/picturefeed/repositories/AWSIdentityRepository.kt) for this is rather long, but let's take a look at one of the flows - the important sign-in flow:
+The AWS Implementation for this is rather long, but let's take a look at one of the flows - the important sign-in flow:
 
 {% highlight kotlin %}
 override fun initiateSignin(handler: IdentityHandler) {
@@ -231,7 +231,7 @@ I'm going to implement the forced new password prompt and the multi-factor authe
 
 ![]({{ site.baseurl }}/assets/images/2018-09-23-image3.png)
 
-You can check out the final layouts in [my GitLab project](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/custom-auth). Let's take a look at the pieces for the actual Authenticator. The important piece is the event handler for the submit button (which is called when you click on _Sign In_):
+Let's take a look at the pieces for the actual Authenticator. The important piece is the event handler for the submit button (which is called when you click on _Sign In_):
 
 {% highlight kotlin %}
 @SuppressLint("InflateParams")
@@ -337,7 +337,5 @@ I'm using the [Anko library](https://github.com/Kotlin/anko) for starting activi
 ## Conclusion
 
 The basic UI that the AWS Mobile SDK provides gets you started very quickly. However, you will want to implement your own custom UI. With these techniques, you can get your authentication UI working rapidly as well. the AWS Amplify CLI will get the backend set up in no time, allowing you to spend your time on the front end code.
-
-Check out the code for my app so far on [my GitLab repository](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/custom-auth).
 
 {% include links.md %}

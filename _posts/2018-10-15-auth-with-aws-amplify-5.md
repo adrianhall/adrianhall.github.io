@@ -333,5 +333,3 @@ There are two common errors:
 
 This is the last of the primary authentication methods that we will cover. In the next article, I'm going to cover TOTP (Time-based one-time passwords) for Amazon Cognito user pools, including configuration and usage.
 
-Until then, you can find the code for this article on [my repository](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/auth0-auth).
-

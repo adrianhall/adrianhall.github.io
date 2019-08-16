@@ -266,5 +266,3 @@ Note that if you have multi-factor authentication configured, then the user will
 Biometric security is awesome and adds a feature to your app that users will appreciate. It means remembering less passwords, and an easier login experience. The Whorlwind library, despite its lack of documentation, makes it easy to configure.
 
 You can even support "just biometrics" by generating a random password during sign-up, then storing it in secure storage. The user then only has to touch the fingerprint reader to authenticate and doesn't have a password to remember.
-
-As always, you can check out the code at [my GitLab repository](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/auth-biometrics).

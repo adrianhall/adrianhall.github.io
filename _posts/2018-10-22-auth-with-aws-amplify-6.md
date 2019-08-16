@@ -278,6 +278,3 @@ When `getMFACode()` is called, the `challengeName` will be set to `SOFTWARE_TOKE
 ## Wrap up
 
 I'm not a big fan of TOTP for mobile apps. (I'm a big fan of TOTP for web apps, however). The TOTP is in another app, but on the same phone, so it's hard to configure and requires you to swap apps to get the token. However, it's unavoidable because of security requirements sometimes. Fortunately, Amazon Cognito supports this mode and can be adaptive in its requirements (as we shall see in the last article in this series). Also fortunately, it's easy to configure and use within a mobile app, and the multi-factor authentication feature is flexible enough to accomodate whatever features you want.
-
-As always, check out the code on [my GitLab repository](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/totp-auth).
-

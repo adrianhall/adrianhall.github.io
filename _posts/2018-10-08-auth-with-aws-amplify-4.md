@@ -253,5 +253,3 @@ Note that the code is practically the same as the code used for the active login
 ## Wrap up
 
 Thus far, we have used supported authentication providers — Amazon Cognito user pools, Facebook and Google authentication. This will be suitable for probably 90+% of all consumer apps. However, there will be times when you want to federate with something else. We’ll cover that topic next time.
-
-In the intrim, here is a link to the [work so far](https://gitlab.com/adrianhall/aws-mobile-android-kotlin-photos/tree/google-auth).
