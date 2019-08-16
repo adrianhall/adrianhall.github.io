@@ -230,7 +230,7 @@ enum class AuthenticationProvider {
 data class AuthenticatedUser(
 	val accessToken: String,
 	val authProvider: AuthenticationProvider,
-    val fullname: String,
+	val fullname: String,
 	val emailAddress: String)
 {% endhighlight %}
 
