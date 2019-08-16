@@ -166,4 +166,4 @@ localStorage
 
 This is a standard promise pattern. The `getAllItems()` method resolves to the list of notes from the local storage, and I use that to populate the notes in my in-memory store.
 
-That’s it for this series. As always, my stuff is stored on [my GitHub repository](https://github.com/adrianhall/masterdetailtemplate/tree/20170821). Now I’m going to use this knowledge to produce a prettier version of the Notes app!
+That’s it for this series.  Now I’m going to use this knowledge to produce a prettier version of the Notes app!

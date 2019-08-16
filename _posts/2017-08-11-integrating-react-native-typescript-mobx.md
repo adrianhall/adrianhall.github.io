@@ -205,5 +205,4 @@ Note that the Provider has an argument (called noteStore) that is assigned the v
 
 ## Next Steps
 
-Now that I have the MobX store working, I am going to move onto getting the two-pane version of the application working. I’ll show this in the next article. Until then, my code is available on [my GitHub repository](https://github.com/adrianhall/masterdetailtemplate/tree/20170811).
-
+Now that I have the MobX store working, I am going to move onto getting the two-pane version of the application working. I’ll show this in the next article. 

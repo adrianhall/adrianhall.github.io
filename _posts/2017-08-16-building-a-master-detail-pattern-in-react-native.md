@@ -221,4 +221,4 @@ There are a lot of fiddly UI pieces in the Master-Detail that make it problemati
 
 ## Next Steps
 
-Next on the list is local storage. I want to store the notes in persistent storage so that they are available next time the app is started. That will be the subject of my next blog post. Until then, the app is located on [my GitHub repository](https://github.com/adrianhall/masterdetailtemplate/tree/20170814).
+Next on the list is local storage. I want to store the notes in persistent storage so that they are available next time the app is started. That will be the subject of my next blog post. 

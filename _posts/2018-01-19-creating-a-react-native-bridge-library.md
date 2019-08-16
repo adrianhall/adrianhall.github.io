@@ -200,8 +200,6 @@ Now, let’s run it with react-native run-ios! You will note that almost immedia
 
 Running in the Android emulator using `react-native run-android` is a little trickier. The emulator you use must have support for the hardware. If you have a real device, that may be an easier method.
 
-You can find the code for this library on [my GitHub repository](https://github.com/adrianhall/react-native-secure-keystore).
-
 ## Writing tests
 
 One of the problems you will encounter in this is how to test your library on real devices. Fortunately, there are services out there ([AWS Device Farm](https://aws.amazon.com/devicefarm) is the one I use) that allow you to test your library on a wide variety of devices. What you want to do in this case is write an app that exercises the library through a set of screens. For example, you might have a main navigation where you press buttons to call each routine and fill in a text box with the result. Then, write UI tests in [XCUI Test](https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/testing_with_xcode/chapters/09-ui_testing.html#//apple_ref/doc/uid/TP40014132-CH13-DontLinkElementID_6), [Espresso](https://developer.android.com/training/testing/ui-testing/espresso-testing.html) or [Appium](http://appium.io/) to exercise the app. Of these, only Appium is cross-platform and it is fully supported by AWS Device Farm.

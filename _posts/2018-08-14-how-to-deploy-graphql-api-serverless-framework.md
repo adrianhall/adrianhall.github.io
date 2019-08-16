@@ -78,7 +78,7 @@ Here is the list of resources you will need to define:
 * A policy document for allowing access to the DynamoDB table
 * An IAM role for implementing the policy document
 
-I haven’t covered these here since I covered them in my prior article and they are identical in form. If you want to see what they look like in-situ, check out [the final serverless.yml file on the GitHub repository](https://github.com/adrianhall/sls-appsync-backend).
+I haven’t covered these here since I covered them in my prior article and they are identical in form.
 
 There is a little complexity here, however. When I was doing a CloudFormation template, I could use operations like `!Join` and `!GetAtt`. These are not available with Serverless Framework. Instead, you have to use the JSON versions — mostly because Serverless Framework translates the configuration into a JSON CloudFormation file. That means using arrays and objects and the `Fn::` versions of the functions. As an example, the resource definition for the `AppSyncDynamoDBPolicy` became a bit cumbersome:
 
@@ -126,7 +126,7 @@ Similarly, the mapping files must be located in a directory called `mapping-temp
 $util.toJson($ctx.result)
 ```
 
-That can become `common-response.vtl`. I like using the `.vtl` as an extension as it can enable some extra highlighting in editors. Visual Studio Code has a couple of potential syntax highlighters for VTL code. As with the resources, I’m not going to duplicate each and every mapping template here. I’ve put them in [the GitHub repository](https://github.com/adrianhall/sls-appsync-backend) for you to view.
+That can become `common-response.vtl`. I like using the `.vtl` as an extension as it can enable some extra highlighting in editors. Visual Studio Code has a couple of potential syntax highlighters for VTL code. As with the resources, I’m not going to duplicate each and every mapping template here.
 
 ## Define the AWS AppSync API in serverless.yml
 

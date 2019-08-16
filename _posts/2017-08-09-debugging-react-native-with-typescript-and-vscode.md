@@ -136,5 +136,3 @@ AppRegistry.registerComponent('masterdetailtemplate', () => App);
 ## Add React Native Launch Controls and Debug
 
 Click into the Debug area of Vistual Studio code and create the React Native launch.json file. Select the appropriate target (I use **Debug iOS** to run the iOS simulator). Then click on the green start button.
-
-You can find the [full repository](https://github.com/adrianhall/masterdetailtemplate) on my GitHub account. Now I can get back to writing TypeScript in React Native!
