@@ -1,5 +1,5 @@
 ---
-title: "Tailwind Photos: The Splash Screen"
+title: "Tailwind Photos: Facebook Login"
 categories:
   - Android
   - "Tailwind Photos"
@@ -43,7 +43,6 @@ Hmm - how can we do this from Android Studio?  The easiest way is to add some co
 
 ```kotlin
 class SplashActivity : AppCompatActivity() {
-
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
@@ -83,8 +82,12 @@ Run your app and watch the LogCat window:
 The second line contains the development key hash.  Copy it into the box provided, then click **Save** followed by **Continue**.  Don't forget to remove this code from your application.
 
 > You need to add the key hashes from every single machine you use for developing this app.  To add further key hashes (including an eventual release key hash):
-> * TODO: Add in instructions on adding the additional developer codes
-> *
+> * Go back to the [Facebook Developers page](https://developers.facebook.com).
+> * Click **My Apps** > _Your App Name_
+> * Click **Settings** > **Basic** in the left hand nav (right below the dashboard).
+> * Scroll down to the bottom of the page.
+> * Copy the hash into the **Key Hashes** field (making sure you don't delete the ones that are already there).
+> * Click **Save Changes** at the very bottom of the page.
 
 * Enable Single Sign On for Your App: I generally turn this on because I'm bound to use it eventually.
     * Click the switch icon to turn it to **Yes**.
