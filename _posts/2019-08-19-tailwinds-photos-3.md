@@ -7,7 +7,7 @@ tags:
   - Kotlin
 ---
 
-Thus far in this series, I've [established a decent splash screen and auth trigger page](2019-08-15-tailwind-photos-1.md), and [integrated Facebook authentication](2019-08-17-tailwind-photos-2.md) into my app.  The next authentication technique is [Google Auth](https://developers.google.com/identity/sign-in/android/start-integrating).  If you followed along with the Facebook auth integration, you will know that I separated the actual Facebook part of it into a separate class, allowing me to clean up the code in the actual activity.  I also established provider-agnostic models for the authenticated user, which I will re-use in this post.
+Thus far in this series, I've [established a decent splash screen and auth trigger page]({% post_url 2019-08-15-tailwind-photos-1 %}), and [integrated Facebook authentication]({% post_url 2019-08-17-tailwind-photos-2 %}) into my app.  The next authentication technique is [Google Auth](https://developers.google.com/identity/sign-in/android/start-integrating).  If you followed along with the Facebook auth integration, you will know that I separated the actual Facebook part of it into a separate class, allowing me to clean up the code in the actual activity.  I also established provider-agnostic models for the authenticated user, which I will re-use in this post.
 
 Onto Google!  It follows the same pattern as Facebook - you do some work to configure a project on the Google Developers site, then integrate some code in your app.  Along the way, you will need to provide some data about your app to Google, and take some information from Google to hook the app to the right configuration.
 

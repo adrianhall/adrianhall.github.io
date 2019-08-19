@@ -7,7 +7,7 @@ tags:
   - Kotlin
 ---
 
-In [my last post on Tailwind Photos](tailwind-photos-1.md), I set up the splash screen and the buttons I want to use for signing in to the app - social media buttons for Facebook, Google, Microsoft, and Twitter.  In this article, I'm going to go through the process of authenticating Facebook.
+In [my last post on Tailwind Photos]({% post_url 2019-08-15-tailwind-photos-1 %}), I set up the splash screen and the buttons I want to use for signing in to the app - social media buttons for Facebook, Google, Microsoft, and Twitter.  In this article, I'm going to go through the process of authenticating Facebook.
 
 ## The Facebook side of things
 
