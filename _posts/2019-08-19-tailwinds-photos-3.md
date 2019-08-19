@@ -95,14 +95,15 @@ Like the Facebook mechanism, I want to abstract the code for handling Google.  I
 
 {% highlight kotlin %}
 class AuthenticatorActivity : AppCompatActivity() {
-	private val fbManager = FacebookManager()
-	private val googleManager = GoogleManager(this)
+	private lateinit var fbManager: FacebookManager
+	private lateinit var googleManager: GoogleManager
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_authenticator)
 
 		/* FACEBOOK AUTH INITIALIZATION */
+		fbManager = FacebookManager()
 		fbManager
 			.onSuccess { user -> moveToNextActivity(user) }
 			.onFailure { error -> displayErrorAlert("Facebook", error) }
@@ -111,6 +112,7 @@ class AuthenticatorActivity : AppCompatActivity() {
 		}
 
 		/* GOOGLE AUTH INITIALIZATION */
+		googleManager = GoogleManager(this)
 		googleManager
 			.onSuccess { user -> moveToNextActivity(user) }
 			.onFailure { error -> displayErrorAlert("Google", error) }
