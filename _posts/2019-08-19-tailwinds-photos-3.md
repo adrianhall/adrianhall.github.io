@@ -67,7 +67,7 @@ Now, let's move to the app side!
 
 ## The App side
 
-Firstly, I said we needed the client ID for the web client.  Let's put that in our `res/values/strings.xml` file:
+First, I said we needed the client ID for the web client.  Let's put that in our `res/values/strings.xml` file:
 
 {% highlight xml %}
 <resource>
@@ -78,7 +78,18 @@ Firstly, I said we needed the client ID for the web client.  Let's put that in o
 </resources>
 {% endhighlight %}
 
-Just replace my (obviously faked) client ID above with the one your copied from the Google developers console earlier.
+
+> It's ok to include client IDs in the app - they aren't considered security information.  However, you should never include client secrets in mobile apps.  Mobile apps can be decoded once they are released.  Any string you include in your app will be available for anyone to see.
+
+Just replace my (obviously faked) client ID above with the one your copied from the Google developers console earlier.  Next, as with all these integrations, there is a library to add to the module-level `build.gradle` file:
+
+{% highlight gradle %}
+dependencies {
+	// Rest of the dependencies go here	
+	implementation 'com.facebook.android:facebook-android-sdk:5.2.0'
+	implementation 'com.google.android.gms:play-services-auth:17.0.0'
+}
+{% endhighlight %}
 
 Like the Facebook mechanism, I want to abstract the code for handling Google.  I'm going to try and use a similar API surface.  Here is the code for the `AuthenticatorActivity` (at least the important bits):
 
@@ -176,10 +187,8 @@ This code is pretty much taken from the Google sign-in instructions.  The one wr
 
 There are two possible errors that you may run into:
 
-* Getting an `ApiException` generally indicates that you have messed up the Google console piece.  Check that the information in the Google developers console matches your app exactly.  The SHA-1 hash and the package identifier have to match.
+* An `ApiException` generally indicates that you have messed up the Google console configuration.  Check that the information in the Google developers console matches your app exactly.  The SHA-1 hash and the package identifier have to match.
 * If the `idToken` is null, then the web client ID is probably wrong.  Again, check that the client ID you included in the `strings.xml` file matches the client ID in the Google developers console for the `Web client` OAuth credential.
-
-> It's ok to include client IDs in the app - they aren't considered security information.  However, you should never include client secrets in mobile apps.  Mobile apps can be decoded once they are released.  Any string you include in your app will be available for anyone to see.
 
 ## Next steps
 
