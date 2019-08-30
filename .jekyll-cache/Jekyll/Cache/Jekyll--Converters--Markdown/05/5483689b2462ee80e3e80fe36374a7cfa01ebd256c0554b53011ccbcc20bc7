@@ -1,0 +1,10 @@
+I"<ul class="toc__menu">
+  <li><a href="#create-an-app">Create an App</a></li>
+  <li><a href="#add-typescript-packages">Add TypeScript Packages</a></li>
+  <li><a href="#configure-typescript">Configure TypeScript</a></li>
+  <li><a href="#configure-the-react-native-packager">Configure the React Native Packager</a></li>
+  <li><a href="#write-a-typescript-react-native-component">Write a TypeScript React Native component</a></li>
+  <li><a href="#wire-up-your-typescript-component">Wire up your TypeScript component</a></li>
+  <li><a href="#add-react-native-launch-controls-and-debug">Add React Native Launch Controls and Debug</a></li>
+</ul>
+:ET

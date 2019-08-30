@@ -1,0 +1,11 @@
+I"]<ul class="toc__menu">
+  <li><a href="#adding-a-location">Adding a Location</a></li>
+  <li><a href="#marking-a-location-as-favorite">Marking a Location as Favorite</a></li>
+  <li><a href="#the-me-query">The “me” query</a></li>
+  <li><a href="#performing-subqueries">Performing subqueries</a></li>
+  <li><a href="#the-favorites-query">The favorites query</a></li>
+  <li><a href="#the-reviews-for-a-location-query">The Reviews for a location query</a></li>
+  <li><a href="#field-resolvers-for-aggregations">Field resolvers for aggregations</a></li>
+  <li><a href="#next-steps">Next steps</a></li>
+</ul>
+:ET

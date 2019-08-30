@@ -1,0 +1,11 @@
+I"œ<ul class="toc__menu">
+  <li><a href="#getting-started-with-serverless-framework">Getting started with Serverless Framework</a></li>
+  <li><a href="#add-plugins">Add plugins</a></li>
+  <li><a href="#define-dependent-services">Define dependent services</a></li>
+  <li><a href="#define-the-aws-appsync-schema-and-mapping-files">Define the AWS AppSync schema and mapping files</a></li>
+  <li><a href="#define-the-aws-appsync-api-in-serverlessyml">Define the AWS AppSync API in serverless.yml</a></li>
+  <li><a href="#deploy-your-api">Deploy your API</a></li>
+  <li><a href="#remove-your-api">Remove your API</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+:ET

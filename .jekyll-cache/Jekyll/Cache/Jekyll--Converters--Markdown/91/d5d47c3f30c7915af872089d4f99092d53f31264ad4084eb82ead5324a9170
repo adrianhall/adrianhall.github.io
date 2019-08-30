@@ -1,0 +1,87 @@
+I"�&<p>I find quite a lot of Android apps have splash screens. Some splash screens are for showing off the logo; others for hiding the extensive data load times. Whatever the reason, it’s a way for a little bit of creativity to shine through.</p>
+
+<h2 id="my-first-effort">My first effort</h2>
+
+<p>My new app needs a splash screen. Splash screens aren’t hard until you need to do something that takes some time, and there are many tutorials on how to produce one out on the Internet. I’m going to focus on the one problem I had. Let’s take a look at my first attempt at the splash screen:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="kd">class</span> <span class="nc">SplashActivity</span> <span class="p">:</span> <span class="n">AppCompatActivity</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onCreate</span><span class="p">(</span><span class="nv">savedInstanceState</span><span class="p">:</span> <span class="nc">Bundle</span><span class="p">?)</span> <span class="p">{</span>
+        <span class="k">super</span><span class="p">.</span><span class="n">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">)</span>
+        <span class="n">setContentView</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">layout</span><span class="p">.</span><span class="n">activity_splash</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">onResume</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">super</span><span class="p">.</span><span class="n">onResume</span><span class="p">()</span>
+
+        <span class="n">AnalyticsClient</span><span class="p">.</span><span class="n">initialize</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+        <span class="n">AnalyticsClient</span><span class="p">.</span><span class="n">startSession</span><span class="p">()</span>
+
+        <span class="c1">// Do any other initialization here</span>
+        <span class="n">Thread</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="m">5000L</span><span class="p">)</span>
+
+        <span class="kd">val</span> <span class="py">startupTime</span> <span class="p">=</span> <span class="n">System</span><span class="p">.</span><span class="n">currentTimeMillis</span><span class="p">()</span> <span class="p">-</span> <span class="n">ApplicationWrapper</span><span class="p">.</span><span class="n">startTime</span>
+        <span class="kd">val</span> <span class="py">event</span> <span class="p">=</span> <span class="n">AnalyticsClient</span><span class="p">.</span><span class="n">createEvent</span><span class="p">(</span><span class="s">"startup"</span><span class="p">)</span>
+              <span class="p">.</span><span class="n">withMetric</span><span class="p">(</span><span class="s">"time"</span><span class="p">,</span> <span class="n">startupTime</span><span class="p">.</span><span class="n">toDouble</span><span class="p">())</span>
+        <span class="n">AnalyticsClient</span><span class="p">.</span><span class="n">recordEvent</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">e</span><span class="p">:</span> <span class="nc">InterruptedException</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">e</span><span class="p">.</span><span class="n">printStackTrace</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">finally</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">intent</span> <span class="p">=</span> <span class="n">Intent</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">MainActivity</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span>
+        <span class="n">startActivity</span><span class="p">(</span><span class="n">intent</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>This is, at first review, a reasonable way to do things. Placing the startup code in the <code class="highlighter-rouge">onResume()</code> means that my UI will be shown to the user. However, the UI components in the layout don’t get displayed until AFTER <code class="highlighter-rouge">onResume()</code> has ended. The result is that my background is shown, but my nice indeterminate progress bar (aka activity spinner) is not shown.</p>
+
+<h2 id="add-threading">Add threading</h2>
+
+<p>For my second attempt, I dug into my Java days. I can create a thread and put the initialization code in there:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="kd">var</span> <span class="py">context</span><span class="p">:</span> <span class="n">Context</span> <span class="p">=</span> <span class="k">this</span>
+<span class="kd">var</span> <span class="py">thread</span> <span class="p">=</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">Thread</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="p">{</span>
+      <span class="c1">// My code here</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">e</span><span class="p">:</span> <span class="nc">InterruptedException</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">e</span><span class="p">.</span><span class="n">printStackTrace</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">finally</span> <span class="p">{</span>
+      <span class="c1">// Transition to the new activity</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">thread</span><span class="p">.</span><span class="n">start</span><span class="p">()</span></code></pre></figure>
+
+<p>Does this seem, well, not Kotlin’ish enough?</p>
+
+<h2 id="kotlin-async">Kotlin async</h2>
+
+<p>Kotlin has some great async facilities. One of these is the <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.concurrent/thread.html">thread operator</a>. You can place all the code within the thread operator instead of stuffing it in a lambda:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">thread</span><span class="p">(</span><span class="n">start</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="p">{</span>
+        <span class="n">AnalyticsClient</span><span class="p">.</span><span class="n">initialize</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+        <span class="n">AnalyticsClient</span><span class="p">.</span><span class="n">startSession</span><span class="p">()</span>
+
+        <span class="c1">// Do any other initialization here</span>
+        <span class="n">Thread</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="m">5000L</span><span class="p">)</span>
+
+        <span class="kd">val</span> <span class="py">startupTime</span> <span class="p">=</span> <span class="n">System</span><span class="p">.</span><span class="n">currentTimeMillis</span><span class="p">()</span> <span class="p">-</span> <span class="n">ApplicationWrapper</span><span class="p">.</span><span class="n">startTime</span>
+        <span class="kd">val</span> <span class="py">event</span> <span class="p">=</span> <span class="n">AnalyticsClient</span><span class="p">.</span><span class="n">createEvent</span><span class="p">(</span><span class="s">"startup"</span><span class="p">)</span>
+                <span class="p">.</span><span class="n">withMetric</span><span class="p">(</span><span class="s">"time"</span><span class="p">,</span> <span class="n">startupTime</span><span class="p">.</span><span class="n">toDouble</span><span class="p">())</span>
+        <span class="n">AnalyticsClient</span><span class="p">.</span><span class="n">recordEvent</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">e</span><span class="p">:</span> <span class="nc">InterruptedException</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">e</span><span class="p">.</span><span class="n">printStackTrace</span><span class="p">()</span>
+    <span class="p">}</span> <span class="k">finally</span> <span class="p">{</span>
+        <span class="n">startActivity</span><span class="p">(</span><span class="n">Intent</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">MainActivity</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">))</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>With this code, the UI widgets get displayed, the animations start, and all the initialization happens. I don’t need to temporarily store the context so that the thread can get at it, and I’m using the in-built async commands that Kotlin has. This is a vast improvement to my original codebase.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

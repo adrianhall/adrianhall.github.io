@@ -1,0 +1,355 @@
+I"X�<p>I’m loving <a href="https://graphql.org/">GraphQL</a> for my apps. It removes the ever shifting requirements that I implemented when I was doing “REST-like” backends and removes the complexity of having to do BFF (<a href="https://samnewman.io/patterns/architectural/bff/">Backend for your Frontend</a>) and the maintenance headaches that come with such architectures.</p>
+
+<p>Developing a GraphQL backend requires four steps:</p>
+
+<ol>
+  <li>Design a GraphQL schema that you will expose to the apps.</li>
+  <li>Design and implement a backend data store schema to store the data.</li>
+  <li>Implement resolvers to translate #1 to #2.</li>
+  <li>Implement authorization requirements for the API.</li>
+</ol>
+
+<p>There is lots of information on how to develop data store schemas, irrespective of whether you are using SQL, NoSQL, more modern databases such as graph databases, or other services such as data stored in CRM applications. The backend is generally less of a concern.</p>
+
+<p>But how do you start developing a GraphQL schema?</p>
+
+<h2 id="my-process">My process</h2>
+
+<p>There is no “best practice” for developing a GraphQL schema. However, when I am working on an app, I’m generally working with the frontend and backend code concurrently. So here is what I do:</p>
+
+<ol>
+  <li>Work out what primitive data types I need.</li>
+  <li>Adjust anything that returns a list into a “paging” query.</li>
+  <li>Determine operations an app might reasonably require.</li>
+  <li>Write input types required for queries.</li>
+  <li>Determine real-time update requirements for user experience.</li>
+  <li>Determine authorization requirements for security.</li>
+</ol>
+
+<p>To illustrate this, I’m going to take an example and work it through from the beginning. Simple apps (like chat apps, note taking apps, and so on) have been done ad nauseum, so I’m going to tackle something different — a restaurant review app.</p>
+
+<h2 id="step-1-the-primitive-types">Step 1: The primitive types</h2>
+
+<p>When I’m thinking about the app, I want to do several things:</p>
+
+<ul>
+  <li>As a restaurant owner, I want to be able to add a restaurant to the database.</li>
+  <li>As an authenticated user, I want to be able to add a review to a restaurant listing with a rating.</li>
+  <li>As an authenticated user, I want to be able to mark a restaurant as a favorite.</li>
+  <li>As an authenticated user, I want to see a list of my favorite restaurants.</li>
+  <li>As an unauthenticated user, I want to search for restaurants and see their average rating.</li>
+  <li>As an authenticated user, I want to read the reviews of a particular restaurant.</li>
+</ul>
+
+<p>These requirements have three basic types:</p>
+
+<ul>
+  <li>A <em>User</em> represents me (or another user) and I should be able to get lists of restaurants that I have added, restaurants that I have marked as a favorite, and reviews that I have written.</li>
+  <li>A <em>Location</em> represents a restaurant and I should be able to get the reviews for this location.</li>
+  <li>A <em>Review</em> is written by a user and has a specific rating and content.</li>
+</ul>
+
+<p>Put into basic GraphQL:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">email</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">locations</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Location</span><span class="p">]</span><span class="w">
+  </span><span class="n">reviews</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Review</span><span class="p">]</span><span class="w">
+  </span><span class="n">favorites</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Location</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Location</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">owner</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">longitude</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">latitude</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">address</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">averageRating</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">favoritesCount</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">reviews</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Review</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Review</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">owner</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+  </span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="n">Location</span><span class="p">!</span><span class="w">
+  </span><span class="n">content</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">rating</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Note that all three are interdependent. Each type has a linkage to the other two types. If I were doing a SQL schema, I would just be referencing the ID. However, in this case, I’m embedding the type directly so that I can do queries. For example, I could do:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="n">getUser</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">name</span><span class="w">
+  </span><span class="n">email</span><span class="w">
+  </span><span class="n">favorites</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">id</span><span class="w">
+    </span><span class="n">name</span><span class="w">
+    </span><span class="n">averageRating</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>That gets my favorite restaurants and their rating easily. I can do similar things for locations and reviews. The flexibility of embedding the types instead of just sending the IDs translates to increased flexibility when developing the front end.</p>
+
+<h2 id="step-2-paging-support">Step 2: Paging Support</h2>
+
+<p>Right now, my types are returning arrays of types. When talking about front end development, this isn’t what is required. Front end developers want to only load what is shown on the screen, allowing for infinite scroll with minimal data transfer. To do this, I need to add paging support for the API.</p>
+
+<p>There are basically two mechanisms you can use for this:</p>
+
+<ul>
+  <li>A <em>limit</em> and <em>nextToken</em> allow you to start at the beginning and move page by page to the end. The <em>nextToken</em> is a marker for the next page. In the client, you keep the previous pages cached so you can easily traverse the list.</li>
+  <li>A <em>start</em> and <em>end</em> allow you to jump to any point in the list. This needs to allow for what happens when you specify out of bounds numbers and needs backend support for random access within the list.</li>
+</ul>
+
+<p>Inevitably, the <em>limit/nextToken</em> is more widely supported that <em>start/end</em>, so I recommend you use that mechanism unless there is a good reason (and backend data store support for) using <em>start/end</em>.</p>
+
+<p>To implement:</p>
+
+<ul>
+  <li>Create a <em>PagingConnection</em> type for each primitive type that returns the items plus the nextToken.</li>
+  <li>Update the elements that return an array to take a <em>PagingRequest</em> object and return the relevant <em>PagingConnection</em> type.</li>
+</ul>
+
+<p>Let’s take an example of the <em>User</em> type. Here is how I modified it:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">input</span><span class="w"> </span><span class="n">PagingRequest</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">limit</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">email</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">locations</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+  </span><span class="n">reviews</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w">
+  </span><span class="n">favorites</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Location</span><span class="p">]</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Review</span><span class="p">]</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Note that the <em>limit</em> and <em>nextToken</em> are both optional in the <em>PagingRequest</em>. If <em>limit</em> is not specified, then the backend chooses the number of elements to return. If <em>nextToken</em> is not specified, the first page is requested. Similarly, if the <em>nextToken</em> is not returned, then there are no more pages to be returned.</p>
+
+<h2 id="step-3-determine-operations">Step 3: Determine operations</h2>
+
+<p>This is probably the area that I most often return to when developing an app, as it is driven by the requirements of the front end. However, I can see some operations:</p>
+
+<ul>
+  <li>Get “my user” record (which will include the locations, reviews, and favorites under my record)</li>
+  <li>Search for a location</li>
+  <li>Add a location</li>
+  <li>Add a review</li>
+  <li>Mark a location as favorite</li>
+</ul>
+
+<p>So that is three mutations and two queries. However, when I think about the search for a location, I can see two possibilities: searching by GPS coordinates, and searching by some name or address, so we will need to handle both of those:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">Query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">me</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+  </span><span class="n">searchForLocation</span><span class="p">(</span><span class="n">byGPS</span><span class="p">:</span><span class="w"> </span><span class="n">GPSInput</span><span class="p">,</span><span class="w"> </span><span class="n">byAddress</span><span class="p">:</span><span class="w"> </span><span class="n">AddressInput</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Mutation</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">addLocation</span><span class="p">(</span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="n">LocationInput</span><span class="p">):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+  </span><span class="n">addReview</span><span class="p">(</span><span class="n">review</span><span class="p">:</span><span class="w"> </span><span class="n">ReviewInput</span><span class="p">):</span><span class="w"> </span><span class="n">Review</span><span class="w">
+  </span><span class="n">addFavorite</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>I’ve added new types here — several of them. These are <a href="https://graphql.org/graphql-js/mutations-and-input-types/">input types</a> and they enable me to request different things from the user in an expansive manner. Right now, they are just placeholders to say “I need some parameters here”. I’ve already defined one input type — for paging support.</p>
+
+<h2 id="step-4-write-input-types">Step 4: Write input types</h2>
+
+<p>There are a few reasons for using input types to specify parameters to mutations:</p>
+
+<ul>
+  <li>You should never pass information that can be inferred from the context of the request, so the input type will be different from the returned type.</li>
+  <li>You may want to use the same input type for several mutations (for example, using the same input type for create and update mutations).</li>
+  <li>The number of parameters that are to be supported is large, causing readability issues within the query.</li>
+</ul>
+
+<p>Whatever the reason, I recommend using input types for just about everything. I’ve required four input types in step 3, and now need to define them:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">input</span><span class="w"> </span><span class="n">GPSInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">longitude</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">latitude</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">radius</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">AddressInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">street</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">city</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">state</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">zipcode</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">LocationInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">address</span><span class="p">:</span><span class="w"> </span><span class="n">AddressInput</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">ReviewInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">content</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">rating</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>note that I am reusing the <em>AddressInput</em> in the <em>LocationInput</em> — re-use like this is fully supported and reduces the size of the schema, which is a good thing.</p>
+
+<p>Could there be enhancements? Sure! For example, I might want to search by name where the name “begins with” or “ends with” a certain string. That concept is probably supported by the backend, but it isn’t supported by the schema right now. If you want to see a good example of how to support this, check out the schema that is generated by <a href="/cloud/2018/08/29/build-a-graphql-service-the-easy-way/">AWS Amplify model transforms</a>.</p>
+
+<h2 id="step-5-real-time-data-delivery">Step 5: Real-time Data Delivery</h2>
+
+<p>Adding real-time data delivery to your apps increases the “liveness” of the data, making your app more engaging. It does this by delivering updates to the app via a subscription that is communicated over a websocket. You need to decide which operations should be communicated immediately to clients, concentrating on those that provide an improvement in user experience.</p>
+
+<p>For example, if I am looking at a location in the app, should I be immediately notified of a rating change or a new review? This is a feature that will show that the app is being used and the data is fresh, so it will be a net improvement to the user experience.</p>
+
+<p>If I am browsing a list of locations on the web and mark one as a favorite, should that show up immediately on my mobile device? This might not be a core use case as the device can refresh the favorites list automatically when it wakes up. It’s unlikely the user will be looking at their phone while using the same app on the web.</p>
+
+<p>In this case, I want to update the location being viewed by a user when it is updated since that includes the ratings and favorites count:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">Subscription</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">updatedLocation</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+  </span><span class="err">@</span><span class="n">aws_subscribe</span><span class="p">(</span><span class="n">mutations</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">"</span><span class="n">addReview</span><span class="err">"</span><span class="p">,</span><span class="w"> </span><span class="err">"</span><span class="n">addFavorite</span><span class="err">"</span><span class="w"> </span><span class="p">])</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Note that here I’ve included a <em>locationId</em> to indicate that I want to watch a specific location. This means going back to ensure that <em>addReview</em> and <em>addFavorite</em> are both asking for the <em>locationId</em> so that it is tracked appropriately. You will see how I do this in the final version.</p>
+
+<p>I’m using <a href="https://aws.amazon.com/appsync">AWS AppSync</a> for my subscriptions. If you are using a different GraphQL server, then you will have to refer to the documentation on how to set up real-time subscriptions.</p>
+
+<h2 id="step-6-authentication-and-authorization">Step 6: Authentication and Authorization</h2>
+
+<p>Now that real-time is done, I need to work on authorization. This depends on the GraphQL server and the capabilities of that server. For example, I’m using AWS AppSync and the AWS_IAM authentication model. I’m doing this because I want both unauthenticated and authenticated access. As a result, some queries are available unauthenticated, and some queries are available only to authenticated users. All the mutations are available only to authenticated users, and I want to restrict subscriptions to authenticated users to ensure costs are kept low for the app.</p>
+
+<p>In my case this is all done in IAM (and I’ll cover this topic in another blog post). If you want to learn more about authentication and authorization options in AWS AppSync, see <a href="/cloud/2018/06/01/how-developers-can-auth-with-aws-appsync/">my blog on the topic</a>.</p>
+
+<h2 id="the-final-schema">The final schema</h2>
+
+<p>So, what does the final schema look like?</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">input</span><span class="w"> </span><span class="n">PagingRequest</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">limit</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">email</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">locations</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+  </span><span class="n">reviews</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w">
+  </span><span class="n">favorites</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Location</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">owner</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">longitude</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">latitude</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">address</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">averageRating</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">favoritesCount</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">reviews</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingInput</span><span class="p">):</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Review</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">owner</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+  </span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="n">Location</span><span class="p">!</span><span class="w">
+  </span><span class="n">content</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">rating</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Location</span><span class="p">]</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Review</span><span class="p">]</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">GPSInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">longitude</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">latitude</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+  </span><span class="n">radius</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">AddressInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">street</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">city</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">state</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">zipcode</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">LocationInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">address</span><span class="p">:</span><span class="w"> </span><span class="n">AddressInput</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">ReviewInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">content</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">rating</span><span class="p">:</span><span class="w"> </span><span class="n">Number</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">me</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+  </span><span class="n">searchForLocation</span><span class="p">(</span><span class="n">byGPS</span><span class="p">:</span><span class="w"> </span><span class="n">GPSInput</span><span class="p">,</span><span class="w"> </span><span class="n">byAddress</span><span class="p">:</span><span class="w"> </span><span class="n">AddressInput</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Mutation</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">addLocation</span><span class="p">(</span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="n">LocationInput</span><span class="p">):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+  </span><span class="n">addReview</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!,</span><span class="w"> </span><span class="n">review</span><span class="p">:</span><span class="w"> </span><span class="n">ReviewInput</span><span class="p">):</span><span class="w"> </span><span class="n">Review</span><span class="w">
+  </span><span class="n">addFavorite</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Subscription</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">updatedLocation</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+  </span><span class="err">@</span><span class="n">aws_subscribe</span><span class="p">(</span><span class="n">mutations</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">"</span><span class="n">addReview</span><span class="err">"</span><span class="p">,</span><span class="w"> </span><span class="err">"</span><span class="n">addFavorite</span><span class="err">"</span><span class="w"> </span><span class="p">])</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">schema</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">query</span><span class="p">:</span><span class="w"> </span><span class="n">Query</span><span class="w">
+  </span><span class="n">mutation</span><span class="p">:</span><span class="w"> </span><span class="n">Mutation</span><span class="w">
+  </span><span class="n">subscription</span><span class="p">:</span><span class="w"> </span><span class="n">Subscription</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Methodically building up the schema likes this allows you to make decisions quickly based on the requirements of the apps.</p>
+
+<p>There are topics that I have not addressed here:</p>
+
+<ul>
+  <li>How to handle versioning of the API?</li>
+  <li>How to handle deprecated fields?</li>
+  <li>How to manage combining multiple services together into a coherent single API?</li>
+</ul>
+
+<p>These are all good topics and ones I intend to explore in the future. GraphQL is still a young API and I fully expect it to evolve over time. As it evolves, these questions will get answered, with advice, enhancements, and best practices being documented along the way.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

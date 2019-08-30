@@ -1,0 +1,123 @@
+I"4<p>One of the things I really miss from <a href="https://facebook.github.io/react-native/">React Native</a> was the support for <a href="http://www.typescriptlang.org/">TypeScript</a>. TypeScript helps me immensely, but it really comes into its own with React programming as the PropTypes are specified for you (no more propTypes static). I’m also getting into <a href="https://mobx.js.org/">MobX</a> as a flux implementation and that uses decorators, which is native in TypeScript. There is lots to love in TypeScript.</p>
+
+<p>However, every single guide I saw for implementing TypeScript within React Native was flawed. Specifically, there was a need for a separate build step, so I could not just use Visual Studio Code to run a debug instance of my app.</p>
+
+<p>Well, I’ve solved that and this is how I did it.</p>
+
+<h2 id="create-an-app">Create an App</h2>
+
+<p>Use either <code class="highlighter-rouge">react-native init</code> to create your app. You can use <code class="highlighter-rouge">create-react-native-app</code> to create your app but there are a couple of extra steps that I am not going to cover here. If you use <code class="highlighter-rouge">create-react-native-app</code>, check <a href="https://github.com/ds300/react-native-typescript-transformer">the transformer repo</a>.</p>
+
+<h2 id="add-typescript-packages">Add TypeScript Packages</h2>
+
+<p>Use the following to add the appropriate packages:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yarn add <span class="nt">--dev</span> react-native-typescript-transformer typescript @types/react @types/react-native
+</code></pre></div></div>
+
+<p>The <a href="https://github.com/ds300/react-native-typescript-transformer">first package</a> is the glue code that makes this all possible. After that, you should recognize the other packages as they are common for all TypeScript projects.</p>
+
+<h2 id="configure-typescript">Configure TypeScript</h2>
+
+<p>TypeScript has a <a href="https://www.typescriptlang.org/docs/handbook/tsconfig-json.html">configuration file</a> called <code class="highlighter-rouge">tsconfig.json</code>. The major parts of this are as follows:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"compilerOptions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"target"</span><span class="p">:</span><span class="w"> </span><span class="s2">"es2015"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"module"</span><span class="p">:</span><span class="w"> </span><span class="s2">"es2015"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"jsx"</span><span class="p">:</span><span class="w"> </span><span class="s2">"react-native"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"moduleResolution"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"allowSyntheticDefaultImports"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can add whatever other options you need to your TypeScript configuration at this point. I like things like <code class="highlighter-rouge">noImplicitAny</code> here, for example.</p>
+
+<h2 id="configure-the-react-native-packager">Configure the React Native Packager</h2>
+
+<p>This (along with the <code class="highlighter-rouge">react-native-typescript-transformer</code> package) is the bit that does the magic – compiling your TypeScript files on the fly! Create a file called <code class="highlighter-rouge">rn-cli.config.js</code> with the following contents:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nx">getTransformModulePath</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">require</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="dl">'</span><span class="s1">react-native-typescript-transformer</span><span class="dl">'</span><span class="p">);</span>
+    <span class="p">},</span>
+    <span class="nx">getSourceExts</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">[</span> <span class="dl">'</span><span class="s1">ts</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">tsx</span><span class="dl">'</span> <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>You will also want to update the start script definition within <code class="highlighter-rouge">package.json</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"scripts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"start"</span><span class="p">:</span><span class="w"> </span><span class="s2">"react-native start --transformer node_modules/react-native-typescript-transformer/index.js --sourceExts ts,tsx"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"test"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jest"</span><span class="w">
+</span><span class="p">}</span><span class="err">,</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This will add the transformer when you run <code class="highlighter-rouge">npm start</code> instead of using the IDE.</p>
+
+<h2 id="write-a-typescript-react-native-component">Write a TypeScript React Native component</h2>
+
+<p>I’ve created a folder called <code class="highlighter-rouge">src</code> that holds my TypeScript files. I’ve placed a component in <code class="highlighter-rouge">src/index.tsx</code> as follows:</p>
+
+<figure class="highlight"><pre><code class="language-jsx" data-lang="jsx"><span class="k">import</span> <span class="nx">React</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">StyleSheet</span><span class="p">,</span> <span class="nx">Text</span><span class="p">,</span> <span class="nx">TextStyle</span><span class="p">,</span> <span class="nx">View</span><span class="p">,</span> <span class="nx">ViewStyle</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react-native</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="kr">interface</span> <span class="nx">Props</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kr">interface</span> <span class="nx">State</span> <span class="p">{</span>
+<span class="p">}</span>
+
+<span class="kd">const</span> <span class="nx">styles</span> <span class="o">=</span> <span class="nx">StyleSheet</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+  <span class="na">container</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">flex</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="na">justifyContent</span><span class="p">:</span> <span class="dl">'</span><span class="s1">center</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">alignItems</span><span class="p">:</span> <span class="dl">'</span><span class="s1">center</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">backgroundColor</span><span class="p">:</span> <span class="dl">'</span><span class="s1">#F5FCFF</span><span class="dl">'</span><span class="p">,</span>
+  <span class="p">}</span> <span class="k">as</span> <span class="nx">ViewStyle</span><span class="p">,</span>
+  <span class="na">welcome</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">fontSize</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="na">textAlign</span><span class="p">:</span> <span class="dl">'</span><span class="s1">center</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">margin</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="p">}</span> <span class="k">as</span> <span class="nx">TextStyle</span><span class="p">,</span>
+  <span class="na">instructions</span><span class="p">:</span> <span class="p">{</span>
+    <span class="na">textAlign</span><span class="p">:</span> <span class="dl">'</span><span class="s1">center</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">color</span><span class="p">:</span> <span class="dl">'</span><span class="s1">#333333</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">marginBottom</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+  <span class="p">}</span> <span class="k">as</span> <span class="nx">TextStyle</span><span class="p">,</span>
+<span class="p">});</span>
+
+<span class="k">export</span> <span class="k">default</span> <span class="kd">class</span> <span class="nx">App</span> <span class="kd">extends</span> <span class="nx">React</span><span class="p">.</span><span class="nx">Component</span><span class="o">&lt;</span><span class="nx">Props</span><span class="p">,</span> <span class="nx">State</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span>
+      <span class="p">&lt;</span><span class="nc">View</span> <span class="na">style=</span><span class="si">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">container</span><span class="si">}</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nc">Text</span> <span class="na">style=</span><span class="si">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">welcome</span><span class="si">}</span><span class="p">&gt;</span>
+          Welcome to React Native!
+        <span class="p">&lt;/</span><span class="nc">Text</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nc">Text</span> <span class="na">style=</span><span class="si">{</span><span class="nx">styles</span><span class="p">.</span><span class="nx">instructions</span><span class="si">}</span><span class="p">&gt;</span>
+          <span class="si">{</span><span class="dl">'</span><span class="s1">To get started, edit src/index.tsx</span><span class="dl">'</span><span class="si">}</span>
+        <span class="p">&lt;/</span><span class="nc">Text</span><span class="p">&gt;</span>
+      <span class="p">&lt;/</span><span class="nc">View</span><span class="p">&gt;</span>
+    <span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Yes, this is just plain old TypeScript+JSX, but using React Native components.</p>
+
+<h2 id="wire-up-your-typescript-component">Wire up your TypeScript component</h2>
+
+<p>Before we continue, there is a bunch of code in the <code class="highlighter-rouge">index.ios.js</code> and <code class="highlighter-rouge">index.android.js</code> files. Unless you want to hack the iOS and Android platform code, it’s best to leave these as JavaScript code. However, you can make them minimal. Both of mine are identical:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">AppRegistry</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react-native</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">App</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">./src</span><span class="dl">'</span><span class="p">;</span>
+
+<span class="nx">AppRegistry</span><span class="p">.</span><span class="nx">registerComponent</span><span class="p">(</span><span class="dl">'</span><span class="s1">masterdetailtemplate</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">App</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h2 id="add-react-native-launch-controls-and-debug">Add React Native Launch Controls and Debug</h2>
+
+<p>Click into the Debug area of Vistual Studio code and create the React Native launch.json file. Select the appropriate target (I use <strong>Debug iOS</strong> to run the iOS simulator). Then click on the green start button.</p>
+:ET

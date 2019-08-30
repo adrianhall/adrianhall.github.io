@@ -1,0 +1,12 @@
+I"S<ul class="toc__menu">
+  <li><a href="#get-used-to-the-terminology">Get used to the terminology</a></li>
+  <li><a href="#design-your-resource-hierarchy">Design your resource hierarchy</a></li>
+  <li><a href="#build-the-template-file-and-parameters">Build the template file and parameters</a></li>
+  <li><a href="#the-amazon-cognito-resources">The Amazon Cognito resources</a></li>
+  <li><a href="#create-the-amazon-dynamodb-resources">Create the Amazon DynamoDB resources</a></li>
+  <li><a href="#create-the-aws-appsync-resources">Create the AWS AppSync resources</a></li>
+  <li><a href="#create-some-outputs">Create some outputs</a></li>
+  <li><a href="#create-the-cloudformation-stack">Create the CloudFormation stack</a></li>
+  <li><a href="#other-ways-to-build-cloudformation-templates">Other ways to build CloudFormation templates</a></li>
+</ul>
+:ET

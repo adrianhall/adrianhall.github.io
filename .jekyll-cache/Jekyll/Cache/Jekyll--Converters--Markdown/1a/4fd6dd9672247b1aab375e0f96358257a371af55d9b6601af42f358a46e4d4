@@ -1,0 +1,207 @@
+I"�C<p>I love GraphQL even for the small apps. Generating a simple API allows me to change out back end details without re-compiling my front end. It also allows me to rotate API keys easily, handle authentication, and get in depth monitoring of the individual fields being used. So, naturally, when I am building a new weather app (don’t judge — everyone makes one), I naturally want to use a weather API based on GraphQL.</p>
+
+<p>Except there isn’t one. So I created one using <a href="https://aws.amazon.com/appsync">AWS AppSync</a> — a managed offline and real-time service in AWS that allows me to create a GraphQL API and connect it to a variety of data sources. Most recently, AWS AppSync introduced <a href="https://aws.amazon.com/blogs/mobile/aws-appsync-releases-an-enhanced-no-code-graphql-api-builder-http-resolvers-new-built-in-scalar-types-and-sdk-cache-abstraction/">HTTP endpoints as a data source</a> and that’s what I am going to use today.</p>
+
+<p>Well, I didn’t create the weather API — that has been handled by several API providers on the web. I’m using the one by <a href="https://openweathermap.org/">OpenWeatherMap</a>. Before you continue, you will need an API key, which means signing up for their service.</p>
+
+<h2 id="step-1-create-an-aws-appsync-api">Step 1: Create an AWS AppSync API</h2>
+
+<p>I’ve gone over this before, as have many other blogs. Here are the simple steps again:</p>
+
+<ol>
+  <li>Open the <a href="https://console.aws.amazon.com/appsync/home">AWS AppSync Console</a>.</li>
+  <li>Click on the <strong>Create API</strong> button.</li>
+  <li>Select the <strong>Author from scratch</strong> template, and give your API a name before clicking on <strong>Create</strong>.</li>
+</ol>
+
+<p>You will see your API key and endpoint on this page. You can set up authentication (optional for this one — API key is fine!) and enable logging in the Settings page. I highly recommend that you enable verbose logging during development.</p>
+
+<h2 id="step-2-add-a-http-data-source">Step 2: Add a HTTP Data Source</h2>
+
+<p>The HTTP resolver was added in the July 2018 release of AWS AppSync and its an awesome addition that makes this project possible.</p>
+
+<ol>
+  <li>Select <strong>Data Sources</strong>.</li>
+  <li>Click on <strong>New</strong>.</li>
+  <li>Enter a name for your data source (I called mine <em>OpenWeatherMap</em>).</li>
+  <li>Select <strong>HTTP endpoint</strong> in the <strong>Data source type</strong> drop-down.</li>
+  <li>Enter https://api.openweathermap.org in the <strong>HTTP endpoint</strong> field.</li>
+</ol>
+
+<p>The HTTP endpoint is just the base URL — the protocol and hostname/port number. It does not contain any path information.</p>
+
+<h2 id="step-3-create-a-schema">Step 3: Create a schema</h2>
+
+<p>I want to separate what the GraphQL service provides from what the weather API provides. If I use the same schema for both, then I get an easier response mapping template, but I lose the ability to change backend API at will. I need to do more as a result.</p>
+
+<p>Click on <strong>Schema</strong> to edit the schema. My schema is really simple:</p>
+
+<figure class="highlight"><pre><code class="language-graphql" data-lang="graphql"><span class="k">type</span><span class="w"> </span><span class="n">Query</span><span class="w"> </span><span class="p">{</span><span class="w">
+ </span><span class="n">weatherByCity</span><span class="p">(</span><span class="n">city</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!):</span><span class="w"> </span><span class="n">Weather</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Weather</span><span class="w"> </span><span class="p">{</span><span class="w">
+ </span><span class="n">timestamp</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+ </span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+ </span><span class="n">condition</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+ </span><span class="n">description</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+ </span><span class="n">temperature</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">pressure</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">humidity</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">wind_speed</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">wind_direction</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+ </span><span class="n">cloud_cover</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">rain_volume</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">snow_volume</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">schema</span><span class="w"> </span><span class="p">{</span><span class="w">
+ </span><span class="n">query</span><span class="p">:</span><span class="w"> </span><span class="n">Query</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>Once entered, click on <strong>Save</strong>.</p>
+
+<p>The <code class="highlighter-rouge">Weather</code> type is really flat. If you just want to pass the API results through un-hindered, you just have to create a type (which can potentially have embedded types) that maps the JSON you receive from the backend API to your GraphQL requirements.  However, I want to transform the data. That means I have to do more work in the mapping, but I get to use any type I want in the GraphQL schema and can divorce it from the response from the service.  If the OpenWeatherMap API changes, I don’t have to change my schema.</p>
+
+<h2 id="step-4-create-the-request-mapping">Step 4: Create the request mapping</h2>
+
+<p>After you have saved your schema, click the <strong>Attach</strong> button next to the <code class="highlighter-rouge">WeatherByCity</code> query. Select the <em>OpenWeatherMap</em> data source in the drop-down.</p>
+
+<p>The request mapping turns your GraphQL query into the HTTP request that your backend API needs. The OpenWeatherMap API has a form for a “city search” query as follows:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://api.openweathermap.org/data/2.5/weather?q=name&amp;APPID=apikey
+</code></pre></div></div>
+
+<p>This is provided by the following request mapping:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+    </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2018-05-29"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GET"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"resourcePath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/data/2.5/weather"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"params"</span><span class="p">:{</span><span class="w">
+        </span><span class="nl">"query"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"q"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$context.args.city"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"APPID"</span><span class="p">:</span><span class="w"> </span><span class="s2">"APIKEY"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"headers"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"Content-Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"application/json"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>Replace the <em>APIKEY</em> with the API key of your OpenWeatherMap API. You can include query parameters, body and headers within the <code class="highlighter-rouge">params</code> section. The body should be a string, so convert it if you need to send JSON. The <code class="highlighter-rouge">$util.toJSON()</code> utility method is useful here. This is where you should include your API key as well. When your client submits the request, they are going to include the API key for the GraphQL service. The API key in the request mapping is the API key for the backend service.</p>
+
+<h2 id="step-5-write-the-response-mapping">Step 5: Write the response mapping</h2>
+
+<p>One of the criteria I have for this API is that I want to hide the details of the backend API. I do this by divorcing the types — one type for the client and one type for the backend API. The response mapping template does the work of mapping one to the other</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#if($context.result.statusCode == 200)
+## Success - decode the body and reconstruct the response with the schema in mind
+#set($response = $util.parseJson($context.result.body))
+#set($result = {
+ "timestamp": $response.dt,
+ "location": $response.name,
+ "condition": $response.weather[0].id,
+ "description": $response.weather[0].description,
+ "temperature": $response.main.temp,
+ "pressure": $response.main.pressure,
+ "humidity": $response.main.humidity,
+ "wind_speed": $response.wind.speed,
+ "wind_direction": $response.wind.deg,
+ "cloud_cover": $response.clouds.all,
+ "rain_volume": $util.defaultIfNullOrEmpty($response.rain["3h"], 0),
+ "snow_volume": $util.defaultIfNullOrEmpty($response.rain["3h"], 0)
+})
+$util.toJson($result)
+#else
+## Error - send the proper error message
+$utils.appendError($ctx.result.body, $ctx.result.statusCode)
+#end
+</code></pre></div></div>
+
+<p>One important consideration is that the body of the response is provided as a string. If the API provides data as JSON or XML, you need to convert it to an object before use. This is done with <code class="highlighter-rouge">$util.parseJson()</code> in the case of JSON data.</p>
+
+<p>Don’t forget to save your resolver before you go on to the next step.</p>
+
+<h2 id="step-6-test-your-api">Step 6: Test your API</h2>
+
+<p>Move on to the <strong>Queries</strong> page. Enter the following in the query editor:</p>
+
+<figure class="highlight"><pre><code class="language-graphql" data-lang="graphql"><span class="k">query</span><span class="w"> </span><span class="n">GetWeather</span><span class="p">(</span><span class="nv">$city</span><span class="p">:</span><span class="nb">String</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">weatherByCity</span><span class="p">(</span><span class="n">city</span><span class="p">:</span><span class="nv">$city</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">timestamp</span><span class="p">,</span><span class="w">
+    </span><span class="n">location</span><span class="p">,</span><span class="w">
+    </span><span class="n">temperature</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>Select the <strong>Query Variables</strong> section below the query editor and enter the following:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ "city": "London" }
+</code></pre></div></div>
+
+<p>Click the Play button.  You should see the following results:</p>
+
+<p><img src="/assets/images/2018-07-20-image1.png" alt="AWS AppSync Query Results" class="center-image" /></p>
+
+<p>Congratulations! You’ve created a GraphQL weather API.</p>
+
+<p>However, we aren’t finished. There are a couple of issues. here. Firstly, the location does not include the country information. Secondly, the temperature is in degrees kelvin, which isn’t exactly a normal temperature. I’d prefer degrees celsius. Also, the timestamp is in some obscure format. I’d prefer that to be in ISO-8601 format. Adding the country is easy. Just place curly-braces around the text and add in the country (which is stored in <code class="highlighter-rouge">sys.country</code> in the response. Similarly, converting kelvin to celsius is a little bit of math that you can put in the resolver. Here is the new response mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#if($context.result.statusCode == 200)
+## Success - decode the body and reconstruct the response with the schema in mind
+#set($response = $util.parseJson($context.result.body))
+#set($temp = $response.main.temp - 273.15)
+#set($msec = $response.dt * 1000)
+#set($timestamp = $util.time.epochMilliSecondsToISO8601($msec))
+#set($result = {
+ "timestamp": "${timestamp}",
+ "location": "${response.name}, ${response.sys.country}",
+ "condition": $response.weather[0].id,
+ "description": $response.weather[0].description,
+ "temperature": $temp,
+ "pressure": $response.main.pressure,
+ "humidity": $response.main.humidity,
+ "wind_speed": $response.wind.speed,
+ "wind_direction": $response.wind.deg,
+ "cloud_cover": $response.clouds.all,
+ "rain_volume": $util.defaultIfNullOrEmpty($response.rain["3h"], 0),
+ "snow_volume": $util.defaultIfNullOrEmpty($response.rain["3h"], 0)
+})
+$util.toJson($result)
+#else
+## Error - send the proper error message
+$utils.appendError($ctx.result.body, $ctx.result.statusCode)
+#end
+</code></pre></div></div>
+
+<p>Note that the calculations are done before the result is formed. The calculations or formatting has to be done prior to putting it in an object.</p>
+
+<p>Finally, we need to change the type of the timestamp. Currently, it is an integer, but ISO 8601 is a textual field, so minimally we should convert it to a <code class="highlighter-rouge">String</code> type. However, the latest release also included a number of new scalar types. One of these is <code class="highlighter-rouge">AWSDateTime</code> which is an ISO-8601 formatted time. The new type in the schema looks like this:</p>
+
+<figure class="highlight"><pre><code class="language-graphql" data-lang="graphql"><span class="k">type</span><span class="w"> </span><span class="n">Weather</span><span class="w"> </span><span class="p">{</span><span class="w">
+ </span><span class="n">timestamp</span><span class="p">:</span><span class="w"> </span><span class="n">AWSDateTime</span><span class="w">
+ </span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+ </span><span class="n">condition</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+ </span><span class="n">description</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+ </span><span class="n">temperature</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">pressure</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">humidity</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">wind_speed</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">wind_direction</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+ </span><span class="n">cloud_cover</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">rain_volume</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+ </span><span class="n">snow_volume</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<h2 id="wrap-up">Wrap Up</h2>
+
+<p>I’ve introduced a couple of new features of AWS AppSync here — HTTP resolvers and the new scalar types. REST isn’t legacy yet, but random HTTP endpoints to retrieve formatted data should be an endangered species at this point. With this technique, I can finally put my HTTP based APIs to pasture.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

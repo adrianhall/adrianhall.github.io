@@ -1,0 +1,199 @@
+I"TK<p>Have you ever looked at a feature of a mobile app and wondered how they do something? Me too! I like to figure out how they built those features and build them into my own apps. Take, as an example, universal search. You can find this sort of search box at the top of the Facebook app. So, how do they implement it? I’ve not seen their codebase, but I imagine it’s something similar to the following proof of concept.</p>
+
+<h2 id="the-schema">The schema</h2>
+
+<p>I have a GraphQL API already built within <a href="https://aws.amazon.com/appsync">AWS AppSync</a> with the following schema:</p>
+
+<figure class="highlight"><pre><code class="language-graphql" data-lang="graphql"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+</pre></td><td class="code"><pre><span class="k">interface</span><span class="w"> </span><span class="n">Item</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">title</span><span class="p">:</span><span class="nb">String</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Post</span><span class="w"> </span><span class="k">implements</span><span class="w"> </span><span class="n">Item</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">title</span><span class="p">:</span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">comments</span><span class="p">:[</span><span class="n">Comment</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Comment</span><span class="w"> </span><span class="k">implements</span><span class="w"> </span><span class="n">Item</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">title</span><span class="p">:</span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">postId</span><span class="p">:</span><span class="nb">ID</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">PaginatedPosts</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="nb">String</span><span class="w">
+  </span><span class="n">items</span><span class="p">:[</span><span class="n">Post</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">PaginatedItems</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="nb">String</span><span class="w">
+  </span><span class="n">items</span><span class="p">:[</span><span class="n">Item</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="p">:</span><span class="nb">String</span><span class="p">!,</span><span class="w"> </span><span class="n">limit</span><span class="p">:</span><span class="nb">Int</span><span class="p">,</span><span class="w"> </span><span class="n">nextToken</span><span class="p">:</span><span class="nb">String</span><span class="p">):</span><span class="n">PaginatedItems</span><span class="w">
+  </span><span class="n">allPosts</span><span class="p">(</span><span class="n">limit</span><span class="p">:</span><span class="nb">Int</span><span class="p">,</span><span class="w"> </span><span class="n">nextToken</span><span class="p">:</span><span class="nb">String</span><span class="p">):</span><span class="w"> </span><span class="n">PaginatedPosts</span><span class="w">
+  </span><span class="n">getPost</span><span class="p">(</span><span class="n">postId</span><span class="p">:</span><span class="nb">ID</span><span class="p">!):</span><span class="n">Post</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Mutation</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">addPost</span><span class="p">(</span><span class="n">title</span><span class="p">:</span><span class="nb">String</span><span class="p">!):</span><span class="w"> </span><span class="n">Post</span><span class="w">
+  </span><span class="n">addComment</span><span class="p">(</span><span class="n">postId</span><span class="p">:</span><span class="nb">ID</span><span class="p">!,</span><span class="w"> </span><span class="n">title</span><span class="p">:</span><span class="nb">String</span><span class="p">!):</span><span class="w"> </span><span class="n">Comment</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">schema</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">query</span><span class="p">:</span><span class="n">Query</span><span class="w">
+  </span><span class="n">mutation</span><span class="p">:</span><span class="n">Mutation</span><span class="w">
+</span><span class="p">}</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>There are some new things in here. The first one is an <em>interface</em> (see lines 1–4. An interface in GraphQL is just like an interface in other languages. It specifies that the types that implement the interface must have certain fields. The side effect is that derivitive types (<code class="highlighter-rouge">Post</code> and <code class="highlighter-rouge">Comment</code> in this case) can be referred to as a single entity. The second item is a <em>search function</em> (see line 29). This returns a paged list of <code class="highlighter-rouge">Item</code> objects (see lines 23–26). The items in the list could be either <code class="highlighter-rouge">Post</code> or <code class="highlighter-rouge">Comment</code> because they both implement the <code class="highlighter-rouge">Item</code> interface.</p>
+
+<blockquote>
+  <p>This isn’t the only way to implement universal search on the server side. You should also check out unions in <a href="https://graphql.org/learn/schema/#union-types">the GraphQL specification</a>.</p>
+</blockquote>
+
+<p>The schema is connected to a single <a href="https://aws.amazon.com/dynamodb">Amazon DynamoDB</a> table that stores both the posts and the comments. The DynamoDB table has a partition key of <code class="highlighter-rouge">typename</code> (used to store the type of data) and a sort key of <code class="highlighter-rouge">id</code> (used to identify each individual record). I’m using an API key for authorization in this instance, but I could easily authenticate users using <a href="https://docs.aws.amazon.com/appsync/latest/devguide/security.html#openid-connect-authorization">OIDC</a> or <a href="https://aws.amazon.com/cognito">Amazon Cognito user pools</a>.</p>
+
+<h2 id="the-resolvers">The resolvers</h2>
+
+<p>Most of the resolvers are fairly straight forward. The resolver for <code class="highlighter-rouge">addPost</code> and <code class="highlighter-rouge">addComment</code> store the <code class="highlighter-rouge">typename</code> as well as generating the ID. For example, here is the <code class="highlighter-rouge">addComment</code> resolver:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+    </span><span class="nl">"version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-02-28"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"operation"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"PutItem"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"key"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+     </span><span class="nl">"typename"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"S"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Comment"</span><span class="w"> </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="err">$util.dynamodb.toDynamoDBJson($util.autoId())</span><span class="p">,</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"attributeValues"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">$util.dynamodb.toMapValuesJson($ctx.args)</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>Putting everything in one table is not the most efficient method of linking the data storage to the GraphQL schema. Some operations need to use a <code class="highlighter-rouge">Scan</code> or secondary indices to make them perform well. In particular, the <code class="highlighter-rouge">comments</code> resolver looks like this:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+    </span><span class="nl">"version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-02-28"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"operation"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Scan"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"filter"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"expression"</span><span class="p">:</span><span class="w"> </span><span class="s2">"#typename = :typename AND #postId = :postId"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"expressionNames"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"#typename"</span><span class="p">:</span><span class="w"> </span><span class="s2">"typename"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"#postId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"postId"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"expressionValues"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">":typename"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">$util.dynamodb.toDynamoDBJson(</span><span class="s2">"Comment"</span><span class="err">)</span><span class="p">,</span><span class="w">
+          </span><span class="nl">":postId"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">$util.dynamodb.toDynamoDBJson($ctx.source.id)</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>In this case, I have to use a <code class="highlighter-rouge">Scan</code> operation to get the appropriate data. This is less performant than a <code class="highlighter-rouge">Query</code> operation. I cannot use a <code class="highlighter-rouge">Query</code> because <code class="highlighter-rouge">postId</code> is just a regular field. I’m not here to design an awesome database, so these details would need to be looked at in a production implementation.</p>
+
+<blockquote>
+  <p>If you are contemplating this schema for your own project, look into using two tables — one for each of <code class="highlighter-rouge">Post</code> and <code class="highlighter-rouge">Comment</code> — then feed the data automatically into a single ElasticSearch instance. Use the ElasticSearch instance to fulfill search queries. This will provide better search flexibility while storing the data in two different tables (one for each data type).</p>
+</blockquote>
+
+<p>Back to the implementation. The one operation I have not considered yet is the <code class="highlighter-rouge">search</code> operation. I want to feed a query string in and search for items where the string is a part of the title. The <code class="highlighter-rouge">title</code> field is a part of the interface, so it will be available on every single record. Here is my first pass at the resolver:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+    </span><span class="nl">"version"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2017-02-28"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"operation"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Scan"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"filter"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"expression"</span><span class="p">:</span><span class="w"> </span><span class="s2">"contains(#title,:query)"</span><span class="p">,</span><span class="w">
+       </span><span class="nl">"expressionNames"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+         </span><span class="nl">"#title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"title"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"expressionValues"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">":query"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">$util.dynamodb.toDynamoDBJson($ctx.args.query)</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"limit"</span><span class="p">:</span><span class="w"> </span><span class="err">$util.defaultIfNull($</span><span class="p">{</span><span class="err">ctx.args.limit</span><span class="p">},</span><span class="w"> </span><span class="mi">20</span><span class="err">)</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"nextToken"</span><span class="p">:</span><span class="w"> </span><span class="err">$util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken</span><span class="p">,</span><span class="w"> </span><span class="kc">null</span><span class="err">))</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>In this case, a Scan is appropriate because we want to search all the items for a random string. In a scalable solution, I’d use an alternate data source (for example, an ElasticSearch service) instead of DynamoDB as this is an inefficient search.</p>
+
+<p><strong>Spoiler alert</strong>: The request resolver works and the right query is executed, but the response resolver does not work. You will get the following error if you have added appropriate data and run a search operation:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+  </span><span class="nl">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"errorType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BadRequestException"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Could not determine the exact type of Item. Missing __typename key on value.'"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<h2 id="updating-the-response-mapping">Updating the response mapping</h2>
+
+<p>When a GraphQL service sends a record back, there is an accompanying type stored in a field called <code class="highlighter-rouge">__typename</code>. Since we have an interface, AWS AppSync cannot determine the concrete type, hence it produces an error. We have to use the response resolver to add the appropriate type. Fortunately, each record has a <code class="highlighter-rouge">typename</code> field within the database that gives the appropriate type. We can iterate through the items and add the appropriate type before returning the final object. This is my response resolver:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "nextToken":$util.toJson($ctx.result.nextToken),
+  "items": [
+    #foreach($entry in $ctx.result.items)
+    $!entry.put("__typename", $entry.get('typename'))
+    $util.toJson($entry),
+    #end
+  ]
+}
+</code></pre></div></div>
+
+<p>Normally, we would just convert the response to JSON. Here, we are constructing the JSON output by iterating through the items, adjusting them for our requirements as we move through the items.</p>
+
+<p>The <code class="highlighter-rouge">__typename</code> field is available via the normal GraphQL client libraries and you can make decisions based on this — for example, you may want to change the icon or pick a different <code class="highlighter-rouge">ViewHolder</code> in an Android RecyclerView configuration.</p>
+
+<h2 id="wrap-up">Wrap Up</h2>
+
+<p>This is just one way that you can implement the service side of a universal search box. Using interfaces and unions within a GraphQL schema is a great way to get this sort of functionality. AWS AppSync makes this sort of functionality easy to implement.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

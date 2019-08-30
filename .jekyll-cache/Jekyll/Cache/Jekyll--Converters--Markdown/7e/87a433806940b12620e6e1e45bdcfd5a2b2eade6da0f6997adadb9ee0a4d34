@@ -1,0 +1,261 @@
+I"�j<p>This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.</p>
+
+<ul>
+  <li><a href="/android/2018/09/18/auth-with-aws-amplify-1/">The basics - a username/password system</a>.</li>
+  <li><a href="/android/2018/09/23/auth-with-aws-amplify-2/">Customizing the UI</a>.</li>
+  <li><a href="/android/2018/10/01/auth-with-aws-amplify-3/">Authenticating with Facebook</a>.</li>
+  <li><a href="/android/2018/10/08/auth-with-aws-amplify-4/">Authenticating with Google</a>.</li>
+  <li><a href="/android/2018/10/15/auth-with-aws-amplify-5/">Using third-party authentication providers</a>.</li>
+  <li><a href="/android/2018/10/22/auth-with-aws-amplify-6/">Using Time-based One-time passwords (TOTP)</a>.</li>
+  <li><a href="/android/2018/10/29/auth-with-aws-amplify-7/">Using Biometric authentication</a>.</li>
+  <li><a href="/android/2018/11/05/auth-with-aws-amplify-8/">Doing fraud protection and analytics</a>.</li>
+</ul>
+
+<p>This is the seventh in the series covering how to authenticate with the backend service using Biometrics - specifically, fingerprints. </p>
+
+<p>I should note here that I am Android introduced a new API called <code class="highlighter-rouge">BiometricPrompt</code> in API level 28 (Pie). I find this API to be a bit problematic in many respects. Because Pie is so new and because the new API is such a problem, I am not using that API. Instead, I am using the older API. This means my target API level is 27 for this part of the project.</p>
+
+<p>If you went looking for biometric authentication on the web, you probably found lots of ways to authenticate your user using their fingerprint and not one of them allows you to authenticate to a backend service. That’s because you are looking for the wrong thing. You need to look for examples for storage secured by biometrics. In essence, you don’t authenticate the user. You store the users password in secured storage, and retrieve it when needed. To access the secure area, you need to use biometric authentication.</p>
+
+<blockquote>
+  <p>You don’t need anything special on the server side to handle biometric storage of credentials.</p>
+</blockquote>
+
+<p>In this article, I’m going to use a reactive secure storage library written by Square called Whorlwind. Handling secure storage is time consuming and a lot of the code is boiler plate. By utilizing the library, we get out of the business of writing boiler plate code.
+So, what do we need to do?</p>
+
+<ol>
+  <li>Add the Whorlwind library to the app</li>
+  <li>Add permissions to the app for handling fingerprints</li>
+  <li>Ask for permission to use fingerprints in our app</li>
+  <li>Initialize the Whorlwind library</li>
+  <li>Save the password to Secure Storage on a successful login</li>
+  <li>Load the password from Secure Storage if it exists</li>
+</ol>
+
+<p>The Whorlwind library takes care of the rest.</p>
+
+<h2 id="add-whorlwind-to-the-app">Add Whorlwind to the app</h2>
+
+<p>Whorlwind is based on <a href="https://github.com/ReactiveX/RxJava">RxJava</a>, so you will actually need to add three libraries to your dependencies:</p>
+
+<div class="language-gradle highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">implementation</span> <span class="s2">"io.reactivex.rxjava2:rxjava:2.1.3"</span>
+<span class="n">implementation</span> <span class="s2">"io.reactivex.rxjava2:rxandroid:2.1.0"</span>
+<span class="n">implementation</span> <span class="s2">"com.squareup.whorlwind:whorlwind:2.0.0"</span>
+</code></pre></div></div>
+
+<p>Don’t forget to synchronize your IDE so you can use the new libraries</p>
+
+<h2 id="add-permissions-to-theapp">Add permissions to the app</h2>
+
+<p>Permissions are handled in the <code class="highlighter-rouge">AndroidManifest.xml</code> file:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">&lt;!-- Biometrics --&gt;</span>
+<span class="nt">&lt;uses-feature</span>
+    <span class="na">android:name=</span><span class="s">"android.hardware.fingerprint"</span>
+    <span class="na">android:required=</span><span class="s">"false"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;uses-permission</span>
+    <span class="na">android:name=</span><span class="s">"android.permission.USE_FINGERPRINT"</span><span class="nt">/&gt;</span>
+</code></pre></div></div>
+
+<p>The feature states that we don’t “require” a fingerprint reader, but we declare that we use it so that it displays the requirement within the Google Play Store if you distribute your app.</p>
+
+<h2 id="ask-for-permissions-to-use-the-fingerprint-reader">Ask for permissions to use the fingerprint reader</h2>
+
+<p>Just because you have the permission listed in the <code class="highlighter-rouge">AndroidManifest.xml</code> doesn’t mean that your users have given the app that permission. We need to ask for permission if it has not been granted. I’ve done this in the <code class="highlighter-rouge">AuthenticatorActivity</code>. First, let’s set some things up:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">AuthenticatorActivity</span> <span class="p">:</span> <span class="n">AppCompatActivity</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="k">private</span> <span class="k">const</span> <span class="kd">val</span> <span class="py">REQUEST_PERMISSIONS_FINGERPRINT</span> <span class="p">=</span> <span class="m">90001</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">model</span> <span class="k">by</span> <span class="n">viewModel</span><span class="p">&lt;</span><span class="n">AuthenticatorViewModel</span><span class="p">&gt;()</span>
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">analyticsService</span> <span class="k">by</span> <span class="n">inject</span><span class="p">&lt;</span><span class="n">AnalyticsService</span><span class="p">&gt;()</span>
+
+    <span class="c1">// For permissions checks</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">checkedPermissions</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">hasPermissions</span> <span class="p">=</span> <span class="k">false</span>
+
+    <span class="c1">// For fingerprint storage</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">whorlwind</span><span class="p">:</span> <span class="n">Whorlwind</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">mDisposable</span> <span class="p">=</span> <span class="n">CompositeDisposable</span><span class="p">()</span>
+
+    <span class="c1">// Rest of class</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Permissions are handled by calling out to the OS and then handling the response - much the same way that dealing with the camera, as an example, is done. To handle the request, we need a request code which is located in the companion object. In addition, we’ve got a couple of booleans to ensure that we don’t perpetually ask for permissions when they have been denied. </p>
+
+<p>I’ve also shown off the private variables I need to handle the Whorlwind library - we’ll be using these shortly.</p>
+
+<p>In the <code class="highlighter-rouge">onCreate()</code> method, we need to check for permissions and initiate a permissions request if we don’t have them. I put this at the bottom of the <code class="highlighter-rouge">onCreate()</code> method so that it’s the last thing that happens:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Ask for permission to use the fingerprint scanner</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">fingerprintManager</span><span class="p">.</span><span class="n">isHardwareDetected</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">checkSelfPermission</span><span class="p">(</span><span class="n">Manifest</span><span class="p">.</span><span class="n">permission</span><span class="p">.</span><span class="n">USE_FINGERPRINT</span><span class="p">)</span> <span class="p">!=</span> <span class="n">PackageManager</span><span class="p">.</span><span class="n">PERMISSION_GRANTED</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">checkedPermissions</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">hasPermissions</span> <span class="p">=</span> <span class="k">false</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">requestPermissions</span><span class="p">(</span><span class="n">arrayOf</span><span class="p">(</span><span class="n">Manifest</span><span class="p">.</span><span class="n">permission</span><span class="p">.</span><span class="n">USE_FINGERPRINT</span><span class="p">),</span> <span class="n">REQUEST_PERMISSIONS_FINGERPRINT</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">hasPermissions</span> <span class="p">=</span> <span class="k">true</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here, <code class="highlighter-rouge">fingerprintManager</code> is retrieved using <code class="highlighter-rouge">getSystemService()</code>. I also need to handle the response from the OS:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**</span><span class="err">
+</span><span class="cm">  * Callback for when the permissions has been requested and responded to.</span><span class="err">
+</span><span class="cm">  */</span>
+<span class="k">override</span> <span class="k">fun</span> <span class="nf">onRequestPermissionsResult</span><span class="p">(</span><span class="nv">requestCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">permissions</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">out</span> <span class="nc">String</span><span class="p">&gt;,</span> <span class="nv">grantResults</span><span class="p">:</span> <span class="nc">IntArray</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">when</span> <span class="p">(</span><span class="n">requestCode</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">REQUEST_PERMISSIONS_FINGERPRINT</span> <span class="p">-&gt;</span> <span class="p">{</span>
+            <span class="n">checkedPermissions</span> <span class="p">=</span> <span class="k">true</span>
+            <span class="n">hasPermissions</span> <span class="p">=</span> <span class="p">(</span><span class="n">grantResults</span><span class="p">.</span><span class="n">isNotEmpty</span><span class="p">()</span> <span class="p">&amp;&amp;</span> <span class="n">grantResults</span><span class="p">[</span><span class="m">0</span><span class="p">]</span> <span class="p">==</span> <span class="n">PackageManager</span><span class="p">.</span><span class="n">PERMISSION_GRANTED</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">else</span> <span class="p">-&gt;</span> <span class="p">{</span>
+            <span class="k">super</span><span class="p">.</span><span class="n">onRequestPermissionsResult</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">permissions</span><span class="p">,</span> <span class="n">grantResults</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This is fairly standard boiler-plate code for handling permissions checks. You should be able to re-use this.</p>
+
+<h2 id="initialize-the-whorlwind-library">Initialize the Whorlwind library</h2>
+
+<p>In the <code class="highlighter-rouge">onCreate()</code> method, add the following:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">whorlwind</span> <span class="p">=</span> <span class="n">Whorlwind</span><span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="k">this</span><span class="p">,</span>
+  <span class="n">SharedPreferencesStorage</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="s">"amazon.cognito"</span><span class="p">),</span> <span class="s">"cognito"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This will initialize the Whorlwind library.</p>
+
+<h2 id="save-the-password-securely">Save the password securely</h2>
+
+<p>We want biometric storage to be available whenever it is needed, so we need to store the password securely whenever there is a successful login. In the <code class="highlighter-rouge">handleLogin()</code> method, I updated the <code class="highlighter-rouge">SUCCESS</code> case with the following:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">IdentityRequest</span><span class="p">.</span><span class="n">SUCCESS</span> <span class="p">-&gt;</span> <span class="p">{</span>
+    <span class="n">analyticsService</span><span class="p">.</span><span class="n">recordSuccessfulLogin</span><span class="p">(</span><span class="n">loginFormUsernameField</span><span class="p">.</span><span class="n">text</span><span class="p">.</span><span class="n">toString</span><span class="p">())</span>
+    <span class="n">model</span><span class="p">.</span><span class="n">updateStoredUsername</span><span class="p">(</span><span class="n">loginFormUsernameField</span><span class="p">.</span><span class="n">text</span><span class="p">.</span><span class="n">toString</span><span class="p">())</span>
+    <span class="n">saveToBiometricStore</span><span class="p">(</span><span class="n">loginFormPasswordField</span><span class="p">.</span><span class="n">text</span><span class="p">.</span><span class="n">toString</span><span class="p">())</span>
+    <span class="k">this</span><span class="nd">@AuthenticatorActivity</span><span class="p">.</span><span class="n">finish</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This just calls a new method to store the password:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="cm">/**</span><span class="err">
+</span><span class="cm"> * Save the current form data to the biometric store</span><span class="err">
+</span><span class="cm"> */</span>
+<span class="k">private</span> <span class="k">fun</span> <span class="nf">saveToBiometricStore</span><span class="p">(</span><span class="nv">password</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">whorlwind</span><span class="o">?.</span><span class="n">canStoreSecurely</span><span class="p">()</span> <span class="p">==</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">disposable</span> <span class="p">=</span> <span class="n">Observable</span><span class="p">.</span><span class="n">just</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+               <span class="p">.</span><span class="n">observeOn</span><span class="p">(</span><span class="n">Schedulers</span><span class="p">.</span><span class="n">io</span><span class="p">())</span>
+               <span class="p">.</span><span class="n">flatMapCompletable</span> <span class="p">{</span><span class="n">value</span> <span class="p">-&gt;</span>
+                    <span class="n">whorlwind</span><span class="o">?.</span><span class="n">write</span><span class="p">(</span><span class="s">"password"</span><span class="p">,</span> <span class="n">ByteString</span><span class="p">.</span><span class="n">encodeUtf8</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+               <span class="p">}</span>
+               <span class="p">.</span><span class="n">subscribe</span><span class="p">()</span>
+        <span class="n">mDisposable</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">disposable</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+       <span class="n">toast</span><span class="p">(</span><span class="s">"Biometric storage is not available"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>You can “fail silently” if you wish, but I’ve added a toast (from Anko) so that you can see when biometrics is not available.</p>
+
+<p>Biometrics are available when:</p>
+
+<ul>
+  <li>The hardware is present</li>
+  <li>Permission to use the fingerprint sensor has been approved</li>
+  <li>There is an enrolled finger print</li>
+  <li>A secure device lock-screen has been configured</li>
+</ul>
+
+<p>The actual code is almost a direct copy from the Whorlwind sample app and is a good example on how to securely store data.</p>
+
+<h2 id="load-the-password-from-secure-storage">Load the password from secure storage</h2>
+
+<p>The final step is to load the data. I added a “fingerprint icon” to the UI with an ID of <code class="highlighter-rouge">loginFormFingerprintButton</code>. This is wired up within the <code class="highlighter-rouge">onCreate()</code> method to call my data loader:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">loginFormFingerprintButton</span><span class="p">.</span><span class="n">onClick</span> <span class="p">{</span> <span class="n">loadFromBiometricStorage</span><span class="p">()</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>This is similar to all the other buttons on the page. Now, let’s load the data:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**</span><span class="err">
+</span><span class="cm">  * Load the data from the biometric store and populate the right fields</span><span class="err">
+</span><span class="cm">  */</span>
+<span class="k">private</span> <span class="k">fun</span> <span class="nf">loadFromBiometricStore</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">whorlwind</span><span class="o">?.</span><span class="n">canStoreSecurely</span><span class="p">()</span> <span class="p">==</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">disposable</span> <span class="p">=</span> <span class="n">whorlwind</span><span class="o">!!</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">"password"</span><span class="p">)</span>
+                <span class="p">.</span><span class="n">subscribeOn</span><span class="p">(</span><span class="n">Schedulers</span><span class="p">.</span><span class="n">io</span><span class="p">())</span>
+                <span class="p">.</span><span class="n">observeOn</span><span class="p">(</span><span class="n">AndroidSchedulers</span><span class="p">.</span><span class="n">mainThread</span><span class="p">())</span>
+                <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">result</span> <span class="p">-&gt;</span>
+                    <span class="k">when</span> <span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">readState</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="n">ReadResult</span><span class="p">.</span><span class="n">ReadState</span><span class="p">.</span><span class="n">NEEDS_AUTH</span> <span class="p">-&gt;</span> <span class="p">{</span>
+                            <span class="n">toast</span><span class="p">(</span><span class="s">"WHORLWIND - NEEDS_AUTH"</span><span class="p">)</span>
+                        <span class="p">}</span>
+
+                        <span class="n">ReadResult</span><span class="p">.</span><span class="n">ReadState</span><span class="p">.</span><span class="n">UNRECOVERABLE_ERROR</span><span class="p">,</span>
+                        <span class="n">ReadResult</span><span class="p">.</span><span class="n">ReadState</span><span class="p">.</span><span class="n">AUTHORIZATION_ERROR</span><span class="p">,</span>
+                        <span class="n">ReadResult</span><span class="p">.</span><span class="n">ReadState</span><span class="p">.</span><span class="n">RECOVERABLE_ERROR</span> <span class="p">-&gt;</span> <span class="p">{</span>
+                            <span class="n">toast</span><span class="p">(</span><span class="s">"WHORLWIND - ERROR"</span><span class="p">)</span>
+                        <span class="p">}</span>
+
+                        <span class="n">ReadResult</span><span class="p">.</span><span class="n">ReadState</span><span class="p">.</span><span class="n">READY</span> <span class="p">-&gt;</span> <span class="p">{</span>
+                            <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"WHORLWIND - READY - password = ${result.value?.utf8() ?: "</span><span class="k">null</span><span class="s">"}"</span><span class="p">)</span>
+                            <span class="kd">val</span> <span class="py">password</span> <span class="p">=</span> <span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="o">?.</span><span class="n">utf8</span><span class="p">()</span> <span class="o">?:</span> <span class="s">""</span>
+                            <span class="n">with</span> <span class="p">(</span><span class="n">loginFormPasswordField</span><span class="p">.</span><span class="n">text</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="n">clear</span><span class="p">()</span>
+                                <span class="n">append</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+
+                        <span class="k">else</span> <span class="p">-&gt;</span> <span class="p">{</span>
+                            <span class="n">toast</span><span class="p">(</span><span class="s">"WHORLWIND - EEEK!"</span><span class="p">)</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+        <span class="n">mDisposable</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">disposable</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">toast</span><span class="p">(</span><span class="s">"Biometric storage is not available"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>When Whorlwind reads the storage, it can find itself in two states - it either needs authentication or it can provide the data. All other conditions are errors which you can silently eat or print errors for. I produce toasts for each of these conditions.</p>
+
+<p>Let’s talk about those two states though.</p>
+
+<ul>
+  <li>If the state is <code class="highlighter-rouge">NEEDS_AUTH</code>, then you should prompt for a fingerprint. There are lots of tutorials on how to do fingerprint authentication in a dialog. There are even <a href="https://android-arsenal.com/tag/238?sort=created">plenty of helper libraries</a>. For now, I’m just popping up a toast to say “you need to touch the fingerprint sensor”</li>
+  <li>If the state is <code class="highlighter-rouge">READY</code> and the value is non-null, then the data is available. At this point, you can fill in the password and then call handleLogin() to submit the form. No further input is required from the user.</li>
+  <li>If the state is <code class="highlighter-rouge">READY</code> and the value is null, there is no value stored in the secure storage. You should continue on as if nothing had happened and prompt for a password.</li>
+</ul>
+
+<p>Right now, I’m just filling in the password field, but there is nothing stopping you from calling <code class="highlighter-rouge">handleLogin()</code> immediately afterwards.</p>
+
+<h2 id="try-it-out">Try it out!</h2>
+
+<p>If you are using the emulator, you will need to register a fingerprint before continuing. You can do this by swiping down to get into the settings and doing the fingerprint the normal way.</p>
+
+<p>To access the emulated fingerprint manager, open the extended controls (the triple dots at the bottom of the menu), then select Fingerprint. There is a button to simulate a finger print touch.</p>
+
+<p>First, authenticate with your regular username and password. Then sign out. Finally, click the sign-in button, but this time touch the fingerprint marker. You’ll get the toast (<code class="highlighter-rouge">NEEDS_AUTH</code>). Touch the fingerprint reader (or press the button to emulate a sensor touch) and you will notice the password is filled in for you.</p>
+
+<h2 id="wrap-up">Wrap up</h2>
+
+<p>Note that if you have multi-factor authentication configured, then the user will still be prompted for their MFA token (provided via SMS or generated by a TOTP application). We are only storing the credentials securely on device - we aren’t bypassing the security provided by the backend service.</p>
+
+<p>Biometric security is awesome and adds a feature to your app that users will appreciate. It means remembering less passwords, and an easier login experience. The Whorlwind library, despite its lack of documentation, makes it easy to configure.</p>
+
+<p>You can even support “just biometrics” by generating a random password during sign-up, then storing it in secure storage. The user then only has to touch the fingerprint reader to authenticate and doesn’t have a password to remember.</p>
+:ET

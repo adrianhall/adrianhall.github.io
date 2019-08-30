@@ -1,0 +1,371 @@
+I"��<p>I’m currently in the middle of building a restaurant review API driven by GraphQL. So far, I’ve <a href="/cloud/2018/11/15/restaurant-reviews/">looked at the needs of the front end and developed the schema</a>. Now, I need to take a look at the back end. I’m building the API within the AWS cloud. How do I store the data?</p>
+
+<p>Let’s take a quick look at the schema again:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">input</span><span class="w"> </span><span class="n">PagingRequest</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">limit</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+    </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">locations</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+    </span><span class="n">reviews</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w">
+    </span><span class="n">favorites</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">GPS</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">longitude</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+    </span><span class="n">latitude</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">GPSInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">longitude</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+    </span><span class="n">latitude</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Address</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">street</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">city</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">state</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">zipcode</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Location</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+    </span><span class="n">owner</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+    </span><span class="n">gps</span><span class="p">:</span><span class="w"> </span><span class="n">GPS</span><span class="w">
+    </span><span class="n">address</span><span class="p">:</span><span class="w"> </span><span class="n">Address</span><span class="w">
+    </span><span class="n">phone</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">email</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">favoriteCount</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+    </span><span class="n">averageRating</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+    </span><span class="n">reviews</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Review</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+    </span><span class="n">user</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+    </span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="n">Location</span><span class="p">!</span><span class="w">
+    </span><span class="n">content</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">rating</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">UserPagingConnection</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">User</span><span class="p">]</span><span class="w">
+    </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Location</span><span class="p">]</span><span class="w">
+    </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">items</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Review</span><span class="p">]</span><span class="w">
+    </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">GPSQueryInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">gps</span><span class="p">:</span><span class="w"> </span><span class="n">GPSInput</span><span class="w">
+    </span><span class="n">radius</span><span class="p">:</span><span class="w"> </span><span class="nb">Float</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">AddressInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">street</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">city</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">state</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">zipcode</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">LocationInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">address</span><span class="p">:</span><span class="w"> </span><span class="n">AddressInput</span><span class="w">
+    </span><span class="n">phone</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">email</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">input</span><span class="w"> </span><span class="n">ReviewInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">content</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+    </span><span class="n">rating</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Query</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">me</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+    </span><span class="n">findLocation</span><span class="p">(</span><span class="n">byGPS</span><span class="p">:</span><span class="w"> </span><span class="n">GPSQueryInput</span><span class="p">,</span><span class="w"> </span><span class="n">byAddress</span><span class="p">:</span><span class="w"> </span><span class="n">AddressInput</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Mutation</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">addLocation</span><span class="p">(</span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="n">LocationInput</span><span class="p">):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+    </span><span class="n">addReview</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!,</span><span class="w"> </span><span class="n">review</span><span class="p">:</span><span class="w"> </span><span class="n">ReviewInput</span><span class="p">):</span><span class="w"> </span><span class="n">Review</span><span class="w">
+    </span><span class="n">markFavorite</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Subscription</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">location</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Location</span><span class="w">
+    </span><span class="err">@</span><span class="n">aws_subscribe</span><span class="p">(</span><span class="n">mutations</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">"</span><span class="n">addReview</span><span class="err">"</span><span class="p">,</span><span class="w"> </span><span class="err">"</span><span class="n">markFavorite</span><span class="err">"</span><span class="w"> </span><span class="p">])</span><span class="w">
+    </span><span class="n">reviews</span><span class="p">(</span><span class="n">locationId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Review</span><span class="w">
+    </span><span class="err">@</span><span class="n">aws_subscribe</span><span class="p">(</span><span class="n">mutations</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">"</span><span class="n">addReview</span><span class="err">"</span><span class="w"> </span><span class="p">])</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">schema</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">query</span><span class="p">:</span><span class="w"> </span><span class="n">Query</span><span class="w">
+    </span><span class="n">mutation</span><span class="p">:</span><span class="w"> </span><span class="n">Mutation</span><span class="w">
+    </span><span class="n">subscription</span><span class="p">:</span><span class="w"> </span><span class="n">Subscription</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Data backend decisions tend to be made based on the queries that will be performed. Lots of different database technologies can support storage. However, not a lot of database technologies can do everything when we look at the queries.</p>
+
+<p>When looking at these queries, most of the queries are straight forward and can probably be handled by any of the data stores. However, there are some that I have explicit concerns about:</p>
+
+<ul>
+  <li><em>findLocation(byGPS)</em> requires us to do geolocation queries within a radius.</li>
+  <li><em>location(locationId)</em> requires us to return a count of favorites and an average of the review ratings.</li>
+  <li>There are several queries that return paged responses.</li>
+</ul>
+
+<p>AWS AppSync (my favorite GraphQL data layer) supports DynamoDB (a NoSQL service), ElasticSearch Service, and Aurora Serverless. </p>
+
+<p>When deciding on a backend solution:</p>
+
+<ol>
+  <li>Ensure your choice supports your queries and mutations.</li>
+  <li>Don’t be afraid to use multiple data sources for different parts of your schema.</li>
+</ol>
+
+<p>Let’s investigate some choices:</p>
+
+<h2 id="amazon-dyanmodb">Amazon DyanmoDB</h2>
+
+<p>I love DynamoDB. It’s a serverless key-value store that allows you to control the scaling (and hence the costs). However, it isn’t always a good choice. Specifically, it’s particularly bad if you have to do aggregations across the entire data set. Unfortunately, that means I can’t calculate the ratings average on the fly. In addition, I can’t do geospatial search. That makes two items on my list of queries problematic.</p>
+
+<h2 id="amazon-dynamodb--elasticsearch-service">Amazon DynamoDB + ElasticSearch Service</h2>
+
+<p>There is an alternative to using DynamoDB directly. You can store the data within DynamoDB (so all mutations happen against a DynamoDB instance) and then send that data to an ElasticSearch Service instance. All the queries hit the ElasticSearch Service instance instead. ElasticSearch Service can handle geospatial searches, counts and average aggregation. This means I can do all the mutations and even some of the queries via DynamoDB, then switch over to ElasticSearch Service where required.</p>
+
+<p>In addition, I can see the need to do full-text search at some time in the future. One of the things I try to do is predict the sorts of queries that might come along in the future as I decide on the backends I am going to implement.</p>
+
+<p>However, we are going towards two different stores which we need to synchronize via a Lambda function. This isn’t hard to do, but does increase the complexity. In addition, ElasticSearch Service is not “serverless”, so we have to deal with scaling the search service using configuration:</p>
+
+<p><img src="/assets/images/2018-11-30-picture1.png" alt="" /></p>
+
+<h2 id="aurora-serverless">Aurora Serverless</h2>
+
+<p>The third option is to use a SQL database based on Aurora Serverless. This is new and is definitely worthwhile considering when you have relational data. I can create a Locations table and a Reviews table and then provide relations between them. Since SQL provides the ability to store GPS coordinates as points, I can do geospatial searches easily. I can also do average rating and count of reviews as part of the same SQL query.</p>
+
+<h2 id="which-should-i-choose">Which should I choose?</h2>
+
+<p>I have two viable options here - and it’s normal for there to be multiple viable options. For this project, I’m going to implement the DynamoDB + ElasticSearch Service, mostly because I can see full-text search in my future which is more appropriately handled by ElasticSearch Service. I will implement each record (locations and reviews) within a single DynamoDB table with an ID and a Type (LOCATION or REVIEW). This will then be transferred to the ElasticSearch Service for searching. The majority of the queries will be handled by the ElasticSearch Service, although there are some queries (for example, the paging query for reviews at a location) that will be accomplished with a DynamoDB query.</p>
+
+<h2 id="implementing-the-data-storagelayer">Implementing the Data Storage Layer</h2>
+
+<p>Now that I’ve decided on an architecture for my data storage layer, all that remains is to set it up. There are three basic ways of configuring the backend if you want to remain sane. </p>
+
+<ul>
+  <li>The <a href="https://amplify.aws">Amplify CLI</a> will configure your GraphQL API easily by using model transforms. However, we are doing a completely custom GraphQL API which is not supported at this time.</li>
+  <li><a href="https://aws.amazon.com/cloudformation/">CloudFormation</a> allows you to configure all the resources in the backend, but I want to configure the front end too.</li>
+  <li><a href="https://serverless.com/framework/">Serverless Framework</a> (with the appsync-serverless-plugin and aws-amplify-serverless-plugin) allows me to do all the configuration using CloudFormation but also has an easy way of writing out the front end configuration files.</li>
+</ul>
+
+<p>Short version. Use Amplify CLI if you can as it automates a lot of things, simplifies what you have to write and generates code so that you speed up development. Switch to the Serverless Framework when the Amplify CLI doesn’t do all the things you need for maximum flexibility. Switching to the Serverless Framework also ramps up the complexity you have to deal with. You will still need to know CloudFormation, but a lot of the complexity of dealing with embedded files is taken care of for you.</p>
+
+<blockquote>
+  <p>What about SAM CLI, Terraform, or any of the other configuration tools? These don’t support both front end and back end configuration of AWS AppSync at the time of writing, so I’m not using them.</p>
+</blockquote>
+
+<p>I’ve already got a Serverless Framework configuration <a href="https://github.com/adrianhall/restaurant-reviews">started for my backend</a>, which includes the <code class="highlighter-rouge">schema.graphql</code> file from my last blog. All that is required is that I add the backend configuration to my <code class="highlighter-rouge">serverless.yml</code> file. This requires the following resources:</p>
+
+<ul>
+  <li>A DynamoDB table</li>
+  <li>An ElasticSearch domain</li>
+  <li>A Lambda function to transfer data from the DynamoDB table to the ElasticSearch domain</li>
+  <li>An IAM Role to provide access restrictions to the Lambda function</li>
+</ul>
+
+<p>The DynamoDB table is simple enough as I’ve written these plenty of times before:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">DynamoDBTable</span><span class="pi">:</span>
+  <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::DynamoDB::Table</span>
+  <span class="na">Properties</span><span class="pi">:</span>
+    <span class="na">TableName</span><span class="pi">:</span> <span class="s">${self:custom.api}</span>
+    <span class="na">KeySchema</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">AttributeName</span><span class="pi">:</span> <span class="s">id</span>
+        <span class="na">KeyType</span><span class="pi">:</span> <span class="s">HASH</span>
+      <span class="pi">-</span> <span class="na">AttributeName</span><span class="pi">:</span> <span class="s">typeName</span>
+        <span class="na">KeyType</span><span class="pi">:</span> <span class="s">RANGE</span>
+    <span class="na">AttributeDefinitions</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">AttributeName</span><span class="pi">:</span> <span class="s">id</span>
+        <span class="na">AttributeType</span><span class="pi">:</span> <span class="s">S</span>
+      <span class="pi">-</span> <span class="na">AttributeName</span><span class="pi">:</span> <span class="s">typeName</span>
+        <span class="na">AttributeType</span><span class="pi">:</span> <span class="s">S</span>
+    <span class="na">ProvisionedThroughput</span><span class="pi">:</span>
+      <span class="na">ReadCapacityUnits</span><span class="pi">:</span> <span class="s">${self:custom.ddb_readIOPS}</span>
+      <span class="na">WriteCapacityUnits</span><span class="pi">:</span> <span class="s">${self:custom.ddb_writeIOPS}</span>
+    <span class="na">StreamSpecification</span><span class="pi">:</span>
+      <span class="na">StreamViewType</span><span class="pi">:</span> <span class="s">NEW_AND_OLD_IMAGES</span>
+</code></pre></div></div>
+
+<p>This is placed in the <code class="highlighter-rouge">Resources</code> section of the <code class="highlighter-rouge">serverless.yml</code> file. The only new thing here is the <code class="highlighter-rouge">StreamSpecification</code>. This sets up the data stream such that when data is added, updated, or removed from DynamoDB, the change is also sent to the stream.</p>
+
+<p>The ElasticSearch domain is similarly boiler plate:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">ElasticSearchDomain</span><span class="pi">:</span>
+  <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::Elasticsearch::Domain</span>
+  <span class="na">Properties</span><span class="pi">:</span>
+    <span class="na">DomainName</span><span class="pi">:</span> <span class="s">${self:custom.es_domain}</span>
+    <span class="na">ElasticsearchVersion</span><span class="pi">:</span> <span class="s2">"</span><span class="s">6.2"</span>
+    <span class="na">ElasticsearchClusterConfig</span><span class="pi">:</span>
+      <span class="na">ZoneAwarenessEnabled</span><span class="pi">:</span> <span class="no">false</span>
+      <span class="na">InstanceCount</span><span class="pi">:</span> <span class="s">${self:custom.es_instanceCount}</span>
+      <span class="na">InstanceType</span><span class="pi">:</span> <span class="s">${self:custom.es_instanceType}</span>
+    <span class="na">EBSOptions</span><span class="pi">:</span>
+      <span class="na">EBSEnabled</span><span class="pi">:</span> <span class="no">true</span>
+      <span class="na">VolumeType</span><span class="pi">:</span> <span class="s2">"</span><span class="s">gp2"</span>
+      <span class="na">VolumeSize</span><span class="pi">:</span> <span class="s">${self:custom.es_ebsVolumeGB}</span>
+</code></pre></div></div>
+
+<p>Note that there is no access policy here, despite the CloudFormation template allowing one. My access to the ElasticSearch domain will be programmatic via AWS AppSync or AWS Lambda, so I need to be a bit more prescriptive to honor the rule of least access possible.</p>
+
+<p>I’ve added a whole bunch of configuration elements within the custom section of the serverless.yml file so that I don’t have to look through a massive YAML file to find out where to change the scaling options:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">custom</span><span class="pi">:</span>
+  <span class="c1"># The base name of the API for resource generation - can't include dashes</span>
+  <span class="c1"># [a-zA-Z0-9]+ only</span>
+  <span class="na">api</span><span class="pi">:</span> <span class="s">${self:provider.stage}RestaurantReviews</span>
+  <span class="c1"># ES Domain, must match [a-z][a-z0-9\-]+</span>
+  <span class="na">es_domain</span><span class="pi">:</span> <span class="s">${self:provider.stage}-restaurant-reviews</span>
+  <span class="c1"># The number of instances to launch into the ElasticSearch domain</span>
+  <span class="na">es_instanceCount</span><span class="pi">:</span> <span class="m">1</span>
+  <span class="c1"># The type of instance to launch into the ElasticSearch domain</span>
+  <span class="na">es_instanceType</span><span class="pi">:</span> <span class="s2">"</span><span class="s">t2.small.elasticsearch"</span>
+  <span class="c1"># The size in GB of the EBS volumes that contain the data</span>
+  <span class="na">es_ebsVolumeGB</span><span class="pi">:</span> <span class="m">20</span>
+  <span class="c1"># The number of read IOPS the DynamoDB table should support.</span>
+  <span class="na">ddb_readIOPS</span><span class="pi">:</span> <span class="m">5</span>
+  <span class="c1"># The number of write IOPS the DynamoDB table should support.</span>
+  <span class="na">ddb_writeIOPS</span><span class="pi">:</span> <span class="m">5</span>
+</code></pre></div></div>
+
+<p>The IAM role for the Lambda function should allow the function to receive triggers from DynamoDB and then write to ElasticSearch. It also needs to be able to write to Cloudwatch logs for debugging purposes:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">ElasticSearchStreamingLambdaIAMRole</span><span class="pi">:</span>
+  <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::IAM::Role</span>
+  <span class="na">Properties</span><span class="pi">:</span>
+    <span class="na">RoleName</span><span class="pi">:</span> <span class="s">${self:custom.api}-ESStreamingLambdaRole</span>
+    <span class="na">AssumeRolePolicyDocument</span><span class="pi">:</span>
+      <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+      <span class="na">Statement</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+          <span class="na">Principal</span><span class="pi">:</span>
+            <span class="na">Service</span><span class="pi">:</span> <span class="s2">"</span><span class="s">lambda.amazonaws.com"</span>
+          <span class="na">Action</span><span class="pi">:</span> <span class="s2">"</span><span class="s">sts:AssumeRole"</span>
+    <span class="na">Policies</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">ElasticSearchAccess</span>
+        <span class="na">PolicyDocument</span><span class="pi">:</span>
+          <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+          <span class="na">Statement</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Action</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">es:ESHttpPost"</span>
+              <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Resource</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">arn:aws:es:#{AWS::Region}:#{AWS::AccountId}:domain/${self:custom.es_domain}/_bulk"</span>
+      <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">DynamoDBStreamAccess</span>
+        <span class="na">PolicyDocument</span><span class="pi">:</span>
+          <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+          <span class="na">Statement</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Action</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">dynamodb:DescribeStream"</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">dynamodb:GetRecords"</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">dynamodb:GetShardIterator"</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">dynamodb:ListStreams"</span>
+              <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Resource</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">DynamoDBTable</span><span class="pi">,</span> <span class="nv">StreamArn</span> <span class="pi">]}</span>
+      <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">CloudWatchLogsAccess</span>
+        <span class="na">PolicyDocument</span><span class="pi">:</span>
+          <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+          <span class="na">Statement</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Action</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">logs:CreateLogGroup"</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">logs:CreateLogStream"</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">logs:PutLogEvents"</span>
+              <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Resource</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">arn:aws:logs:#{AWS::Region}:#{AWS::AccountId}:*"</span>
+</code></pre></div></div>
+
+<p>Finally, here is the configuration of the Lambda function:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">functions</span><span class="pi">:</span>
+  <span class="na">dynamodb_stream</span><span class="pi">:</span>
+    <span class="na">handler</span><span class="pi">:</span> <span class="s">elasticsearch.lambda_handler</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">${self:custom.api}-dynamodb_stream_handler</span>
+    <span class="na">description</span><span class="pi">:</span> <span class="s">Stream data from DynamoDB to ElasticSearch</span>
+    <span class="na">runtime</span><span class="pi">:</span> <span class="s">python3.6</span>
+    <span class="na">memorySize</span><span class="pi">:</span> <span class="m">128</span>
+    <span class="na">role</span><span class="pi">:</span> <span class="s">ElasticSearchStreamingLambdaIAMRole</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="na">ES_ENDPOINT</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">ElasticSearchDomain</span><span class="pi">,</span> <span class="nv">DomainEndpoint</span> <span class="pi">]}</span>
+      <span class="na">DEBUG</span><span class="pi">:</span> <span class="m">1</span>
+    <span class="na">events</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">stream</span><span class="pi">:</span>
+          <span class="na">type</span><span class="pi">:</span> <span class="s">dynamodb</span>
+          <span class="na">arn</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">DynamoDBTable</span><span class="pi">,</span> <span class="nv">StreamArn</span> <span class="pi">]}</span>
+</code></pre></div></div>
+
+<p>I copied the function directly from the Amplify CLI, and just slightly adjusted it so I could pass the <code class="highlighter-rouge">StreamArn</code> in directly instead of having to put the https:// in front of it. This Lambda function is triggered via the DynamoDB stream. When there is a stream request, the script will copy the changes to the ES domain. You can find the code for the function on <a href="https://github.com/adrianhall/restaurant-reviews/tree/p2">my GitHub repository</a>.</p>
+
+<blockquote>
+  <p>If you think this is complicated, then check out the Amplify CLI. It does all this configuration for you so you don’t have to worry about it!</p>
+</blockquote>
+
+<h2 id="testing-the-data-transfer">Testing the data transfer</h2>
+
+<p>I never leave this step without ensuring that basic data transfer is happening. However, that requires set up.</p>
+
+<ol>
+  <li>Log on to the <a href="https://console.aws.amazon.com/es/home">ElasticSearch Service Console</a>.</li>
+  <li>Select your ElasticSearch domain.</li>
+  <li>Click <strong>Modify Access Policy</strong>.</li>
+  <li>In the drop-down, select <strong>Allow open access to the domain</strong>.</li>
+  <li>Click <strong>Submit</strong>.</li>
+  <li>Wait for the change to be processed (it takes 1–2 minutes).</li>
+</ol>
+
+<p>Anyone who has the endpoint information can now access your ES domain. This is dangerous, so only do this for testing and remove it once testing is done. For you, this means you can run Kibana:</p>
+
+<ol>
+  <li>Go back to the Dashboard in the ElasticSearch Service Console.</li>
+  <li>Select your ElasticSearch domain.</li>
+  <li>Click on the <strong>Kibana</strong> link.</li>
+  <li>Click on <strong>Dev Tools</strong>.</li>
+  <li>If necessary, click <strong>Get Started</strong>.</li>
+</ol>
+
+<p>At this point, you have a query window, with a “query for all data” specification already loaded. Click on the Play button to see the results (it should result in no data).</p>
+
+<p>Now, let’s test the data transfer.</p>
+
+<ol>
+  <li>Go to the <a href="https://console.aws.amazon.com/dynamodb/home">DynamoDB Console</a>.</li>
+  <li>Click <strong>Tables</strong>, then select your table.</li>
+  <li>Select the <strong>Items</strong> tab.</li>
+  <li>Click <strong>Create Item</strong>.</li>
+  <li>Fill in the fields (id and typeName), then click <strong>Save</strong>.</li>
+</ol>
+
+<p>After a couple of seconds, the data should have appeared in the ES domain. Go back to your Kibana tab and run the query again. This time, you should get data:</p>
+
+<p><img src="/assets/images/2018-11-30-picture2.png" alt="" /></p>
+
+<p>If you delete or update the record within the DynamoDB console, the changes should be reflected in the Kibana query.</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>I still don’t have a functional API. However, I have all both the schema for the API and the backend data storage handled. In the next blog post, I’ll cover writing the request and response mapping templates for the resolvers using AWS AppSync.</p>
+
+<p>Until then, you can find the Serverless Framework configuration on <a href="https://github.com/adrianhall/restaurant-reviews/tree/p2">my GitHub repository</a>.</p>
+:ET

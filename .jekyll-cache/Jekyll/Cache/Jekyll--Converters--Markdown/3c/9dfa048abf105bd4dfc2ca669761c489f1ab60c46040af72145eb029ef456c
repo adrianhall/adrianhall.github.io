@@ -1,0 +1,358 @@
+I"��<p>GraphQL does not handle files.</p>
+
+<p>It may seem an obvious statement, but it needs to be said. GraphQL does not handle files. It handles structured data. Which isn’t to say that GraphQL does not have a role to play within file handling — just that the upload and download of files needs to be done outside the confines of GraphQL.</p>
+
+<p>In this article, I’m going to present one way that you can handle the upload and download of files whereby the URL of the files are presented via GraphQL using <a href="https://aws.amazon.com/appsync">AWS AppSync</a> and the actual upload / download of the files are done via HTTP.</p>
+
+<p>To do this, I’m going to implement a feature — profile pictures — in my Restaurant Reviews app. Any user can download a profile picture, but only the owner of a profile can upload the profile picture. Here is the architecture:</p>
+
+<p><img src="/assets/images/2018-12-18-picture1.png" alt="" /></p>
+
+<ol>
+  <li>The client app asks AWS AppSync (via GraphQL) for an upload URL.</li>
+  <li>AWS AppSync invokes an <a href="https://aws.amazon.com/lambda">AWS Lambda</a> function to generate a pre-signed URL for upload purposes and returns it to the client. A pre-signed URL grants temporary permissions for the operation.</li>
+  <li>The client app then uploads the file to the pre-signed URL.</li>
+</ol>
+
+<p>A pre-signed URL is used to grant a user temporary credentials to perform an action on S3, such as to upload or download a file. It is not without its drawbacks (for example, all pre-signed URLs will expire and multi-part uploads are particularly problematic with pre-signed URLs), but for this use case, they are a great option.</p>
+
+<p>To accomplish this, I have expanded my GraphQL schema as follows:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">S3Object</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">bucket</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">region</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">url</span><span class="p">:</span><span class="w"> </span><span class="n">AWSURL</span><span class="w">
+  </span><span class="n">uploadUrl</span><span class="p">:</span><span class="w"> </span><span class="n">AWSURL</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="k">type</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">lastUpdated</span><span class="p">:</span><span class="w"> </span><span class="n">AWSTimestamp</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">profilePicture</span><span class="p">:</span><span class="w"> </span><span class="n">S3Object</span><span class="w">
+  </span><span class="c"># Rest of the User object goes here</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">S3Object</code> is the same <code class="highlighter-rouge">S3Object</code> mentioned within the <a href="https://aws-amplify.github.io/docs/cli/graphql#s3-objects">AWS Amplify documentation when talking about complex file objects</a>, so the response is compatible with the AWS Amplify libraries when they add support for complex objects. However, I have extended the <code class="highlighter-rouge">S3Object</code> by adding two fields to it for the pre-signed URLs. The <code class="highlighter-rouge">profilePicture</code> value will be resolved by the AWS Lambda function I mentioned earlier. The AWS Lambda function is fed a context that consists of a source (the user that is being handled) and identity (the user that is making the request).</p>
+
+<ol>
+  <li>If <code class="highlighter-rouge">$context.source.id</code> (the ID of the user being requested) is <code class="highlighter-rouge">$context.identity.username</code> (the ID of the user making the request), then return both a pre-signed upload URL and the download URL.</li>
+  <li>If not, then only return the download URL.</li>
+</ol>
+
+<p>In addition, I will define an AWS Lambda function that sets the <code class="highlighter-rouge">lastUpdated</code> field for the user once uploading is complete.</p>
+
+<p>With this model, we can do several things (aside from uploading the file):</p>
+
+<ul>
+  <li>Subscribe to new profile pictures for a specific user.</li>
+  <li>Do image manipulation on the picture prior to publishing (such as crop the image to just the face or re-size suitable for our application).</li>
+  <li>Do machine learning tasks on the picture (for example, reject images that do not meet decency guidelines based on Amazon Rekognition).</li>
+</ul>
+
+<h2 id="implementing-the-data-storage-layer">Implementing the Data Storage Layer</h2>
+
+<p>Before we get to the Lambda functions, we need to create resources. I already have a configuration that includes AWS AppSync, <a href="https://aws.amazon.com/cognito">Amazon Cognito</a> user pools, and Amazon Cognito identity pools, plus some IAM roles. It is built using the <a href="https://serverless.com/framework/docs/providers/aws/guide/quick-start/">Serverless Framework</a> for repeatable deployments. Here is the Amazon S3 definition:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="na">FileStorage</span><span class="pi">:</span>
+      <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::S3::Bucket</span>
+      <span class="na">Properties</span><span class="pi">:</span>
+        <span class="na">CorsConfiguration</span><span class="pi">:</span>
+          <span class="na">CorsRules</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">AllowedOrigins</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s1">'</span><span class="s">*'</span>
+              <span class="na">AllowedHeaders</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s1">'</span><span class="s">*'</span>
+              <span class="na">AllowedMethods</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s">GET</span>
+                <span class="pi">-</span> <span class="s">PUT</span>
+              <span class="na">MaxAge</span><span class="pi">:</span> <span class="m">3000</span>
+</code></pre></div></div>
+
+<p>In addition, we need to adjust permissions via IAM roles. Specifically:</p>
+
+<ul>
+  <li>The AWS Lambda function needs permission to use <code class="highlighter-rouge">S3:GetObject</code> so that it can generate a pre-signed URL</li>
+  <li>All users (both authenticated and unauthenticated) need permission to <code class="highlighter-rouge">S3:GetObject</code> so that they can download the profile images.</li>
+  <li>Authenticated users need permission to <code class="highlighter-rouge">S3:PutObject</code> of their own image so that they can upload their own profile image.</li>
+</ul>
+
+<p>I’m going to store the images with the key <code class="highlighter-rouge">profilePictures/id.png</code> within the S3 bucket where the id concerned is the id of the user. The AuthRole and UnauthRole definitions within my IAM roles provide the user permissions. For example, here is my new UnauthRole:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">UnauthRole</span><span class="pi">:</span>
+      <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::IAM::Role</span>
+      <span class="na">Properties</span><span class="pi">:</span>
+        <span class="na">RoleName</span><span class="pi">:</span> <span class="s">${self:custom.api}-unauth</span>
+        <span class="na">AssumeRolePolicyDocument</span><span class="pi">:</span>
+          <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+          <span class="na">Statement</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Principal</span><span class="pi">:</span>
+                <span class="na">Federated</span><span class="pi">:</span> <span class="s">cognito-identity.amazonaws.com</span>
+              <span class="na">Action</span><span class="pi">:</span> <span class="s">sts:AssumeRoleWithWebIdentity</span>
+              <span class="na">Condition</span><span class="pi">:</span>
+                <span class="s">ForAnyValue:StringLike:</span>
+                  <span class="s">"cognito-identity.amazonaws.com:amr": "unauthenticated"</span>
+        <span class="na">Policies</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">AllowProfilePictureDownload</span>
+            <span class="na">PolicyDocument</span><span class="pi">:</span>
+              <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+              <span class="na">Statement</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="na">Action</span><span class="pi">:</span>
+                    <span class="pi">-</span> <span class="s2">"</span><span class="s">s3:GetObject"</span>
+                  <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+                  <span class="na">Resource</span><span class="pi">:</span>
+                    <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">FileStorage</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]}</span>
+                    <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">Join</span><span class="pi">:</span> <span class="pi">[</span> <span class="s2">"</span><span class="s">/"</span><span class="pi">,</span> <span class="pi">[{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">FileStorage</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]},</span> <span class="s2">"</span><span class="s">*"</span> <span class="pi">]]}</span>
+          <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">AllowUnauthenticatedAppSyncQueries</span>
+            <span class="na">PolicyDocument</span><span class="pi">:</span>
+              <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+              <span class="na">Statement</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="na">Action</span><span class="pi">:</span>
+                    <span class="pi">-</span> <span class="s2">"</span><span class="s">appsync:GraphQL"</span>
+                  <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+                  <span class="na">Resource</span><span class="pi">:</span>
+                    <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">Join</span><span class="pi">:</span> <span class="pi">[</span> <span class="s2">"</span><span class="s">/"</span><span class="pi">,</span> <span class="pi">[{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">GraphQlApi</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]},</span> <span class="s2">"</span><span class="s">types/Query/*"</span> <span class="pi">]]}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>Operate under the “Least Privileges Possible” principal when dealing with S3 resources. Your users should only get access to the actual files they need. A common practice is to separate the web site (which is implemented via a PublicRead S3 bucket and an Amazon CloudFront distribution) and the data files (which are in a separate S3 bucket that has higher authentication requirements).</p>
+</blockquote>
+
+<h2 id="the-profilepicture-resolver">The profilePicture Resolver</h2>
+
+<p>Within Serverless, we first of all need to define a function:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="na">profilePictureResolver</span><span class="pi">:</span>
+    <span class="na">handler</span><span class="pi">:</span> <span class="s">graphql.profilePictureResolver</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">${self:custom.api}-profilePictureResolver</span>
+    <span class="na">description</span><span class="pi">:</span> <span class="s">AppSync Resolver for User.profilePicture</span>
+    <span class="na">runtime</span><span class="pi">:</span> <span class="s">nodejs8.10</span>
+    <span class="na">role</span><span class="pi">:</span> <span class="s">AWSAppSyncS3LambdaIAMRole</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="na">S3_BUCKET</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">FileStorage</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]}</span>
+      <span class="na">S3_URL</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">FileStorage</span><span class="pi">,</span> <span class="nv">WebsiteURL</span> <span class="pi">]}</span>
+</code></pre></div></div>
+
+<p>This defines a NodeJS 8.10 AWS Lambda function that will invoke the <code class="highlighter-rouge">profilePictureResolver</code> function within the <code class="highlighter-rouge">graphql.js</code> file. It also defines some environment variables for where the resource locations are and the IAM role that will be used:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="na">AWSAppSyncS3LambdaIAMRole</span><span class="pi">:</span>
+      <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::IAM::Role</span>
+      <span class="na">Properties</span><span class="pi">:</span>
+        <span class="na">RoleName</span><span class="pi">:</span> <span class="s">${self:custom.api}-AWSAppSyncS3LambdaIAMRole</span>
+        <span class="na">AssumeRolePolicyDocument</span><span class="pi">:</span>
+          <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+          <span class="na">Statement</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Principal</span><span class="pi">:</span>
+                <span class="na">Service</span><span class="pi">:</span> <span class="s2">"</span><span class="s">lambda.amazonaws.com"</span>
+              <span class="na">Action</span><span class="pi">:</span> <span class="s2">"</span><span class="s">sts:AssumeRole"</span>
+        <span class="na">Policies</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">S3Access</span>
+            <span class="na">PolicyDocument</span><span class="pi">:</span>
+              <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+              <span class="na">Statement</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="na">Action</span><span class="pi">:</span>
+                    <span class="pi">-</span> <span class="s2">"</span><span class="s">s3:GetObject"</span>
+                  <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+                  <span class="na">Resource</span><span class="pi">:</span>
+                    <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">FileStorage</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]}</span>
+                    <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">Join</span><span class="pi">:</span> <span class="pi">[</span> <span class="s2">"</span><span class="s">/"</span><span class="pi">,</span> <span class="pi">[{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">FileStorage</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]},</span> <span class="s2">"</span><span class="s">*"</span> <span class="pi">]]}</span>
+          <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">CloudWatchLogsAccess</span>
+            <span class="na">PolicyDocument</span><span class="pi">:</span>
+              <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+              <span class="na">Statement</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="na">Action</span><span class="pi">:</span>
+                    <span class="pi">-</span> <span class="s2">"</span><span class="s">logs:CreateLogGroup"</span>
+                    <span class="pi">-</span> <span class="s2">"</span><span class="s">logs:CreateLogStream"</span>
+                    <span class="pi">-</span> <span class="s2">"</span><span class="s">logs:PutLogEvents"</span>
+                  <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+                  <span class="na">Resource</span><span class="pi">:</span>
+                    <span class="pi">-</span> <span class="s2">"</span><span class="s">arn:aws:logs:#{AWS::Region}:#{AWS::AccountId}:*"</span>
+</code></pre></div></div>
+
+<p>To test the facility, I’m going to use the following function definition:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">exports</span><span class="p">.</span><span class="nx">profilePictureResolver</span> <span class="o">=</span> <span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">`Invoke: event = </span><span class="p">${</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="mi">2</span><span class="p">)}</span><span class="s2">`</span><span class="p">);</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">`context = </span><span class="p">${</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="mi">2</span><span class="p">)}</span><span class="s2">`</span><span class="p">);</span>
+  <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">http://localhost/profilePictures/foo.png</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">uploadUrl</span><span class="p">:</span> <span class="dl">'</span><span class="s1">http://localhost/profilePictures/foo.png?upload</span><span class="dl">'</span>
+  <span class="p">};</span>
+  <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">response</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>This is a very simple function resolver that just returns constants, but it allows me to take a look at the event and context that is being passed in. Finally, let’s take a look at the data source definition that I have placed in the <code class="highlighter-rouge">custom.appSync</code> section of my <code class="highlighter-rouge">serverless.yml</code> file:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">custom</span><span class="pi">:</span>
+  <span class="na">appSync</span><span class="pi">:</span>
+    <span class="na">dataSources</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">AWS_LAMBDA</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">ProfilePictures</span>
+        <span class="na">description</span><span class="pi">:</span> <span class="s">Lambda function for the ProfilePictures</span>
+        <span class="na">config</span><span class="pi">:</span>
+          <span class="na">lambdaFunctionArn</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">ProfilePictureResolverLambdaFunction</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]}</span>
+          <span class="na">iamRoleStatements</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Action</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">lambda:invokeFunction"</span>
+              <span class="na">Resource</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">ProfilePictureResolverLambdaFunction</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]}</span>
+</code></pre></div></div>
+
+<p>This allows us to set up a test suite within the AWS AppSync console. First, navigate to the appropriate resolver definition:</p>
+
+<ol>
+  <li>Log onto the <a href="https://console.aws.amazon.com/appsync/home">AWS AppSync console</a>.</li>
+  <li>Select your API.</li>
+  <li>Select <strong>Queries</strong>.</li>
+  <li>
+    <p>Add the following to the query window:</p>
+
+    <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w"> </span><span class="k">query</span><span class="w"> </span><span class="n">Me</span><span class="w"> </span><span class="p">{</span><span class="w">
+   </span><span class="n">me</span><span class="w"> </span><span class="p">{</span><span class="w">
+     </span><span class="n">id</span><span class="w">
+     </span><span class="n">profilePicture</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">url</span><span class="w"> </span><span class="n">uploadUrl</span><span class="w"> </span><span class="p">}</span><span class="w">
+   </span><span class="p">}</span><span class="w">
+ </span><span class="p">}</span><span class="w">
+</span></code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>When you run this query, you will see the following in the output:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"me"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;random-sequence-of-chars&gt;"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"profilePicture"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost/profilePictures/foo.png"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"uploadUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost/profilePictures/foo.png?upload"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This indicates that the Lambda function is being called and that it is returning what we expected. We can now take a look at the logs in CloudWatch:</p>
+
+<ul>
+  <li>Open the <a href="https://console.aws.amazon.com/lambda/home">AWS Lambda console</a>.</li>
+  <li>Select the <code class="highlighter-rouge">profilePictureResolver</code> Lambda function.</li>
+  <li>Select <strong>Monitoring</strong>.</li>
+  <li>Click <strong>View logs in CloudWatch</strong>.</li>
+  <li>Click the log group (there should only be one at this point — if not, click the latest one).</li>
+  <li>You will see (once all the logs are expanded) something akin to this:</li>
+</ul>
+
+<p><img src="/assets/images/2018-12-18-picture2.png" alt="" /></p>
+
+<p>The only real thing to note is this: nothing from the GraphQL context is passed into the Lambda context by default. It does not know about the identity of the calling user nor the source object, both of which are required for the functionality I want to provide. You need to specify what is passed in within the request mapping template. In this case, I need <code class="highlighter-rouge">$context.source</code> and <code class="highlighter-rouge">$context.identity</code> to be passed into the AWS Lambda function:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "version": "2017-02-28",
+  "operation": "Invoke",
+  "payload": {
+    "source": $util.toJson($context.source),
+    "identity": $util.toJson($context.identity)
+  }
+}
+</code></pre></div></div>
+
+<p>If we run the test again, we see that the payload becomes the event argument within the Lambda function. We can now move on to our simple Lambda function that generates the appropriate data:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">AWS</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">aws-sdk</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">process</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">process</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="nx">AWS</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span>
+    <span class="na">accessKeyId</span><span class="p">:</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">AWS_ACCESS_KEY_ID</span><span class="p">,</span>
+    <span class="na">secretAccessKey</span><span class="p">:</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">AWS_SECRET_ACCESS_KEY</span><span class="p">,</span>
+    <span class="na">sessionToken</span><span class="p">:</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">AWS_SESSION_TOKEN</span><span class="p">,</span>
+    <span class="na">region</span><span class="p">:</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">AWS_REGION</span>
+<span class="p">});</span>
+<span class="kd">const</span> <span class="nx">s3</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">S3</span><span class="p">();</span>
+<span class="kd">const</span> <span class="nx">expiryTime</span> <span class="o">=</span> <span class="mi">3600</span><span class="p">;</span> <span class="c1">// 1 hour = 3600 secomds</span>
+
+<span class="nx">exports</span><span class="p">.</span><span class="nx">profilePictureResolver</span> <span class="o">=</span> <span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="na">Bucket</span><span class="p">:</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">S3_BUCKET</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="dl">'</span><span class="s1">:</span><span class="dl">'</span><span class="p">)[</span><span class="mi">5</span><span class="p">],</span>
+        <span class="na">Key</span><span class="p">:</span> <span class="s2">`profilePictures/</span><span class="p">${</span><span class="nx">event</span><span class="p">.</span><span class="nx">source</span><span class="p">.</span><span class="nx">id</span><span class="p">}</span><span class="s2">.png`</span><span class="p">,</span>
+        <span class="na">Expires</span><span class="p">:</span> <span class="nx">expiryTime</span>
+    <span class="p">};</span>
+
+    <span class="cm">/*
+    ** Pre-sign a getObject synchronously
+    */</span>
+    <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="na">bucket</span><span class="p">:</span> <span class="nx">params</span><span class="p">.</span><span class="nx">Bucket</span><span class="p">,</span>
+        <span class="na">key</span><span class="p">:</span> <span class="nx">params</span><span class="p">.</span><span class="nx">Key</span><span class="p">,</span>
+        <span class="na">region</span><span class="p">:</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">AWS_REGION</span><span class="p">,</span>
+        <span class="na">url</span><span class="p">:</span> <span class="s2">`</span><span class="p">${</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">S3_URL</span><span class="p">}</span><span class="s2">/profilePictures/</span><span class="p">${</span><span class="nx">event</span><span class="p">.</span><span class="nx">source</span><span class="p">.</span><span class="nx">id</span><span class="p">}</span><span class="s2">.png`</span>
+    <span class="p">};</span>
+
+    <span class="cm">/*
+    ** Pre-sign a putObject synchronously
+    */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">sourcce</span><span class="p">.</span><span class="nx">id</span> <span class="o">===</span> <span class="nx">event</span><span class="p">.</span><span class="nx">identity</span><span class="p">.</span><span class="nx">username</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">response</span><span class="p">.</span><span class="nx">uploadUrl</span> <span class="o">=</span> <span class="nx">s3</span><span class="p">.</span><span class="nx">getSignedUrl</span><span class="p">(</span><span class="dl">'</span><span class="s1">putObject</span><span class="dl">'</span><span class="p">,</span> <span class="nx">params</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">response</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>Now, when we run the test, we get the following:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"me"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AIDAI6XOAOVZFVXXXXXX"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"profilePicture"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://restaurantreviews-dev-filestorage-1sylbkx8vt3ij.s3-website-us-east-1.amazonaws.com/profilePictures/AIDAI6XOAOVZFVXXXXXX.png"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"uploadUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://restaurantreviews-dev-filestorage-1sylbkx8vt3ij.s3.amazonaws.com/profilePictures/AIDAI6XOAOVZFVXXXXXX.png?AWSAccessKeyId=ASIA6BKF3YD3OMXXXX&amp;Expires=1544657619&amp;Signature=JfHgE2yx90pj0a5tG8tk46GYyCc%3D&amp;x-amz-security-token=FQoGZXIvYXdzEJ%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDA7gVJSrhcFBjUlAJiKEAhtD2lV1GBU9sVeL%2F4x9UL2XrSe6GuGNdXDcO841uKn5h50UaInl73sCpzMV%2Fr7h8igUr5pdyqAqsDyI94XFqszfeEsBVsT25G0bjwQEKgUPYaB%2BDiYNULoco%2FL9f6EMXd%2F2y7EXEoywdJ5A%2FEtXfWe1H1XdAdnnThyoXBlcSK86yc19EJ%2FQhreSmQ%2BdMiLPaKW5lA0FoQoXBKI7jDlGWeekTcm6viPou7tzAFxnYpOqcwYLhlu6vgLe4%2BsuUjAZdDE6c%2FR2VGvbX1250YsPBdEojDRYsPcxxXhbtV24GwvDjO5pKYhhPb%2B%2BFvbMz3sHJ%2FsMFIayqABjWCRa6qkhVGIIKmkgKOv%2FxeAF"</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Obviously, your data will be different. I can now do a PUT to the uploadUrl from my client using standard HTTP clients to upload a new picture. We can also use the same mechanism to generate a pre-signed URL for the getObject operation.</p>
+
+<h2 id="the-problem">The Problem</h2>
+
+<p>You might think that this is a great way to get the profile picture. It does, however, show off one problem that is an issue with GraphQL. Let’s take an example query:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>query me {
+  profilePicture { url }
+}
+</code></pre></div></div>
+
+<p>This is a perfectly reasonable request — give me the download URL of my profile picture. Now, how does that affect the context of the request? The <code class="highlighter-rouge">$context.source</code> is a blank object because we are not asking for any other fields. We aren’t requesting any other fields, so nothing is passed down to the resolver of the profilePicture field. That means <code class="highlighter-rouge">$context.source.id</code> does not exist, and the URL construction will fail.</p>
+
+<p>We can, of course, read the identity of the user from the <code class="highlighter-rouge">$context.identity</code>. However, this prevents us from using the same code for all profile picture requests, and the <code class="highlighter-rouge">profilePicture</code> is hooked to the <code class="highlighter-rouge">User</code> type, not the <code class="highlighter-rouge">me()</code> query. I would have to create a <code class="highlighter-rouge">getProfilePicture</code> root query to get around this. In other words, I’m adjusting my schema so that I can work around deficiencies in the way resolvers work in GraphQL.</p>
+
+<p>We can fix this by converting the User queries to pipeline resolvers.</p>
+
+<p><img src="/assets/images/2018-12-18-picture3.jpg" alt="" /></p>
+
+<p>In our scenario, we would define two functions:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">GetUserById</code> would take a user ID from the request and get all the data from it.</li>
+  <li><code class="highlighter-rouge">GetProfilePictureForId</code> would follow on from that and construct the pre-signed URLs, adding the <code class="highlighter-rouge">profilePicture</code> object to the previous results.</li>
+</ul>
+
+<p>In a <code class="highlighter-rouge">me</code> query, the mapping template would populate the id with the <code class="highlighter-rouge">$context.identity.username</code> and within the <code class="highlighter-rouge">getUser(id)</code> or the <code class="highlighter-rouge">Review.user</code> query, it would populate the <code class="highlighter-rouge">id</code> field with the argument (or <code class="highlighter-rouge">owner</code> source field). This way, I can use the same functions (and the same Lambda source code) for both the <code class="highlighter-rouge">me</code> query and the <code class="highlighter-rouge">getUser</code> query.</p>
+
+<p>You can find this solution as an example in <a href="https://github.com/adrianhall/restaurant-reviews">my GitHub repository</a>.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

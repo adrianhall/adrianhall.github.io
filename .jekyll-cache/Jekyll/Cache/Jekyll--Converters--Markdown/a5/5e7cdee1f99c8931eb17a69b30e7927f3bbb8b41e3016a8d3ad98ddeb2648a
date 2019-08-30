@@ -1,0 +1,8 @@
+I"ì<ul class="toc__menu">
+  <li><a href="#step-1-set-up-authentication-with-the-provider-of-choice">Step 1: Set up authentication with the provider of choice</a></li>
+  <li><a href="#step-2-configure-amazon-cognito-identity-pools">Step 2: Configure Amazon Cognito identity pools</a></li>
+  <li><a href="#step-3-federate-with-the-identity-pool">Step 3: Federate with the Identity Pool</a></li>
+  <li><a href="#common-errors">Common Errors</a></li>
+  <li><a href="#wrap-up">Wrap Up</a></li>
+</ul>
+:ET

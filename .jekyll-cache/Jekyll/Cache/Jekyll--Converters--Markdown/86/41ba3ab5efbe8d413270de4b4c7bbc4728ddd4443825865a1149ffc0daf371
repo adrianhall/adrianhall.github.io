@@ -1,0 +1,223 @@
+I"_<p>I’m working on a new sample which, as is typical, communicates with a backend service for data through a serverless API. In this particular example, it’s a search capability that I am developing and one of the features I want to implement is “search while you type”.</p>
+
+<p>Not a problem, you might think. Just put a search box on the page (probably in the action bar), wire up the <code class="highlighter-rouge">onTextChange</code> event handler, and do the search. So, that’s what I did:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">fun</span> <span class="nf">onCreateOptionsMenu</span><span class="p">(</span><span class="nv">menu</span><span class="p">:</span> <span class="nc">Menu</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+    <span class="n">menuInflater</span><span class="p">.</span><span class="n">inflate</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">menu</span><span class="p">.</span><span class="n">menu_main</span><span class="p">,</span> <span class="n">menu</span><span class="p">)</span>
+    <span class="kd">val</span> <span class="py">searchView</span> <span class="p">=</span> <span class="n">menu</span><span class="o">?.</span><span class="n">findItem</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">action_search</span><span class="p">)</span><span class="o">?.</span><span class="n">actionView</span> <span class="k">as</span> <span class="n">SearchView</span>
+
+    <span class="c1">// Set up the query listener that executes the search</span>
+    <span class="n">searchView</span><span class="p">.</span><span class="n">setOnQueryTextListener</span><span class="p">(</span><span class="kd">object</span> <span class="err">: </span><span class="nc">SearchView</span><span class="p">.</span><span class="n">OnQueryTextListener</span> <span class="p">{</span>
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onQueryTextSubmit</span><span class="p">(</span><span class="nv">query</span><span class="p">:</span> <span class="nc">String</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+            <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"onQueryTextSubmit: $query"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="k">false</span>
+        <span class="p">}</span>
+
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onQueryTextChange</span><span class="p">(</span><span class="nv">newText</span><span class="p">:</span> <span class="nc">String</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+            <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"onQueryTextChange: $newText"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="k">false</span>
+        <span class="p">}</span>
+    <span class="p">})</span>
+
+    <span class="k">return</span> <span class="k">super</span><span class="p">.</span><span class="n">onCreateOptionsMenu</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<h2 id="the-problem">The problem</h2>
+
+<p>If I am doing “search-on-type”, then whenever the <code class="highlighter-rouge">onQueryTextChange()</code> event handler fires, I will kick off an API call to return the first set of results. The log looks like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>D/MainActivity: onQueryTextChange: T
+D/MainActivity: onQueryTextChange: TE
+D/MainActivity: onQueryTextChange: TES
+D/MainActivity: onQueryTextChange: TEST
+D/MainActivity: onQueryTextSubmit: TEST
+</code></pre></div></div>
+
+<p>Even though I’m just typing, I would kick off five API calls, each of which would do a search. In the serverless cloud, you pay for executions — i.e. API calls. If I am just pressing buttons to complete my search term, I want to de-bounce this and only do one API call.</p>
+
+<p>Now let’s say I want to search for something else. I delete the TEST and type something else:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>D/MainActivity: onQueryTextChange: TES
+D/MainActivity: onQueryTextChange: TE
+D/MainActivity: onQueryTextChange: T
+D/MainActivity: onQueryTextChange:
+D/MainActivity: onQueryTextChange: S
+D/MainActivity: onQueryTextChange: SO
+D/MainActivity: onQueryTextChange: SOM
+D/MainActivity: onQueryTextChange: SOME
+D/MainActivity: onQueryTextChange: SOMET
+D/MainActivity: onQueryTextChange: SOMETH
+D/MainActivity: onQueryTextChange: SOMETHI
+D/MainActivity: onQueryTextChange: SOMETHIN
+D/MainActivity: onQueryTextChange: SOMETHING
+D/MainActivity: onQueryTextChange: SOMETHING
+D/MainActivity: onQueryTextChange: SOMETHING E
+D/MainActivity: onQueryTextChange: SOMETHING EL
+D/MainActivity: onQueryTextChange: SOMETHING ELS
+D/MainActivity: onQueryTextChange: SOMETHING ELSE
+D/MainActivity: onQueryTextChange: SOMETHING ELSE
+D/MainActivity: onQueryTextSubmit: SOMETHING ELSE
+</code></pre></div></div>
+
+<p>20 API calls! Most of these will get taken care of by the “de-bounce”. I also want to de-duplicate so that the trimmed text does not cause duplicate submissions. Also, this is a search page, so I probably want to filter out some items. For example, do I want to allow blank searches? How about short searches (one letter)?</p>
+
+<p>There are a couple of things that I can do here, but the one I want to concentrate on right now is a technique broadly known as reactive programming and the RxJava library. When I first got introduced to reactive programming, I saw this description:</p>
+
+<blockquote>
+  <p><a href="http://reactivex.io/">ReactiveX</a> is an API that focuses on asynchronous composition and manipulation of observable streams of data or events by using a combination of the Observer pattern, Iterator pattern, and features of Functional Programming.</p>
+</blockquote>
+
+<p>That totally doesn’t explain what it does or its power. Well, it does — but only to those who already know what it does. I also saw diagrams like this:</p>
+
+<p><img src="/assets/images/2018-06-20-image1.png" alt="Marble chart courtesy of ReactiveX" class="center-image" /></p>
+
+<p>Which explains the role of the operator, but not so much on how to set things up. So let’s see if I can do a better job by way of a simple example that’s also useful.</p>
+
+<h2 id="configure-the-project">Configure the project</h2>
+
+<p>Let’s get the project ready first. You are going to need a new library in your app <code class="highlighter-rouge">build.gradle</code> dependencies:</p>
+
+<figure class="highlight"><pre><code class="language-gradle" data-lang="gradle"><span class="n">implementation</span> <span class="s2">"io.reactivex.rxjava2:rxjava:2.1.14"</span></code></pre></figure>
+
+<p>Don’t forget to sync the project so that the library is downloaded.</p>
+
+<h2 id="create-an-observable-stream">Create an observable stream</h2>
+
+<p>Now, on to our new technique. Under the old method, I called the API whenever a new character was typed. In the new version I am going to create an <code class="highlighter-rouge">Observable</code> and submit to that:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">fun</span> <span class="nf">onCreateOptionsMenu</span><span class="p">(</span><span class="nv">menu</span><span class="p">:</span> <span class="nc">Menu</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+    <span class="n">menuInflater</span><span class="p">.</span><span class="n">inflate</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">menu</span><span class="p">.</span><span class="n">menu_main</span><span class="p">,</span> <span class="n">menu</span><span class="p">)</span>
+    <span class="kd">val</span> <span class="py">searchView</span> <span class="p">=</span> <span class="n">menu</span><span class="o">?.</span><span class="n">findItem</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">id</span><span class="p">.</span><span class="n">action_search</span><span class="p">)</span><span class="o">?.</span><span class="n">actionView</span> <span class="k">as</span> <span class="n">SearchView</span>
+
+    <span class="c1">// Set up the query listener that executes the search</span>
+    <span class="n">Observable</span><span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="n">ObservableOnSubscribe</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;</span> <span class="p">{</span> <span class="n">subscriber</span> <span class="p">-&gt;</span>
+        <span class="n">searchView</span><span class="p">.</span><span class="n">setOnQueryTextListener</span><span class="p">(</span><span class="kd">object</span> <span class="err">: </span><span class="nc">SearchView</span><span class="p">.</span><span class="n">OnQueryTextListener</span> <span class="p">{</span>
+            <span class="k">override</span> <span class="k">fun</span> <span class="nf">onQueryTextChange</span><span class="p">(</span><span class="nv">newText</span><span class="p">:</span> <span class="nc">String</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+                <span class="n">subscriber</span><span class="p">.</span><span class="n">onNext</span><span class="p">(</span><span class="n">newText</span><span class="o">!!</span><span class="p">)</span>
+                <span class="k">return</span> <span class="k">false</span>
+            <span class="p">}</span>
+
+            <span class="k">override</span> <span class="k">fun</span> <span class="nf">onQueryTextSubmit</span><span class="p">(</span><span class="nv">query</span><span class="p">:</span> <span class="nc">String</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+                <span class="n">subscriber</span><span class="p">.</span><span class="n">onNext</span><span class="p">(</span><span class="n">query</span><span class="o">!!</span><span class="p">)</span>
+                <span class="k">return</span> <span class="k">false</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span>
+        <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"subscriber: $text"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="k">super</span><span class="p">.</span><span class="n">onCreateOptionsMenu</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>This code does exactly the same thing as the old code — the log looks like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>D/MainActivity: subscriber: T
+D/MainActivity: subscriber: TE
+D/MainActivity: subscriber: TES
+D/MainActivity: subscriber: TEST
+D/MainActivity: subscriber: TEST
+</code></pre></div></div>
+
+<p>However, the major difference is that we have a reactive stream to play with. The stream is an <code class="highlighter-rouge">Observable</code>. The text handler (or in this case the query handler) submits elements into the stream using <code class="highlighter-rouge">onNext()</code>. The observable has subscribers that consume those elements (after whatever pipeline we have deemed appropriate has been cleared).</p>
+
+<p>We can place a chain of methods in front of the <code class="highlighter-rouge">subscribe</code> call to adjust the list of strings that the <code class="highlighter-rouge">subscribe</code> method sees.</p>
+
+<h2 id="working-with-the-stream">Working with the stream</h2>
+
+<p>Let’s start by adjusting our stream so that the text that is submitted is always lower-case and it is trimmed of whitespace at the beginning and end:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">Observable</span>
+        <span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="n">ObservableOnSubscribe</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;</span> <span class="p">{</span>
+          <span class="c1">// The same code here</span>
+        <span class="p">})</span>
+        <span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">text</span><span class="p">.</span><span class="n">toLowerCase</span><span class="p">().</span><span class="n">trim</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"subscriber: $text"</span> <span class="p">}</span></code></pre></figure>
+
+<p>I’ve shortened the methods to show just the relevant bit. Now the same log looks like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>D/MainActivity: subscriber: t
+D/MainActivity: subscriber: te
+D/MainActivity: subscriber: tes
+D/MainActivity: subscriber: test
+D/MainActivity: subscriber: test
+</code></pre></div></div>
+
+<p>Next, let’s de-bounce the stream by waiting for more content for up to 250ms:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">Observable</span>
+        <span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="n">ObservableOnSubscribe</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;</span> <span class="p">{</span>
+          <span class="c1">// The same code here</span>
+        <span class="p">})</span>
+        <span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">text</span><span class="p">.</span><span class="n">toLowerCase</span><span class="p">().</span><span class="n">trim</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">.</span><span class="n">debounce</span><span class="p">(</span><span class="m">250</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="p">.</span><span class="n">MILLISECONDS</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"subscriber: $text"</span> <span class="p">}</span></code></pre></figure>
+
+<p>Next, let’s de-duplicate the stream so that only the first unique request gets processed — subsequent identical requests will get ignored</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">Observable</span>
+        <span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="n">ObservableOnSubscribe</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;</span> <span class="p">{</span>
+          <span class="c1">// The same code here</span>
+        <span class="p">})</span>
+        <span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">text</span><span class="p">.</span><span class="n">toLowerCase</span><span class="p">().</span><span class="n">trim</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">.</span><span class="n">debounce</span><span class="p">(</span><span class="m">250</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="p">.</span><span class="n">MILLISECONDS</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">distinct</span><span class="p">()</span>
+        <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"subscriber: $text"</span> <span class="p">}</span></code></pre></figure>
+
+<p>Finally, let’s filter out blank requests:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">Observable</span>
+        <span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="n">ObservableOnSubscribe</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;</span> <span class="p">{</span>
+          <span class="c1">// The same code here</span>
+        <span class="p">})</span>
+        <span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">text</span><span class="p">.</span><span class="n">toLowerCase</span><span class="p">().</span><span class="n">trim</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">.</span><span class="n">debounce</span><span class="p">(</span><span class="m">250</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="p">.</span><span class="n">MILLISECONDS</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">distinct</span><span class="p">()</span>
+        <span class="p">.</span><span class="n">filter</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">text</span><span class="p">.</span><span class="n">isNotBlank</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"subscriber: $text"</span> <span class="p">}</span></code></pre></figure>
+
+<p>At this point, you will note that you only get one (or maybe two) log messages, resulting in less API calls to your backend. Yet your app will remain responsive. In addition, the case where you type something and then delete it to type something else will also result in less API calls.</p>
+
+<p>There are <a href="http://reactivex.io/documentation/operators.html">more operators you can add</a> to this pipeline for different needs. I find these ones are good for dealing with input fields that do something on an API. The complete code looks like this:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="c1">// Set up the query listener that executes the search</span>
+<span class="n">Observable</span>
+    <span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="n">ObservableOnSubscribe</span><span class="p">&lt;</span><span class="n">String</span><span class="p">&gt;</span> <span class="p">{</span> <span class="n">subscriber</span> <span class="p">-&gt;</span>
+        <span class="n">searchView</span><span class="p">.</span><span class="n">setOnQueryTextListener</span><span class="p">(</span><span class="kd">object</span> <span class="err">: </span><span class="nc">SearchView</span><span class="p">.</span><span class="n">OnQueryTextListener</span> <span class="p">{</span>
+            <span class="k">override</span> <span class="k">fun</span> <span class="nf">onQueryTextChange</span><span class="p">(</span><span class="nv">newText</span><span class="p">:</span> <span class="nc">String</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+                <span class="n">subscriber</span><span class="p">.</span><span class="n">onNext</span><span class="p">(</span><span class="n">newText</span><span class="o">!!</span><span class="p">)</span>
+                <span class="k">return</span> <span class="k">false</span>
+            <span class="p">}</span>
+
+            <span class="k">override</span> <span class="k">fun</span> <span class="nf">onQueryTextSubmit</span><span class="p">(</span><span class="nv">query</span><span class="p">:</span> <span class="nc">String</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+                <span class="n">subscriber</span><span class="p">.</span><span class="n">onNext</span><span class="p">(</span><span class="n">query</span><span class="o">!!</span><span class="p">)</span>
+                <span class="k">return</span> <span class="k">false</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">text</span><span class="p">.</span><span class="n">toLowerCase</span><span class="p">().</span><span class="n">trim</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">.</span><span class="n">debounce</span><span class="p">(</span><span class="m">250</span><span class="p">,</span> <span class="n">TimeUnit</span><span class="p">.</span><span class="n">MILLISECONDS</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">distinct</span><span class="p">()</span>
+    <span class="p">.</span><span class="n">filter</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span> <span class="n">text</span><span class="p">.</span><span class="n">isNotBlank</span><span class="p">()</span> <span class="p">}</span>
+    <span class="p">.</span><span class="n">subscribe</span> <span class="p">{</span> <span class="n">text</span> <span class="p">-&gt;</span>
+        <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"subscriber: $text"</span><span class="p">)</span>
+    <span class="p">}</span></code></pre></figure>
+
+<p>I can now replace the log message with a call to my viewModel to initiate the API call. That’s a subject for another blog post, however.</p>
+
+<p>With this simple technique of wrapping your text controls in an observable and using RxJava, you can reduce the number of API calls you make for doing backend operations and improve the responsiveness of your app. This is just scratching the surface of the RxJava world, so I’ll leave you with some additional reading:</p>
+
+<ul>
+  <li><a href="http://blog.danlew.net/2014/09/15/grokking-rxjava-part-1/">Grokking RxJava</a> by Dan Lew. (this is the site that got me pointed in the right direction)</li>
+  <li>The <a href="http://reactivex.io/">ReactiveX website</a>. (I refer to this one often when constructing pipelines)</li>
+</ul>
+
+<p>There are also additional libraries for Android and data binding with Kotlin available. I’ll cover those another time.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

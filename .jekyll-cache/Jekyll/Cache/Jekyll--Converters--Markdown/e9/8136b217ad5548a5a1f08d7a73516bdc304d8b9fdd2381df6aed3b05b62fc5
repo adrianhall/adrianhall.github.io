@@ -1,0 +1,630 @@
+I"�<p>I’m in the middle of building a GraphQL API for a restaurant review app that I’m building. Thus far, I’ve produced the schema and built the backend. However, the two don’t know how to talk to one another. Specifically, how does the GraphQL insert a new location into DynamoDB, or do a geospatial search across ElasticSearch? This is the job of the resolvers - turn a GraphQL query into something that the back end data plane can understand.</p>
+
+<p>There are several concepts to understand along the way, so I will attempt to introduce each one in isolation. First, however, I need to get the basic configuration added to my Serverless configuration. I’m using the <a href="https://github.com/sid88in/serverless-appsync-plugin">serverless-appsync-plugin</a> to the Serverless Framework for this. Here are the basics:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">custom</span><span class="pi">:</span>
+  <span class="c1"># AWS AppSync GraphQL configuration</span>
+  <span class="na">appSync</span><span class="pi">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">${self:custom.api}</span>
+    <span class="na">authenticationType</span><span class="pi">:</span> <span class="s">AWS_IAM</span>
+    <span class="na">logConfig</span><span class="pi">:</span>
+      <span class="na">loggingRoleArn</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">AppSyncLoggingServiceRole</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]}</span>
+      <span class="na">level</span><span class="pi">:</span> <span class="s">ALL</span>
+    <span class="na">schema</span><span class="pi">:</span> <span class="s">./schema.graphql</span>
+    <span class="na">dataSources</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">AMAZON_DYNAMODB</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">DynamoDB</span>
+        <span class="na">config</span><span class="pi">:</span>
+          <span class="na">tableName</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Ref</span><span class="pi">:</span> <span class="nv">DynamoDBTable</span> <span class="pi">}</span>
+          <span class="na">iamRoleStatements</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Action</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">dynamodb:PutItem"</span>
+              <span class="na">Resource</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">DynamoDBTable</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]}</span>
+                <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">Join</span><span class="pi">:</span> <span class="pi">[</span> <span class="s2">"</span><span class="s">/"</span><span class="pi">,</span> <span class="pi">[{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">DynamoDBTable</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]},</span> <span class="s2">"</span><span class="s">*"</span> <span class="pi">]]}</span>
+      <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">AMAZON_ELASTICSEARCH</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">ElasticSearch</span>
+        <span class="na">config</span><span class="pi">:</span>
+          <span class="na">endpoint</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">Join</span><span class="pi">:</span> <span class="pi">[</span> <span class="s2">"</span><span class="s">"</span><span class="pi">,</span> <span class="pi">[</span> <span class="s2">"</span><span class="s">https://"</span><span class="pi">,</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">ElasticSearchDomain</span><span class="pi">,</span> <span class="nv">DomainEndpoint</span> <span class="pi">]}</span> <span class="pi">]]}</span>
+          <span class="na">iamRoleStatements</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Action</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">es:ESHttpGet"</span>
+              <span class="na">Resource</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">ElasticSearchDomain</span><span class="pi">,</span> <span class="nv">DomainArn</span> <span class="pi">]}</span>
+    <span class="na">mappingTemplates</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Mutation</span>
+        <span class="na">field</span><span class="pi">:</span> <span class="s">addLocation</span>
+        <span class="na">dataSource</span><span class="pi">:</span> <span class="s">DynamoDB</span>
+        <span class="na">request</span><span class="pi">:</span> <span class="s">Mutation-addLocation-request.vtl</span>
+        <span class="na">response</span><span class="pi">:</span> <span class="s">Mutation-addLocation-response.vtl</span>
+</code></pre></div></div>
+
+<p>This has defined the two data sources I am going to use (DynamoDB and ElasticSearch Service) and my first resolver mapping template for the <code class="highlighter-rouge">addLocation()</code> mutation.</p>
+
+<p>In addition to this, I need to add specific permissions to the <code class="highlighter-rouge">UnauthRole</code> and <code class="highlighter-rouge">AuthRole</code> to determine what operations can be performed. For instance, I added the following to the <code class="highlighter-rouge">AuthRole</code> to allow any authenticated user to perform any GraphQL operation:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">AuthRole</span><span class="pi">:</span>
+  <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::IAM::Role</span>
+  <span class="na">Properties</span><span class="pi">:</span>
+    <span class="na">RoleName</span><span class="pi">:</span> <span class="s">${self:custom.api}-auth</span>
+    <span class="na">AssumeRolePolicyDocument</span><span class="pi">:</span>
+      <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+      <span class="na">Statement</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+          <span class="na">Principal</span><span class="pi">:</span>
+            <span class="na">Federated</span><span class="pi">:</span> <span class="s">cognito-identity.amazonaws.com</span>
+          <span class="na">Action</span><span class="pi">:</span> <span class="s">sts:AssumeRoleWithWebIdentity</span>
+          <span class="na">Condition</span><span class="pi">:</span>
+            <span class="s">ForAnyValue:StringLike:</span>
+              <span class="s">"cognito-identity.amazon.com:amr": "authenticated"</span>
+    <span class="na">Policies</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">AllowAuthenticatedAppSyncAccess</span>
+        <span class="na">PolicyDocument</span><span class="pi">:</span>
+          <span class="na">Version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">2012-10-17"</span>
+          <span class="na">Statement</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="na">Action</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="s2">"</span><span class="s">appsync:GraphQL"</span>
+              <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+              <span class="na">Resource</span><span class="pi">:</span>
+                <span class="pi">-</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">Join</span><span class="pi">:</span> <span class="pi">[</span> <span class="s2">"</span><span class="s">/"</span><span class="pi">,</span> <span class="pi">[</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">GraphQLApi</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]},</span> <span class="s2">"</span><span class="s">*"</span> <span class="pi">]]}</span>
+</code></pre></div></div>
+
+<p>You can restrict the operations that can be performed by adding specific resources to each role.</p>
+
+<h2 id="adding-a-location">Adding a Location</h2>
+
+<p>Let’s start with the most basic of the operations - adding a location. The information provided in the mutation is as follows:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">input</span><span class="w"> </span><span class="n">LocationInput</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+  </span><span class="n">gps</span><span class="p">:</span><span class="w"> </span><span class="n">GPSInput</span><span class="w">
+  </span><span class="n">address</span><span class="p">:</span><span class="w"> </span><span class="n">AddressInput</span><span class="w">
+  </span><span class="n">phone</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">email</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>A resolver mapping consists of a request and response mapping template. The request mapping template will turn the query or mutation arguments (plus other information contained in the context, such as the identity of the user) into the form that the resolver actually needs. In the case of the DynamoDB resolver, it needs a JSON object. The request object for a DynamoDB <code class="highlighter-rouge">PutItem</code> operation is <a href="https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_PutItem.html">documented well</a>. Here is my request mapping template:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$util.qr($context.args.location.put("owner", $context.identity.username))
+$util.qr($context.args.location.put("lastUpdated", $util.time.nowISO8601()))
+{
+    "version": "2017-02-28",
+    "operation": "PutItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson($util.autoId()),
+        "typeName": $util.dynamodb.toDynamoDBJson("LOCATION")
+    },
+    "attributeValues": $util.dynamodb.toMapValuesJson($context.args.location)
+}
+</code></pre></div></div>
+
+<p>Note how I name my templates - this allows me to quickly locate them. Mapping templates for AWS AppSync are written in Velocity Template Language (or VTL).</p>
+
+<p>The response template just turns the result back into an object so it can be returned as JSON:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$util.toJson($context.result)
+</code></pre></div></div>
+
+<p>I name this one <code class="highlighter-rouge">common-response.vtl</code> since it is generally used a lot in response templates.</p>
+
+<p>Let’s switch back to the request template for a little bit. There are some things I want to point out:</p>
+
+<ol>
+  <li>DynamoDB has a specific way of representing data values. A data value includes both a type and a value. For example, a string is written like this: <code class="highlighter-rouge">{ "S": "LOCATION" }</code> To handle this, there is a utility helper called <code class="highlighter-rouge">toDynamoDBJson()</code> that converts to this formation for you. You should always use this and the companion functions (like <code class="highlighter-rouge">toMapValuesJson()</code> for maps).</li>
+  <li>I’m using <code class="highlighter-rouge">autoId()</code> to generate an ID since I’m only adding a location. You will note that I don’t have an <code class="highlighter-rouge">updateLocation</code>. It’s relatively easy to handle but you have some more authorization to do (mostly ensuring that only the owner can update the record).</li>
+  <li>I added two fields to the map that is stored in DynamoDB. The first is the current time (in an easily parse-able form), and the second is the identity of the user. I’m using <code class="highlighter-rouge">username</code> here, but you could use other fields (for example, the ARN of the user). For more information, check out <a href="https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference.html#aws-appsync-resolver-context-reference-identity">the documentation</a>.</li>
+  <li>The AWS AppSync console has lots of standard templates that you can copy as a baseline for your own adjustments. In addition, you can check out the request and response mappings provided as part of the Amplify CLI for various operations by deploying a test API with model transforms.</li>
+</ol>
+
+<p>It’s important to test your API as you go along. When testing this API, I do it in the following way:</p>
+
+<ol>
+  <li>Log onto the <a href="https://console.aws.amazon.com/appsync/home">AWS AppSync console</a>.</li>
+  <li>Select your API, then the <strong>Queries</strong> tab.</li>
+  <li>Create a template query, add a query variable, and then run the query.</li>
+  <li>Validate the output is as expected.</li>
+  <li>Go to the DynamoDB console and validate the data is correct in the table.</li>
+  <li>Go to the Kibana console and validate the data is correct in the ES domain.</li>
+</ol>
+
+<p>For me, the template query looks like this:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">mutation</span><span class="w"> </span><span class="n">AddLocation</span><span class="p">(</span><span class="nv">$input</span><span class="p">:</span><span class="w"> </span><span class="n">LocationInput</span><span class="p">!)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">addLocation</span><span class="p">(</span><span class="n">location</span><span class="p">:</span><span class="w"> </span><span class="nv">$input</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">id</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>And the query variables looks like this:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"input"</span><span class="p">:{</span><span class="w">
+    </span><span class="nl">"name"</span><span class="p">:</span><span class="s2">"The Sphere"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"gps"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"longitude"</span><span class="p">:</span><span class="mf">-122.3340779</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"latitude"</span><span class="p">:</span><span class="mf">47.6147408</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"address"</span><span class="p">:{</span><span class="w">
+      </span><span class="nl">"street"</span><span class="p">:</span><span class="s2">"2101 7th Ave"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"city"</span><span class="p">:</span><span class="s2">"Seattle"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"state"</span><span class="p">:</span><span class="s2">"WA"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"zipcode"</span><span class="p">:</span><span class="s2">"98101"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Hit run and you should get something akin to this:</p>
+
+<p><img src="/assets/images/2018-12-06-picture1.png" alt="" /></p>
+
+<p>The ID will change in your situation since it is generated by the system. This result indicates that something worked. When I look at the record within DynamoDB, I get the following:</p>
+
+<p><img src="/assets/images/2018-12-06-picture2.png" alt="" /></p>
+
+<p>Checking the data within ElasticSearch reveals a similar story - the data got everywhere it should have gotten.</p>
+
+<p>You can do the same thing for adding a review. The request mapping template will change, but the concepts are the same.</p>
+
+<h2 id="marking-a-location-as-favorite">Marking a Location as Favorite</h2>
+
+<p>Let’s consider the case of marking a location as a favorite. We give the mutation a location ID and then get the new location back. There are a couple of ways we can do this, but I want to perhaps have a list of favorites, so I’m going to have to store this as a separate data type. That means I have to do two operations - one to store the favorite and another to return the location.</p>
+
+<p>This is great opportunity to use one of the new features of AWS AppSync: Pipeline Resolvers. With a pipeline resolver, you define a number of <em>functions</em>, each one of which does one operation. In this case, I will have two operations - one for storing the data and then a second one for retrieving the resulting location.</p>
+
+<p>Building pipeline resolvers is a multi-step process. I do this in the console prior to transferring the resolvers to the <code class="highlighter-rouge">serverless.yml</code> file. Let’s first consider what we are going to do.</p>
+
+<ul>
+  <li>Obtain the location specified within the <code class="highlighter-rouge">locationId</code> field using a DynamoDB <code class="highlighter-rouge">GetItem</code> operation.</li>
+  <li>If the location exists, then use <code class="highlighter-rouge">PutItem</code> to store a FAVORITE record within the DynamoDB table.</li>
+</ul>
+
+<p>We need to do it this way round because we don’t know that the location exists until we do the <code class="highlighter-rouge">GetItem</code> to retrieve it. Each operation will map to a specific function which is then converted into a pipeline. Whatever is returned by the response mapping template from one function will become <code class="highlighter-rouge">$context.prev.result</code> in the next step of the pipeline. The identity, source, arguments, and other parts of the context are passed through the pipeline intact.</p>
+
+<p>To create this pipeline:</p>
+
+<ol>
+  <li>Open the AWS AppSync console and select the API.</li>
+  <li>Select <strong>Schema</strong>.</li>
+  <li>Find the <em>markFavorite</em> mutation, then click <strong>Attach</strong>.</li>
+  <li>Click <strong>Convert to pipeline resolver</strong>.</li>
+  <li>Click <strong>Save resolver</strong>.</li>
+</ol>
+
+<p>This will give you a request mapping and a response mapping for the overall resolver, plus an option to add functions. I want to store the <code class="highlighter-rouge">locationId</code> and the owner within a “stash” for the request. My request mapping looks like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$util.qr($context.stash.put("locationId", $context.args.locationId))
+$util.qr($context.stash.put("owner", $context.identity.username))
+{}
+</code></pre></div></div>
+
+<p>I could also put these inside the JSON object that the request mapping template is returning - this becomes the <code class="highlighter-rouge">$context.prev.result</code> for the first function in the list. It really depends if you want the data element to be available throughout the resolver or just to the first function. Anything you place in <code class="highlighter-rouge">$context.stash</code> is available from that point on through the life of the GraphQL request.</p>
+
+<p><img src="/assets/images/2018-12-06-picture3.jpg" alt="" /></p>
+
+<p>The response mapping is the same as the <code class="highlighter-rouge">common-response.vtl</code> file I am already using and this is fine!</p>
+
+<p>Let’s continue by creating a function:</p>
+
+<ol>
+  <li>Click on <strong>Functions</strong> in the side bar.</li>
+  <li>Click <strong>Create function</strong>.</li>
+  <li>Select <strong>DynamoDB</strong> as the data source name and give the function a name (for example: <code class="highlighter-rouge">getLocation</code>)</li>
+  <li>Fill in the request and response mapping (see below)</li>
+  <li>Click <strong>Create function</strong>.</li>
+</ol>
+
+<p>For the <code class="highlighter-rouge">getLocation</code> function, I’m using the following as the request mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+    "operation": "GetItem",
+    "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.stash.get("locationId")),
+        "typeName": $util.dynamodb.toDynamoDBJson("LOCATION")
+    }
+}
+</code></pre></div></div>
+
+<p>Don’t forget to allow AWS AppSync to execute the <code class="highlighter-rouge">dynamodb:GetItem</code> action on the DynamoDB table in IAM. The response mapping is interesting:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Raise a GraphQL field error in case of a datasource invocation error
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+## Pass back the result from DynamoDB. **
+$util.toJson($ctx.result)
+</code></pre></div></div>
+
+<p>Normally, we would just use <code class="highlighter-rouge">$util.toJson()</code> to return the results. However, we must now deal with errors, so this also returns the error, which will abort the path. </p>
+
+<p>You can now return to the resolver and add the function you just created. Don’t forget to save the resolver at the end.</p>
+
+<p>The resolver is currently equivalent to a <code class="highlighter-rouge">getLocation</code> operation. As such, we can actually execute it within the Queries window to see what is happening:</p>
+
+<p><img src="/assets/images/2018-12-06-picture4.png" alt="" /></p>
+
+<p>In this case, I executed the <em>MarkFavorite</em> query and got back the results of the first function. My next function will be called <code class="highlighter-rouge">storeFavorite</code>, and will take the result of the prior function, store the favorite marker, and then return the result of the prior function. This also uses the DynamoDB data source, with the following request mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#set($id = $ctx.stash.get("locationId")+"-"+$context.stash.get("owner"))
+{
+  "operation": "PutItem",
+  "key": {
+    "id": $util.dynamodb.toDynamoDBJson($id),
+    "typeName": $util.dynamodb.toDynamoDBJson("FAVORITE")
+  },
+  "attributeValues": {
+    "owner": $util.dynamodb.toDynamoDBJson($context.stash.get("owner")),
+    "locationId": $util.dynamodb.toDynamoDBJson($context.stash.get("locationId"))
+  }
+}
+</code></pre></div></div>
+
+<p>Note that I am constructing the ID in this case. This allows the <code class="highlighter-rouge">PutItem</code> operation to update the record if needed so that I will only ever have one favorite for a given location/owner combination. The response mapping template becomes a little more interesting:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Raise a GraphQL field error in case of a datasource invocation error
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+## Pass back the result from DynamoDB. **
+$util.toJson($context.prev.result)
+</code></pre></div></div>
+
+<p>The $context.prev.result is the result from the previous function (i.e. the location that is being favorited) in the pipeline. Again, we have to deal with error handling to abort early.</p>
+
+<p>If you run the same <code class="highlighter-rouge">MarkFavorite</code> query now, you will get a side effect - a record will be inserted into the DynamoDB table with the appropriate <code class="highlighter-rouge">owner</code> and <code class="highlighter-rouge">locationId</code>.</p>
+
+<p>I can now transfer this into the <code class="highlighter-rouge">custom:appSync</code> of my <code class="highlighter-rouge">serverless.yml</code> file:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">mappingTemplates</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">Mutation</span>
+    <span class="na">field</span><span class="pi">:</span> <span class="s">markFavorite</span>
+    <span class="na">request</span><span class="pi">:</span> <span class="s">Mutation-markFavorite-request.vtl</span>
+    <span class="na">response</span><span class="pi">:</span> <span class="s">common-response.vtl</span>
+    <span class="na">kind</span><span class="pi">:</span> <span class="s">PIPELINE</span>
+    <span class="na">functions</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">getLocation</span>
+      <span class="pi">-</span> <span class="s">storeFavorite</span>
+<span class="na">functionConfigurations</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">dataSource</span><span class="pi">:</span> <span class="s">DynamoDB</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">getLocation</span>
+    <span class="na">request</span><span class="pi">:</span> <span class="s">Function-getLocation-request.vtl</span>
+    <span class="na">response</span><span class="pi">:</span> <span class="s">Function-getLocation-response.vtl</span>
+  <span class="pi">-</span> <span class="na">dataSource</span><span class="pi">:</span> <span class="s">DynamoDB</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">storeFavorite</span>
+    <span class="na">request</span><span class="pi">:</span> <span class="s">Function-storeFavorite-request.vtl</span>
+    <span class="na">response</span><span class="pi">:</span> <span class="s">Function-storeFavorite-response.vtl</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>Note that you will need to use v1.0.9 or later of the serverless-appsync-plugin to support pipeline resolvers. </p>
+</blockquote>
+
+<p>At this point, all the mutations I envisioned within the schema are done, so it’s time to move to the queries.</p>
+
+<h2 id="the-me-query">The “me” query</h2>
+
+<p>The first query that I needed to consider was the “me” query. The idea of this query is to have the ability to return “my data” - from the locations I have entered to the list of my reviews. However, the basic query is simple:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">locations</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+  </span><span class="n">reviews</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">ReviewPagingConnection</span><span class="w">
+  </span><span class="n">favorites</span><span class="p">(</span><span class="n">paging</span><span class="p">:</span><span class="w"> </span><span class="n">PagingRequest</span><span class="p">):</span><span class="w"> </span><span class="n">LocationPagingConnection</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="k">type</span><span class="w"> </span><span class="n">Query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">me</span><span class="p">:</span><span class="w"> </span><span class="n">User</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Let’s leave the locations, reviews, and favorites for now, and look at the <code class="highlighter-rouge">id</code> and <code class="highlighter-rouge">name</code> fields. The user ID is already configured within the system - we use it in the <code class="highlighter-rouge">storeFavorite</code> query as <code class="highlighter-rouge">$context.identity.username</code>. However, the name must come from somewhere. If we were using the Amazon Cognito user pools, we would be able to use a null resolver and pull the name from the Amazon Cognito claims that are stored within <code class="highlighter-rouge">$context.identity</code>. However, we are using IAM for authentication.</p>
+
+<p>Another mechanism is to use a record within DynamoDB (with a <code class="highlighter-rouge">typeName</code> of USER and an <code class="highlighter-rouge">id</code> equal to the username) to store additional metadata about the user. There is a <code class="highlighter-rouge">GetItem</code> operation on DyanmoDB, so I can just execute that with the appropriate record as it may return an error. If I use the <code class="highlighter-rouge">2018–05–29</code> template version for the request, then <code class="highlighter-rouge">$context.result</code> will be null if the record does not exist. Using an earlier version within the DynamoDB request will return an error instead, which is undesirable in this case. I can use this change in the response mapping to decide what to return - some default data or the data from the DynamoDB table.</p>
+
+<p>Here is my request mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "version": "2018-05-29",
+  "operation": "GetItem",
+  "key": {
+    "id": $util.dynamodb.toDynamoDBJson($ctx.identity.username),
+    "typeName": $util.dynamodb.toDynamoDBJson("USER")
+  }
+}
+</code></pre></div></div>
+
+<p>And here is my response mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#if($util.isNull($context.result))
+  #set($result = {})
+  $util.qr($result.put("id", $context.identity.username))
+  #return($result)
+#end
+$util.toJson($context.result)
+</code></pre></div></div>
+
+<p>I am using velocity template language (VTL) and an if clause to decide what to return. I should really add another mutation to my schema to allow the client to update the name as well. The <code class="highlighter-rouge">#return()</code> statement allows me to “break out” of the response mapping template early.</p>
+
+<blockquote>
+  <p>You can also use <code class="highlighter-rouge">#return()</code> to break out of request mapping templates early. This allows you to return unauthorized results without executing a DynamoDB query, for example. For more information, check out <a href="https://docs-aws.amazon.com/appsync/latest/devguide/resolver-util-reference.html#aws-appsync-directives">the directives section of the AWS AppSync documentation</a>.</p>
+</blockquote>
+
+<h2 id="performing-subqueries">Performing subqueries</h2>
+
+<p>The <code class="highlighter-rouge">me</code> query I introduced above deals with the user meta-data. However, it does not deal with locations, reviews, or favorites. For example, let’s say I want to return “my” locations:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="n">Me</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">me</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">id</span><span class="w">
+    </span><span class="n">locations</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The “locations” field here is a sub-query. It relies on the context of the outer query to fulfill the request. This is available through the $context.source variable within the mapping templates.</p>
+
+<p>I can fulfill this request in one of two ways:</p>
+
+<ul>
+  <li>I can use a DynamoDB Query to return pages of information. Query is a good thing, but Scan is less efficient, so if you end up doing a Scan, you may want to use the ElasticSearch query capability instead.</li>
+  <li>I can use an ElasticSearch operation to return pages of information. This option has several additional search characteristics as well as just paging.</li>
+</ul>
+
+<p>DynamoDB has a one or two-value primary key. I’m using a two-value primary key, composed of the <em>typeName</em> and <em>id</em> columns. The <em>typeName</em> is the partition (or HASH) key, and the <em>id</em> is the sort (or RANGE) key.  In addition, I can further filter the results using a filter. Learning the nuances of DynamoDB queries and scans allows you to construct highly scaleable searches.</p>
+
+<p>ElasticSearch can do these queries with ease because of the way that data is indexed within ElasticSearch domains. I can also test the queries easily using the Kibana console, which makes it very easy to use ElasticSearch for all queries.</p>
+
+<p>For this specific search, both options are viable. If I were to introduce geospatial search characteristics (as an example), then I would definitely want to use the ElasticSearch option. In this case, I’m going to use a DynamoDB query with the following request mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "version" : "2018-05-29",
+  "operation" : "Query",
+  "query" : {
+    "expression": "typeName = :typeName",
+    "expressionValues" : {
+      ":typeName" : $util.dynamodb.toDynamoDBJson("LOCATION"),
+    }
+  },
+  "filter": {
+    "expression": "#owner = :owner",
+    "expressionNames": {
+      "#owner": "owner"
+    },
+    "expressionValues": {
+      ":owner": $util.dynamodb.toDynamoDBJson($context.identity.username)
+    }
+  },
+  "limit": $util.defaultIfNull(${ctx.args.limit}, 20),
+  "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+}
+</code></pre></div></div>
+
+<p>I’m using the “default” paginated list response mapping template. I can use a very similar query for the reviews as well. When placing this response mapping template into the <code class="highlighter-rouge">serverless.yml</code> file, I use a common filename (just like the single response version).</p>
+
+<p>One of the things I do to reduce API development time is to look for commonality between resolvers (such as the reviews and locations fields). This allows me to spend the time creating the query for one of them and then rapidly duplicate the work for the other similar fields.</p>
+
+<h2 id="the-favorites-query">The favorites query</h2>
+
+<p>The other query I have not covered within the <code class="highlighter-rouge">User</code> record is the <code class="highlighter-rouge">favorites</code> query. If you will remember, we are storing a favorite marker - basically a <code class="highlighter-rouge">locationId</code> and an owner - in the same table as everything else. However, the <code class="highlighter-rouge">favorites</code> query returns a paged <code class="highlighter-rouge">Location</code> response. The data from the <code class="highlighter-rouge">favorites</code> list in DynamoDB does not include this information, so we have to go and grab it as a secondary lookup. This is a good example of needing a pipeline resolver.</p>
+
+<p>In this case, we will have two functions. The first (named <code class="highlighter-rouge">getFavorites</code>) will do a paged list of the favorites for a particular user, in much the same way as the <code class="highlighter-rouge">locations</code> and <code class="highlighter-rouge">reviews</code> resolvers that we looked at previously. However, we will then pass that into a second resolver (named <code class="highlighter-rouge">getLocationForList</code>) that will do a second query on the locations for a list of items. Here is the request mapping template for the <code class="highlighter-rouge">getFavorites</code> function:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "version": "2018-05-29",
+  "operation" : "Query",
+  "query" : {
+    "expression": "typeName = :typeName",
+    "expressionValues" : {
+      ":typeName" : $util.dynamodb.toDynamoDBJson("FAVORITE")
+    }
+  },
+  "filter": {
+    "expression": "#owner = :owner",
+    "expressionNames": {
+      "#owner": "owner"
+    },
+    "expressionValues": {
+      ":owner": $util.dynamodb.toDynamoDBJson($context.identity.username)
+    }
+  },
+  "limit": $util.defaultIfNull(${ctx.prev.result.limit}, 20),
+  "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.prev.result.nextToken, null))
+}
+</code></pre></div></div>
+
+<p>However, the magic happens in the response mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#if($ctx.error)
+  $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+#set($idList = [])
+#foreach($item in $context.result.items)
+  $util.qr($idList.add($item.locationId))
+#end
+#set($result = {})
+$util.qr($result.put("ids", $idList))
+$util.qr($result.put("nextToken", $ctx.result.nextToken))
+$util.toJson($result)
+</code></pre></div></div>
+
+<p>Assuming there is not an error, this loops through the results, pulls out the <code class="highlighter-rouge">locationId</code> from the item, and stores it in the <code class="highlighter-rouge">$idList</code>. This is then returned as a list of ids:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"ids"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"a588408b-d02d-4cbc-819b-72c33c55d1c0"</span><span class="w"> </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"nextToken"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If you have logs turned on, you will be able to see this even though the eventual query will fail because it is not returning the right shape. To get the records of those IDs, I can use a DynamoDB <code class="highlighter-rouge">BatchGetItem</code> request, but I have to construct the keys properly. Unfortunately, I have to specify a table name within the request, which means I will normally have to construct a separate pair of resolver mapping templates for each environment (dev vs. prod). Here is my request mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#set($keys = [])
+#foreach($id in ${ctx.prev.result.ids})
+  #set($key = {})
+  $util.qr($key.put("typeName", $util.dynamodb.toString("LOCATION")))
+  $util.qr($key.put("id", $util.dynamodb.toString($id)))
+  $util.qr($keys.add($key))
+#end
+
+{
+  "version": "2018-05-29",
+  "operation" : "BatchGetItem",
+  "tables" : {
+    "devRestaurantReviews": {
+      "keys": $util.toJson($keys),
+    }
+  }
+}
+</code></pre></div></div>
+
+<p>And here is the response mapping template:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Raise a GraphQL field error in case of a datasource invocation error
+#if($ctx.error)
+    $util.error($ctx.error.message, $ctx.error.type)
+#end
+
+#set($result = {})
+$util.qr($result.put("nextToken",$ctx.prev.result.nextToken))
+$util.qr($result.put("items", $ctx.result.data.devRestaurantReviews))
+$util.toJson($result)
+</code></pre></div></div>
+
+<p>Note that I use the paging response from the first function in the response from the second function to ensure that paging works as expected. In addition, the results from the <code class="highlighter-rouge">BatchGetItem</code> operation are stored in <code class="highlighter-rouge">$ctx.result.data.tableName</code> — so I have to alter the response here for the table as well.</p>
+
+<h2 id="the-reviews-for-a-location-query">The Reviews for a location query</h2>
+
+<p>Let’s move our attention to the <code class="highlighter-rouge">Location</code> type. There are three fields that need our attention here:</p>
+
+<ul>
+  <li>favoriteCount</li>
+  <li>averageRating</li>
+  <li>reviews</li>
+</ul>
+
+<p>Each field will need a special query. However, the one I am going to concentrate on here is the <code class="highlighter-rouge">reviews</code> query. What happens when I execute the following query:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="n">Me</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">me</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">id</span><span class="w">
+    </span><span class="n">favorites</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">items</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">id</span><span class="w">
+        </span><span class="n">reviews</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">items</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="n">nextToken</span><span class="w"> </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+      </span><span class="n">nextToken</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>I want to include the reviews for a specific location within the response. I’ve already covered how to do a sub-query, but I casually mentioned the <code class="highlighter-rouge">$context.source</code> field that is available within the resolver mapping templates. In this case, I’m going to need that.</p>
+
+<p>When I do this query, here is what happens:</p>
+
+<ol>
+  <li><code class="highlighter-rouge">/Query/me</code> is executed and returns results Q1.</li>
+  <li><code class="highlighter-rouge">/Query/me/favorites</code> is executed with <code class="highlighter-rouge">$context.source</code> set to Q1, returning result Q2.</li>
+  <li><code class="highlighter-rouge">/Location/reviews</code> is executed with <code class="highlighter-rouge">$context.source</code> set to Q2.items[0].</li>
+  <li>#3 is repeated, cycling through each item in the <code class="highlighter-rouge">items</code> list.</li>
+</ol>
+
+<p>This can result in a long query time as many queries are being done recursively. You should ensure that your clients do not do this sort of query. Rather, return the IDs of the locations, then retrieve the reviews for just that location. This (I have realized) will require a <code class="highlighter-rouge">getLocation(locationId)</code> query which executes a <code class="highlighter-rouge">GetItem</code> within DynamoDB.</p>
+
+<blockquote>
+  <p>It’s normal to tweak the schema as you go along. Just make sure your changes are additive, not replacing functionality (and hence removing previous functionality).</p>
+</blockquote>
+
+<p>Here is the request mapping template for the <code class="highlighter-rouge">/Location/reviews</code> resolver:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "version" : "2017-02-28",
+  "operation" : "Query",
+  "query" : {
+    "expression": "#typeName = :typeName",
+    "expressionNames": {
+      "#typeName": "typeName"
+    },
+    "expressionValues" : {
+      ":typeName" : $util.dynamodb.toDynamoDBJson("REVIEW")
+    }
+  },
+  "filter": {
+    "expression": "#location = :location",
+      "expressionNames": {
+        "#location": "locationId"
+      },
+      "expressionValues": {
+        ":location": $util.dynamodb.toDynamoDBJson($context.source.id)
+   }
+  },
+  "limit": $util.defaultIfNull(${ctx.args.limit}, 20),
+  "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+}
+</code></pre></div></div>
+
+<p>The parent (the <code class="highlighter-rouge">Location</code>) has an <code class="highlighter-rouge">id</code> field. However, the review stores this in the <code class="highlighter-rouge">locationId</code> field. So <code class="highlighter-rouge">$context.source.id</code> will be the id of the location that we want to grab reviews for.</p>
+
+<h2 id="field-resolvers-for-aggregations">Field resolvers for aggregations</h2>
+
+<p>The other two fields within the <code class="highlighter-rouge">Location</code> type that need special attention warrant that attention because they are aggregations. The first — <code class="highlighter-rouge">favoriteCount</code> — requires us to count the number of favorite records in the dataset that have the required <code class="highlighter-rouge">locationId</code>, and the second — <code class="highlighter-rouge">averageRating</code> — requires that we search for review records and average the rating within them. Both of these can be done using the ElasticSearch API.</p>
+
+<p>Let’s start with the easier of the two — counting records. The basic form for this (which you can test within the Kibana console) is to do a <code class="highlighter-rouge">GET _count</code> with some criteria. For instance:</p>
+
+<p><img src="/assets/images/2018-12-06-picture5.png" alt="" /></p>
+
+<p>We can turn this into an ElasticSearch resolver with a pair of mapping templates. Here is the request mapping:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "version":"2017-02-28",
+  "operation":"GET",
+  "path":"/_count",
+  "params":{
+    "body": {
+      "query": {
+        "bool": {
+          "must": [
+            { "match": { "typeName": "FAVORITE" } },
+            { "match": { "locationId": "$context.source.id" } }
+          ]
+        }
+      }
+    }
+  }
+}
+</code></pre></div></div>
+
+<p>I cut and paste the query from Kibana into the <code class="highlighter-rouge">body</code> section of the request mapping template, then inserted the variables I wanted. The response mapping template is just one line:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$util.toJson($context.result.count)
+</code></pre></div></div>
+
+<p>Note that the expectation is that <code class="highlighter-rouge">favoriteCount</code> is a number, so our template is just returning the count as a number.  Most resolvers expect a JSON object, but that isn’t a consistent rule.  It depends on what is expected at the schema level.   I can do a similar thing for the average aggregation. In this case, I had to do some hunting for the appropriate syntax and then validate through Kibana:</p>
+
+<p><img src="/assets/images/2018-12-06-picture6.png" alt="" /></p>
+
+<p>This is then formulated into mapping templates in the same way as the count example.</p>
+
+<h2 id="next-steps">Next steps</h2>
+
+<p>There are still a whole bunch of resolvers that I need to configure so that my schema actually works. For example, each review has a user record and a location record that needs to be returned. These are each another query with another resolver. However, we’ve covered the basic design patterns that you need to use. Once that is done, I can move onto creating client applications for the API.</p>
+
+<p>I also need to deal with one more field, and it’s a complex one — the <code class="highlighter-rouge">findLocation</code> query. That will be the subject of my next blog.</p>
+
+<p>Before I leave, let me give you the resources that I have handy at all times when I am developing resolver mapping templates:</p>
+
+<ul>
+  <li>The <a href="https://docs.aws.amazon.com/appsync/latest/devguide/resolver-mapping-template-reference.html">AWS AppSync Resolver Reference</a></li>
+  <li>The <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html">DynamoDB Query / Filter Reference</a></li>
+  <li>The <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html">ElasticSearch Query DSL Reference</a></li>
+</ul>
+
+<p>I refer to these documents constantly, reaching out to Stack Overflow when needed since everyone has had the same issues as I have.</p>
+
+<p>You can see the work so far in <a href="https://github.com/adrianhall/restaurant-reviews/tree/p3">my GitHub repository</a>.</p>
+:ET

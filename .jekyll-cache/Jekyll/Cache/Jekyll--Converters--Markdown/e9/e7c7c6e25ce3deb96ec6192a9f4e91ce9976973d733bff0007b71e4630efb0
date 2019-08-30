@@ -1,0 +1,10 @@
+I"g<ul class="toc__menu">
+  <li><a href="#step-1-install-packages">Step 1: Install Packages</a></li>
+  <li><a href="#step-2-enable-decorators">Step 2: Enable Decorators</a></li>
+  <li><a href="#step-3-write-a-model">Step 3: Write a Model</a></li>
+  <li><a href="#step-4-write-a-store">Step 4: Write a Store</a></li>
+  <li><a href="#step-5-write-some-container-components">Step 5: Write some container components</a></li>
+  <li><a href="#step-6-wire-the-store-to-the-components-with-the-provider">Step 6: Wire the store to the components with the Provider</a></li>
+  <li><a href="#next-steps">Next Steps</a></li>
+</ul>
+:ET

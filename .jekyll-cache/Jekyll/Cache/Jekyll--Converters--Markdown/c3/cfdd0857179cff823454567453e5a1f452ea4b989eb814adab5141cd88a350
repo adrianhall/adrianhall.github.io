@@ -1,0 +1,2 @@
+I"P<p>I’m currently in the middle of building a restaurant review API driven by GraphQL. So far, I’ve <a href="/cloud/2018/11/15/restaurant-reviews/">looked at the needs of the front end and developed the schema</a>. Now, I need to take a look at the back end. I’m building the API within the AWS cloud. How do I store the data?</p>
+:ET

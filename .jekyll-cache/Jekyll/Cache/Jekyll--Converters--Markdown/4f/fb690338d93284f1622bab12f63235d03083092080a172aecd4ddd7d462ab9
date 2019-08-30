@@ -1,0 +1,89 @@
+I"�#<p>There has been a lot of discussion on GraphQL. In time, it may rank up there alongside REST as a defining protocol for client-server computing. It is at least trending that way right now. REST has got longevity going for it — years of top engineers thinking about the best ways to structure a REST-based API and thoughts on how to handle it. GraphQL hasn’t got the longevity. It does, however, have senior professional developers who constantly think about APIs and development in order to answer those questions on structure and best practices.</p>
+
+<p>I am not one of those developers.</p>
+
+<p>I do, however, know quite a few developers, so I decided to ask four of them to philosophize on the state of GraphQL, what was hard in learning GraphQL and how you can make it easier on yourself, and best practices for developing a GraphQL API.</p>
+
+<h2 id="two-non-graphql-engineers-thoughts">Two non-GraphQL engineers thoughts</h2>
+
+<p>Chandra Bommas is a Principal Engineer with the AWS Mobile SDK for iOS and Android teams, predominantly from an API development background. He is not a “GraphQL” person, but rather an API person. To him, GraphQL solves the two main problems associated with mobile API.</p>
+
+<p>Chandra has an overarching philosophy for API design. Take the work you need to do within the API; make it easy on the consumer of the data and do the work wherever you produce the data. As a technologist, this appeals to him.</p>
+
+<blockquote>
+  <p>Make it easy on the <strong>CONSUMER</strong> of the data, and do the work with the <strong>PRODUCER</strong> of the data. - <em>Chandra Bommas</em></p>
+</blockquote>
+
+<p>So, what are some of the problems when learning GraphQL? The language models information as a set of interconnected bubbles; when done, you see a graph. That graph does not care how the data is stored. “When I grab data from the graph, I can express what I need using constraints on the graph.” There was a chasm of knowledge to be crossed before Chandra could really understand GraphQL. The problem is conceptual. Don’t look at GraphQL as an alternate to an old API — POST and GET doesn’t map to mutations and queries. You need to throw out the old model and embrace the information graph.</p>
+
+<p>You should also not think about GraphQL as a database. While the concepts are similar on the surface, they soon break down. As a user of GraphQL (for example, inside a mobile app), you need to break free of the self-imposed shackles where you constrain your models based on how the data is stored, and work only with the information graph.</p>
+
+<blockquote>
+  <p>Leverage tools such as Hasura, AWS AppSync, or Prisma to get started fast. Then you can concentrate on your app. — <em>Nader Dabit</em></p>
+</blockquote>
+
+<p>As the host of React Native Radio and a Developer Advocate for AWS Amplify, <a href="https://twitter.com/dabit3">Nader Dabit</a> is well known in the React Native community as an educator, but his engineering credentials are solid as well. He is primarily a front end developer. For him, doing the backend database pieces and hooking the resolvers to databases was the most confusing part. “Of course, AWS AppSync now makes this effortless”, he remarked. He didn’t worry about the information graph as he found early on that it is self-documenting. He found leveraging tools like Hasura, AWS AppSync, or Prisma allows you to quickly get a functional GraphQL service off the ground and allows you to start playing with data in the front end app.</p>
+
+<p>One thing to concentrate on? When developing your client, pay particular attention to nullable types in the GraphQL schema. The main issue is to ensure that the server gets the right information to fulfill the request. Nullable types are the default in GraphQL, and that makes a good API versioning story, but it can easily lead to obscure problems if you are not careful.</p>
+
+<h2 id="two-graphql-engineers-thoughts">Two GraphQL engineers thoughts</h2>
+
+<blockquote>
+  <p>Look at an open API (like GitHub) with GraphIQL to get familiar with the GraphQL Language — <em>Michael Paris</em></p>
+</blockquote>
+
+<p><a href="https://twitter.com/mikeparisstuff">Michael Paris</a> started Scaphold prior to joining AWS on the AWS AppSync team and has been working with GraphQL services since Facebook open-sourced the technology in late 2015. His thoughts?</p>
+
+<p>One of the tools that made GraphQL popular is GraphiQL — a web-based GraphQL API explorer. The impact it has on being able to understand an API is amazing. Go look at an open API (like GitHub) with GraphiQL and get familiar with the language.</p>
+
+<p>Well-defined operations are important. Once you get into more complex scenarios, you have to decide between more focused operations vs. a general query. While general queries (such as <code class="highlighter-rouge">searchAllRestaurants</code>) with an expansive input type for arguments is tempting, more focused operations (such as <code class="highlighter-rouge">searchRestaurantsByName</code>) are easier to optimize. There is no namspacing in GraphQL, so use long unambiguous names for your operations and types.</p>
+
+<p>Really think how you will handle authorization. For larger organizations, push authorization to the service, but for smaller organizations, it’s ok for authorization to be placed in the GraphQL schema.</p>
+
+<p>Use the errors response properly and deal with a partial response. REST tends to either succeed or fail and can be handled using the HTTP response codes. With GraphQL, you may be authorized to access one part of the graph and not another, so errors and a partial result are quite possible.</p>
+
+<p>One thing Michael wished he had known or delved into earlier was NoSQL. If you are going to store data in NoSQL, then you have to think about how that impacts your service. It’s a shift in mindset on how to model data and how to query the NoSQL data within GraphQL resolvers.</p>
+
+<blockquote>
+  <p>Figure out not only the data model but also the access patterns. — <em>Michael Paris</em></p>
+</blockquote>
+
+<p>Finally, before you start coding, figure out not only the data model but also the access patterns. This will allow you to design an efficient schema for your service.</p>
+
+<p>As the principal engineer on AWS AppSync, <a href="https://twitter.com/appwiz">Rohan Deshpande</a> has seen and solved his share of developer issues. He likes looking at GraphiQL as a learning tool. He started his learning using <a href="https://howtographql.com">howtographql.com</a> — a site run by Prisma (so it’s a little biased) but still with excellent information. Going through the full tutorial allowed him to ramp up quickly. His major problem is learning was getting into native development and the Apollo client too quickly. The Apollo client has a lot of extra considerations that just aren’t important when you start learning about the technology. He got much more traction when he switched over to a web-based app for learning.</p>
+
+<blockquote>
+  <p>GraphQL is about only asking for what you need. It doesn’t matter if it’s a query, mutation, or subscription — never ask for more than you need. — <em>Rohan Deshpande</em></p>
+</blockquote>
+
+<p>Rohan sees a lot of customer issues that are generated because the developer didn’t consider the user experience. For example, developers don’t take advantage of batching. Rather than doing 5000 mutations, restructure your schema to provide the ability to submit batches of 25 items. Your user gets a more responsive app and you reduce the number of calls, which reduces the drain on the battery and the network requirements.</p>
+
+<blockquote>
+  <p>Don’t look at the API just from the perspective of an API call. Include the user experience in your API design — <em>Rohan Deshpande</em></p>
+</blockquote>
+
+<p>GraphQL is primarily a client-server (as opposed to server-server) API surface, so you should always include the impact on the user experience. It may be responsiveness, network utilization, or battery drain. There is almost always a user experience effect when you design such an API.</p>
+
+<h2 id="wrap-up">Wrap up</h2>
+
+<p>There are definitely some best practices:</p>
+
+<ul>
+  <li>Get to know GraphQL by looking at real services using GraphiQL.</li>
+  <li>Follow the experts and read the tutorials (but only the latest tutorials).</li>
+  <li>Spend time understanding the information graph</li>
+  <li>Simplify the backend setup using services and concentrate your learning on the front end.</li>
+  <li>Web/JavaScript apps have more tooling and simpler APIs than native apps, so start there first.</li>
+  <li>Ask questions — you will be surprised how many people are willing to help.</li>
+</ul>
+
+<p>There are also some well known worst practices:</p>
+
+<ul>
+  <li>Skip the older tutorials as they are likely to be out of date.</li>
+  <li>Don’t assume your knowledge of REST or other APIs is translatable to GraphQL.</li>
+  <li>Client libraries may help in the long term, but they can obscure complex interactions that you need to understand.</li>
+</ul>
+
+<p>Happy learning!</p>
+:ET

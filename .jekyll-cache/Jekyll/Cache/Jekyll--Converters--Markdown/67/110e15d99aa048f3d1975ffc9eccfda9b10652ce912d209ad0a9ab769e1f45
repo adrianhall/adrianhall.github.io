@@ -1,0 +1,245 @@
+I"{�<p>Thus far in our story, we’ve covered <a href="/android/tailwind%20photos/2019/08/17/tailwind-photos-2/">Facebook</a>, <a href="/android/tailwind%20photos/2019/08/19/tailwinds-photos-3/">Google</a>, and <a href="/android/tailwind%20photos/2019/08/21/tailwind-photos-4/">Microsoft</a> authentication.  There is one more to do - Twitter.  Unfortunately, Twitter doesn’t have a nice vendor-provided SDK to do the work.  In fact, Twitter is fairly hostile to app developers, so I decided to forego the Twitter login (sorry!).  Instead, I’m going to cover the changes I made to support silent login.</p>
+
+<p>Up until now, everything has been in “managers” - one for each authentication provider.  This has done all the work for each provider.  However, to support silent login, I need to provide two paths to the same information - one silently (during the time when the spinner is active) and one interactively (when the user clicks on a button).  The easiest way to use an observer pattern.  In an observer pattern, you establish a variable that can send events to observers when its value changes.</p>
+
+<p>Android comes with an observable as part of its <a href="https://developer.android.com/topic/libraries/architecture">Android Architecture Components</a> called <code class="highlighter-rouge">LiveData</code>.  This is one of a trio of components that make up the architecture components infrastructure.  The others are <code class="highlighter-rouge">Repository</code> and <code class="highlighter-rouge">ViewModel</code>.  Since my app is going to evolve extensively, I’m going to restructure my app around the architecture components.</p>
+
+<blockquote>
+  <p>Step 0: <strong>Integrate a dependency injection system</strong>.  There are multiple dependency injection systems available, and I’m not going to tell you which one to use.  The most popular is <a href="https://dagger.dev/">Dagger2</a> since it’s produced by Google.  I don’t like it, and prefer <a href="https://insert-koin.io/">Koin</a>.  Use whichever you like.</p>
+</blockquote>
+
+<p>Once you have your preferred dependency injection system selected, you will need to:</p>
+
+<ul>
+  <li>Create a repository interface</li>
+  <li>Create an implementation of the repository interface</li>
+  <li>Create a view model for your authenticator activity</li>
+  <li>Update the authenticator activity to use the new view model</li>
+</ul>
+
+<p>Let’s take each of these in turn:</p>
+
+<h2 id="create-a-repository-interface">Create a repository interface.</h2>
+
+<p>Here is mine:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="kd">interface</span> <span class="nc">IdentityRepository</span> <span class="p">{</span>
+	<span class="kd">val</span> <span class="py">authenticatedUser</span><span class="p">:</span> <span class="n">LiveData</span><span class="p">&lt;</span><span class="n">AuthenticatedUser</span><span class="p">?&gt;</span>
+	<span class="kd">val</span> <span class="py">error</span><span class="p">:</span> <span class="n">LiveData</span><span class="p">&lt;</span><span class="n">Exception</span><span class="p">?&gt;</span>
+
+	<span class="k">fun</span> <span class="nf">silentlySignIn</span><span class="p">(</span><span class="nv">context</span><span class="p">:</span> <span class="nc">Context</span><span class="p">)</span>
+	<span class="k">fun</span> <span class="nf">interactivelySignIn</span><span class="p">(</span><span class="nv">activity</span><span class="p">:</span> <span class="nc">Activity</span><span class="p">,</span> <span class="nv">provider</span><span class="p">:</span> <span class="nc">AuthenticationProvider</span><span class="p">)</span>
+	<span class="k">fun</span> <span class="nf">onActivityResult</span><span class="p">(</span><span class="nv">requestCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">resultCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="nc">Intent</span><span class="p">?)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>I’m using two observable variables here - one that will be updated when the user logs in, and another that updates when an error condition occurs.  I’ll eventually tie the former to the code that moves to the next activity and the latter to something that pops up an alert.</p>
+
+<p>After that, my repository has three methods - one used to sign in silently, one that produces an interactive sign-in for a particular provider and another that handles the result from the external authentication.  Each provider (Facebook, Google, and MSAL) uses a web view to complete the transaction, and then redirects back to your app.  When the redirect back to your app occurs, the <code class="highlighter-rouge">onActivityResult()</code> methods captures it to complete the authentication.</p>
+
+<h2 id="create-a-repository-implementation">Create a repository implementation</h2>
+
+<p>I thought about re-using the individual auth provider managers I had previously written, but realized pretty quickly that it was a bad idea for a variety of reasons.  Most notably, each provider has a different way of reporting silent logins back to you.  One does it synchronously (no callback); one does it in the activity result and another does it in a different callback.  Since there is no standard way, it’s best to do it all in one repository.  So my repository covers all three providers.</p>
+
+<p>Most of the code is practically identical to the original code.  Instead of calling the callbacks (which won’t exist any more as we are using observables), the callback handlers update the observable variables.  The only difference is in the <code class="highlighter-rouge">silentlySignIn()</code> method.  This needs to handle cases when the user is not signed in and cases when the user is signed in.  Here is my code:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin">	<span class="k">override</span> <span class="k">fun</span> <span class="nf">silentlySignIn</span><span class="p">(</span><span class="nv">context</span><span class="p">:</span> <span class="nc">Context</span><span class="p">)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(!</span><span class="n">prefs</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="n">PREFS_KEY</span><span class="p">))</span> <span class="p">{</span>
+			<span class="n">postAnonymousUser</span><span class="p">()</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="kd">val</span> <span class="py">provider</span> <span class="p">=</span> <span class="n">prefs</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="n">PREFS_KEY</span><span class="p">,</span> <span class="k">null</span><span class="p">)</span>
+			<span class="k">if</span> <span class="p">(</span><span class="n">provider</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+				<span class="n">postAnonymousUser</span><span class="p">()</span>
+			<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+				<span class="k">when</span> <span class="p">(</span><span class="n">provider</span><span class="p">.</span><span class="n">toLowerCase</span><span class="p">())</span> <span class="p">{</span>
+					<span class="s">"facebook"</span> <span class="p">-&gt;</span> <span class="p">{</span>
+						<span class="kd">val</span> <span class="py">accessToken</span> <span class="p">=</span> <span class="n">AccessToken</span><span class="p">.</span><span class="n">getCurrentAccessToken</span><span class="p">()</span>
+						<span class="k">if</span> <span class="p">(</span><span class="n">accessToken</span> <span class="p">!=</span> <span class="k">null</span> <span class="p">&amp;&amp;</span> <span class="p">!</span><span class="n">accessToken</span><span class="p">.</span><span class="n">isExpired</span><span class="p">)</span> <span class="p">{</span>
+							<span class="n">getFacebookProfile</span><span class="p">(</span><span class="n">accessToken</span><span class="p">)</span>
+						<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+							<span class="n">postAnonymousUser</span><span class="p">()</span>
+						<span class="p">}</span>
+					<span class="p">}</span>
+
+					<span class="s">"google"</span> <span class="p">-&gt;</span> <span class="p">{</span>
+						<span class="kd">val</span> <span class="py">task</span> <span class="p">=</span> <span class="n">googleClient</span><span class="p">.</span><span class="n">silentSignIn</span><span class="p">()</span>
+						<span class="k">if</span> <span class="p">(</span><span class="n">task</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+							<span class="k">try</span> <span class="p">{</span>
+								<span class="kd">val</span> <span class="py">account</span> <span class="p">=</span> <span class="n">task</span><span class="p">.</span><span class="n">getResult</span><span class="p">(</span><span class="n">ApiException</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span> <span class="o">?:</span> <span class="k">throw</span> <span class="n">RuntimeException</span><span class="p">(</span><span class="s">"account is null"</span><span class="p">)</span>
+								<span class="kd">val</span> <span class="py">idToken</span> <span class="p">=</span> <span class="n">account</span><span class="p">.</span><span class="n">idToken</span> <span class="o">?:</span> <span class="k">throw</span> <span class="n">RuntimeException</span><span class="p">(</span><span class="s">"account ID is null"</span><span class="p">)</span>
+								<span class="kd">val</span> <span class="py">user</span> <span class="p">=</span> <span class="n">AuthenticatedUser</span><span class="p">(</span><span class="n">idToken</span><span class="p">,</span> <span class="n">AuthenticationProvider</span><span class="p">.</span><span class="n">GOOGLE</span><span class="p">,</span>
+									<span class="n">account</span><span class="p">.</span><span class="n">displayName</span> <span class="o">?:</span> <span class="s">"Unknown"</span><span class="p">,</span> <span class="n">account</span><span class="p">.</span><span class="n">email</span> <span class="o">?:</span> <span class="s">""</span><span class="p">)</span>
+								<span class="n">mutableUser</span><span class="p">.</span><span class="n">postValue</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+							<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">error</span><span class="p">:</span> <span class="nc">Exception</span><span class="p">)</span> <span class="p">{</span>
+								<span class="n">postAnonymousUser</span><span class="p">()</span>
+							<span class="p">}</span>
+						<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+							<span class="n">postAnonymousUser</span><span class="p">()</span>
+						<span class="p">}</span>
+					<span class="p">}</span>
+
+					<span class="s">"microsoft"</span> <span class="p">-&gt;</span> <span class="p">{</span>
+						<span class="kd">val</span> <span class="py">account</span> <span class="p">=</span> <span class="k">if</span> <span class="p">(</span><span class="n">msalClient</span><span class="p">.</span><span class="n">accounts</span><span class="p">.</span><span class="n">isEmpty</span><span class="p">())</span> <span class="k">null</span> <span class="k">else</span> <span class="n">msalClient</span><span class="p">.</span><span class="n">accounts</span><span class="p">[</span><span class="m">0</span><span class="p">]</span>
+						<span class="k">if</span> <span class="p">(</span><span class="n">account</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+							<span class="n">msalClient</span><span class="p">.</span><span class="n">acquireTokenSilentAsync</span><span class="p">(</span><span class="n">msalScopes</span><span class="p">,</span> <span class="n">account</span><span class="p">,</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">AuthenticationCallback</span> <span class="p">{</span>
+								<span class="k">override</span> <span class="k">fun</span> <span class="nf">onSuccess</span><span class="p">(</span><span class="nv">authenticationResult</span><span class="p">:</span> <span class="nc">AuthenticationResult</span><span class="p">?)</span> <span class="p">{</span>
+									<span class="k">try</span> <span class="p">{</span>
+										<span class="n">authenticationResult</span><span class="o">?.</span><span class="n">run</span> <span class="p">{</span> <span class="n">getMicrosoftProfile</span><span class="p">(</span><span class="k">this</span><span class="p">)</span> <span class="p">}</span>
+									<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">ex</span><span class="p">:</span> <span class="nc">Exception</span><span class="p">)</span> <span class="p">{</span>
+										<span class="n">postAnonymousUser</span><span class="p">()</span>
+									<span class="p">}</span>
+								<span class="p">}</span>
+								<span class="k">override</span> <span class="k">fun</span> <span class="nf">onCancel</span><span class="p">()</span> <span class="p">{</span> <span class="n">postAnonymousUser</span><span class="p">()</span> <span class="p">}</span>
+								<span class="k">override</span> <span class="k">fun</span> <span class="nf">onError</span><span class="p">(</span><span class="nv">exception</span><span class="p">:</span> <span class="nc">MsalException</span><span class="p">?)</span> <span class="p">{</span> <span class="n">postAnonymousUser</span><span class="p">()</span> <span class="p">}</span>
+							<span class="p">})</span>
+						<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+							<span class="n">postAnonymousUser</span><span class="p">()</span>
+						<span class="p">}</span>
+					<span class="p">}</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}</span></code></pre></figure>
+
+<p>We first read from the preferences file to see if an authentication has happened that has completed all the way through to the end.  If there is, we call the appropriate “silent sign in” process for that provider.  In all cases where something doesn’t exist (there is no preference file; there is no preference; the key is expired; there was an error), we post the “anonymous” user:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin">	<span class="k">private</span> <span class="k">fun</span> <span class="nf">postAnonymousUser</span><span class="p">()</span> <span class="p">{</span>
+		<span class="n">mutableUser</span><span class="p">.</span><span class="n">postValue</span><span class="p">(</span><span class="n">AuthenticatedUser</span><span class="p">(</span><span class="s">""</span><span class="p">,</span> <span class="n">AuthenticationProvider</span><span class="p">.</span><span class="n">ANONYMOUS</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="s">""</span><span class="p">))</span>
+	<span class="p">}</span></code></pre></figure>
+
+<p>The <code class="highlighter-rouge">mutableUser</code> variable is the mutable version of the <code class="highlighter-rouge">authenticatedUser</code> in the interface.  They are defined like this:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin">  <span class="k">private</span> <span class="kd">val</span> <span class="py">mutableUser</span><span class="p">:</span> <span class="n">MutableLiveData</span><span class="p">&lt;</span><span class="n">AuthenticatedUser</span><span class="p">?&gt;</span> <span class="p">=</span> <span class="n">MutableLiveData</span><span class="p">()</span>
+
+	<span class="k">override</span> <span class="kd">val</span> <span class="py">authenticatedUser</span><span class="p">:</span> <span class="n">LiveData</span><span class="p">&lt;</span><span class="n">AuthenticatedUser</span><span class="p">?&gt;</span>
+		<span class="k">get</span><span class="p">()</span> <span class="p">=</span> <span class="n">mutableUser</span></code></pre></figure>
+
+<p>When you post a value to the <code class="highlighter-rouge">mutableUser</code>, anything that establishes an observer on the <code class="highlighter-rouge">authenticatedUser</code> property gets notified of the change.  In other code paths, I post an <code class="highlighter-rouge">AuthenticatedUser</code> that is fully formed for the signed in case.</p>
+
+<p>This is a rather long code re-org, but you can find the complete code on <a href="https://github.com/adrianhall/tailwind-photos-for-android/blob/blog-5/app/src/main/java/com/tailwind/app/photos/repositories/impl/IdentityRepositoryImpl.kt">my GitHub repository</a></p>
+
+<h2 id="create-a-view-model">Create a view model</h2>
+
+<p>The view model is the intermediary between the activity and the repositories.  View models might compose for multiple different repositories, or transform results according to needs.  In this case, there is a 1:1 between the needs of the activity and the repository, so most things are “pass-through”.  Here is the code:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="kd">class</span> <span class="nc">AuthenticatorViewModel</span><span class="p">(</span><span class="k">private</span> <span class="kd">val</span> <span class="py">identityRepository</span><span class="p">:</span> <span class="n">IdentityRepository</span><span class="p">):</span> <span class="nc">ViewModel</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">val</span> <span class="py">authenticatedUser</span> <span class="p">=</span> <span class="n">identityRepository</span><span class="p">.</span><span class="n">authenticatedUser</span>
+	<span class="kd">val</span> <span class="py">identityError</span> <span class="p">=</span> <span class="n">identityRepository</span><span class="p">.</span><span class="n">error</span>
+
+	<span class="k">fun</span> <span class="nf">silentlySignIn</span><span class="p">(</span><span class="nv">context</span><span class="p">:</span> <span class="nc">Context</span><span class="p">)</span>
+		<span class="p">=</span> <span class="n">identityRepository</span><span class="p">.</span><span class="n">silentlySignIn</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+
+	<span class="k">fun</span> <span class="nf">interactivelySignIn</span><span class="p">(</span><span class="nv">activity</span><span class="p">:</span> <span class="nc">Activity</span><span class="p">,</span> <span class="nv">provider</span><span class="p">:</span> <span class="nc">AuthenticationProvider</span><span class="p">)</span>
+		<span class="p">=</span> <span class="n">identityRepository</span><span class="p">.</span><span class="n">interactivelySignIn</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">provider</span><span class="p">)</span>
+
+	<span class="k">fun</span> <span class="nf">onActivityResult</span><span class="p">(</span><span class="nv">requestCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">resultCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="nc">Intent</span><span class="p">?)</span>
+		<span class="p">=</span> <span class="n">identityRepository</span><span class="p">.</span><span class="n">onActivityResult</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">resultCode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<h2 id="update-the-activity">Update the activity</h2>
+
+<p>The activity is actually much simpler, so I’m just going to throw the code for <code class="highlighter-rouge">onCreate()</code> first and walk through it:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin">	<span class="k">private</span> <span class="kd">val</span> <span class="py">vm</span> <span class="p">:</span> <span class="n">AuthenticatorViewModel</span> <span class="k">by</span> <span class="n">viewModel</span><span class="p">()</span>
+
+	<span class="k">override</span> <span class="k">fun</span> <span class="nf">onCreate</span><span class="p">(</span><span class="nv">savedInstanceState</span><span class="p">:</span> <span class="nc">Bundle</span><span class="p">?)</span> <span class="p">{</span>
+		<span class="k">super</span><span class="p">.</span><span class="n">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">)</span>
+		<span class="n">setContentView</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">layout</span><span class="p">.</span><span class="n">activity_authenticator</span><span class="p">)</span>
+
+		<span class="kd">val</span> <span class="py">distance</span> <span class="p">=</span> <span class="n">resources</span><span class="p">.</span><span class="n">getDimensionPixelSize</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">dimen</span><span class="p">.</span><span class="n">social_media_button_offset</span><span class="p">).</span><span class="n">toFloat</span><span class="p">()</span>
+
+		<span class="c1">// Handle the login events</span>
+		<span class="n">vm</span><span class="p">.</span><span class="n">authenticatedUser</span><span class="p">.</span><span class="n">observe</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">Observer</span> <span class="p">{</span> <span class="n">user</span> <span class="p">-&gt;</span>
+			<span class="n">user</span><span class="o">?.</span><span class="n">run</span> <span class="p">{</span>
+				<span class="k">if</span> <span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">authProvider</span> <span class="p">==</span> <span class="n">AuthenticationProvider</span><span class="p">.</span><span class="n">ANONYMOUS</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// There is no logged in user - show the auth buttons</span>
+					<span class="n">auth_progress_bar</span><span class="p">.</span><span class="n">visibility</span> <span class="p">=</span> <span class="n">View</span><span class="p">.</span><span class="n">GONE</span>
+					<span class="n">social_media_login_buttons</span>
+						<span class="p">.</span><span class="n">animate</span><span class="p">()</span>
+						<span class="p">.</span><span class="n">translationY</span><span class="p">(-</span><span class="n">distance</span><span class="p">)</span>
+						<span class="p">.</span><span class="n">setDuration</span><span class="p">(</span><span class="m">500L</span><span class="p">)</span>
+						<span class="p">.</span><span class="n">alpha</span><span class="p">(</span><span class="m">1.0f</span><span class="p">)</span>
+						<span class="p">.</span><span class="n">setListener</span><span class="p">(</span><span class="k">null</span><span class="p">)</span>
+				<span class="p">}</span> <span class="k">else</span> <span class="p">{</span> <span class="c1">// There is a logged in user - move to the next step</span>
+					<span class="n">social_media_login_buttons</span>
+						<span class="p">.</span><span class="n">animate</span><span class="p">()</span>
+						<span class="p">.</span><span class="n">translationY</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
+						<span class="p">.</span><span class="n">setDuration</span><span class="p">(</span><span class="m">250L</span><span class="p">)</span>
+						<span class="p">.</span><span class="n">alpha</span><span class="p">(</span><span class="m">0.0f</span><span class="p">)</span>
+						<span class="p">.</span><span class="n">setListener</span><span class="p">(</span><span class="k">null</span><span class="p">)</span>
+					<span class="n">auth_progress_bar</span><span class="p">.</span><span class="n">visibility</span> <span class="p">=</span> <span class="n">View</span><span class="p">.</span><span class="n">VISIBLE</span>
+					<span class="c1">// SEE IF REGISTERED</span>
+				<span class="p">}</span>
+			<span class="p">}</span>
+		<span class="p">})</span>
+
+		<span class="c1">// Handle the error events</span>
+		<span class="n">vm</span><span class="p">.</span><span class="n">identityError</span><span class="p">.</span><span class="n">observe</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">Observer</span> <span class="p">{</span> <span class="n">error</span> <span class="p">-&gt;</span>
+			<span class="n">error</span><span class="o">?.</span><span class="n">run</span> <span class="p">{</span>
+				<span class="kd">val</span> <span class="py">alert</span> <span class="p">=</span> <span class="n">AlertDialog</span><span class="p">.</span><span class="n">Builder</span><span class="p">(</span><span class="k">this</span><span class="nd">@AuthenticatorActivity</span><span class="p">)</span>
+					<span class="p">.</span><span class="n">setMessage</span><span class="p">(</span><span class="n">error</span><span class="o">?.</span><span class="n">message</span> <span class="o">?:</span> <span class="s">"Unknown Error"</span><span class="p">)</span>
+					<span class="p">.</span><span class="n">setCancelable</span><span class="p">(</span><span class="k">false</span><span class="p">)</span>
+					<span class="p">.</span><span class="n">setPositiveButton</span><span class="p">(</span><span class="s">"OK"</span><span class="p">)</span> <span class="p">{</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="p">-&gt;</span> <span class="n">finish</span><span class="p">()</span> <span class="p">}</span>
+					<span class="p">.</span><span class="n">create</span><span class="p">()</span>
+				<span class="n">alert</span><span class="p">.</span><span class="n">setTitle</span><span class="p">(</span><span class="s">"Sign In Error"</span><span class="p">)</span>
+				<span class="n">alert</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+			<span class="p">}</span>
+		<span class="p">})</span>
+
+		<span class="c1">// Wire up the various sign-in provider buttons</span>
+		<span class="n">facebook_login</span><span class="p">.</span><span class="n">setOnClickListener</span>  <span class="p">{</span> <span class="n">vm</span><span class="p">.</span><span class="n">interactivelySignIn</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">AuthenticationProvider</span><span class="p">.</span><span class="n">FACEBOOK</span><span class="p">)</span> <span class="p">}</span>
+		<span class="n">google_login</span><span class="p">.</span><span class="n">setOnClickListener</span>    <span class="p">{</span> <span class="n">vm</span><span class="p">.</span><span class="n">interactivelySignIn</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">AuthenticationProvider</span><span class="p">.</span><span class="n">GOOGLE</span><span class="p">)</span> <span class="p">}</span>
+		<span class="n">microsoft_login</span><span class="p">.</span><span class="n">setOnClickListener</span> <span class="p">{</span> <span class="n">vm</span><span class="p">.</span><span class="n">interactivelySignIn</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">AuthenticationProvider</span><span class="p">.</span><span class="n">MICROSOFT</span><span class="p">)</span> <span class="p">}</span>
+	<span class="p">}</span></code></pre></figure>
+
+<p>First, I bring in the view model I just wrote via dependency injection.  How you do this depends on your preferred DI mechanism.  I like Koin for its simplicity.  Now, let’s look at the code for the <code class="highlighter-rouge">onCreate()</code> method.  There are two distinct areas - setting up the observers for our observable data, and setting up the click handlers for the interactive sign in buttons.  Concentrate on the <code class="highlighter-rouge">vm.authenticatedUser</code> observer.  It basically says “when the authenticated user changes, do something.  If the user is ANONYMOUS, when show the sign in buttons.  If the user is anything else, when hide the sign in buttons and move to the next activity”.</p>
+
+<p>I haven’t written the next activity yet, but I’m intending to put a registration step there.</p>
+
+<p>Now, let’s look at the (much simpler) <code class="highlighter-rouge">onResume()</code> and <code class="highlighter-rouge">onActivityResult()</code> methods:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin">	<span class="k">override</span> <span class="k">fun</span> <span class="nf">onActivityResult</span><span class="p">(</span><span class="nv">requestCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">resultCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="nc">Intent</span><span class="p">?)</span> <span class="p">{</span>
+		<span class="k">super</span><span class="p">.</span><span class="n">onActivityResult</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">resultCode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+		<span class="n">vm</span><span class="p">.</span><span class="n">onActivityResult</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">resultCode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+	<span class="p">}</span>
+
+	<span class="k">override</span> <span class="k">fun</span> <span class="nf">onResume</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">super</span><span class="p">.</span><span class="n">onResume</span><span class="p">()</span>
+
+		<span class="n">thread</span><span class="p">(</span><span class="n">start</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">vm</span><span class="p">.</span><span class="n">silentlySignIn</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span></code></pre></figure>
+
+<p>This is much easier now.  The <code class="highlighter-rouge">onActivityResult()</code> just calls the view model version, which will call the repository version in turn.  The <code class="highlighter-rouge">onResume()</code> method initiates the silent sign-in process.</p>
+
+<p>So, what will happen when you run the app?  There are two cases - one where you have previously signed in successfully and have a valid token, and another where you have not previously signed in OR do not have a valid token.</p>
+
+<p>In the latter case:</p>
+
+<ul>
+  <li>The activity calls <code class="highlighter-rouge">silentlySignIn()</code> on the repository (via the view model).</li>
+  <li>The repository posts the anonymous user to the <code class="highlighter-rouge">authenticatedUser</code> property.</li>
+  <li>The activity notices that and shows the sign in buttons.</li>
+  <li>The user clicks on a sign-in button to initiate a sign-in.</li>
+  <li>The auth provider brings up a web view to complete the auth, redirecting back to the app.</li>
+  <li>The activity redirects into the repository to complete the authentication.</li>
+  <li>The auth provide callback is called with a new token.</li>
+  <li>An <code class="highlighter-rouge">AuthenticatedUser</code> object is created and posted to the <code class="highlighter-rouge">authenticatedUser</code> property.</li>
+  <li>The activity notices that and hides the sign in buttons before “doing something else”.</li>
+</ul>
+
+<p>In the former case:</p>
+
+<ul>
+  <li>The activity calls <code class="highlighter-rouge">silentlySignIn()</code> on the repository (via the view model).</li>
+  <li>The repository posts the stored user to the <code class="highlighter-rouge">authenticatedUer</code> property.</li>
+  <li>The activity notices that and ensures the sign in buttons are hidden before “doing something else”.</li>
+</ul>
+
+<p>Short version: if the user has signed-in already, they will not see a sign-in button.  They will just be taken to the app.</p>
+
+<h2 id="next-steps">Next steps</h2>
+
+<p>I’ve left the code as “registration happens here”, and that is my next step.  Part of that process is to ensure I’ve created a user on my own cloud backend and completed a sign in process completed before writing the auth provider to the preferences file (so that silent sign-in will work).  Next step is to do the registration process.</p>
+
+<p>Until then, check out the latest code on <a href="https://github.com/adrianhall/tailwind-photos-for-android/tree/blog-5">my GitHub repository</a>.</p>
+:ET

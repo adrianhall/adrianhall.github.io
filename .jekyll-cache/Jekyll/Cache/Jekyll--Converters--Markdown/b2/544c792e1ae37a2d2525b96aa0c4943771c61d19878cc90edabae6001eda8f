@@ -1,0 +1,15 @@
+I"Ù<ul class="toc__menu">
+  <li><a href="#types-of-mobile-testing">Types of mobile testing</a>
+    <ul>
+      <li><a href="#unit-testing">Unit testing</a></li>
+      <li><a href="#ui-testing">UI testing</a></li>
+      <li><a href="#fuzz-testing">Fuzz testing</a></li>
+      <li><a href="#performance-testing">Performance testing</a></li>
+      <li><a href="#integration-end-to-end-testing">Integration (end-to-end) testing</a></li>
+      <li><a href="#pre-launch-or-pre-submission-testing">Pre-launch or pre-submission testing</a></li>
+      <li><a href="#canary-post-production-testing">Canary (post-production) testing</a></li>
+    </ul>
+  </li>
+  <li><a href="#best-practices-in-testing">Best practices in testing</a></li>
+</ul>
+:ET

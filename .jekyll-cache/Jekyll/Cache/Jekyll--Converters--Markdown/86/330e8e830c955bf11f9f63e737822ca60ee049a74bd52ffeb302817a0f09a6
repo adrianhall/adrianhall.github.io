@@ -1,0 +1,10 @@
+I"G<ul class="toc__menu">
+  <li><a href="#step-1-create-an-aws-appsync-api">Step 1: Create an AWS AppSync API</a></li>
+  <li><a href="#step-2-add-a-http-data-source">Step 2: Add a HTTP Data Source</a></li>
+  <li><a href="#step-3-create-a-schema">Step 3: Create a schema</a></li>
+  <li><a href="#step-4-create-the-request-mapping">Step 4: Create the request mapping</a></li>
+  <li><a href="#step-5-write-the-response-mapping">Step 5: Write the response mapping</a></li>
+  <li><a href="#step-6-test-your-api">Step 6: Test your API</a></li>
+  <li><a href="#wrap-up">Wrap Up</a></li>
+</ul>
+:ET

@@ -1,0 +1,137 @@
+I"�;<p>One of the things that is really cool about software development is that we are continually learning and adjusting. I spent a day recently learning <a href="https://kotlinlang.org/">Kotlin</a>. I was so impressed with the language, I decided to refactor my entire Family Photos app. It did not take long.</p>
+
+<h2 id="why-do-i-love-kotlin">Why do I love Kotlin?</h2>
+
+<p>I have to admit, I was skeptical at first. After all, I tried Swift for iOS as an alternate language and it felt foreign. Admittedly, Objective-C isn’t much better, but Swift definitely had some issues for me. Maybe I’m just not an iOS person. For me, Kotlin is more readable. It’s more readable than Swift and more readable than Java. Let’s have a look at some of the basics:</p>
+
+<h3 id="val-for-constants-and-var-for-variables">val for constants and var for variables</h3>
+
+<p>I get this in about 10 seconds. I think I’m a little slow on the uptake. <code class="highlighter-rouge">val</code> is a value and <code class="highlighter-rouge">var</code> is a variable. You get type inference and where that isn’t possible, you can specify a type. Kotlin is still strongly typed, so everything has a type. So, for example, here is equivalent code in Java:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">String</span> <span class="no">TAG</span> <span class="o">=</span> <span class="s">"MainActivity"</span><span class="o">;</span>
+<span class="kd">private</span> <span class="nc">Timestamp</span> <span class="n">lastUpdated</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Timestamp</span><span class="o">(</span><span class="n">model</span><span class="o">.</span><span class="na">getTime</span><span class="o">());</span>
+<span class="kd">public</span> <span class="nc">String</span> <span class="n">wtfError</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span></code></pre></figure>
+
+<p>And the same thing in Kotlin:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">private</span> <span class="kd">val</span> <span class="py">TAG</span> <span class="p">=</span> <span class="s">"MainActivity"</span>
+<span class="k">private</span> <span class="kd">var</span> <span class="py">lastUpdated</span> <span class="p">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">time</span><span class="p">)</span>
+<span class="k">public</span> <span class="kd">var</span> <span class="py">wtfError</span><span class="p">:</span> <span class="n">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span></code></pre></figure>
+
+<p>No reduction in lines, but much more readable. I love the getter/setter inference and the fact that I can specify the type when necessary. I’m also a fan of the null safety. I have to declare something can take null — it isn’t taken for granted.</p>
+
+<p>I’m not a fan of the lack of semi-colons. I like to know when a statement has ended. There are worse languages for this (hello, Python) and it isn’t a show stopper for me.</p>
+
+<h3 id="easy-callbacks-aka-lambdas">Easy callbacks (aka lambdas)</h3>
+
+<p>In Android, you do callbacks all. the. time. It’s a fact of life, and it is mostly because Java hasn’t come out of the dark ages and embraced async/await or even promises — two things that C# and JavaScript get right. The problem with Java is that the code is so verbose. For instance, here is some code for dealing with getting an Amazon Pinpoint client:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nc">AWSMobileClient</span><span class="o">.</span><span class="na">initialize</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="k">new</span> <span class="nc">AWSStartupCallback</span><span class="o">()</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSuccess</span><span class="o">(</span><span class="nc">AWSStartupResult</span> <span class="n">result</span><span class="o">)</span> <span class="o">{</span>
+    <span class="cm">/* do something */</span>
+  <span class="o">}</span>
+<span class="o">}).</span><span class="na">execute</span><span class="o">();</span></code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">AWSMobileClient</span><span class="p">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="p">{</span> <span class="n">_</span> <span class="p">-&gt;</span> <span class="p">{</span>
+  <span class="k">override</span> <span class="k">fun</span> <span class="nf">onSuccess</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="p">{</span>
+    <span class="cm">/* do something */</span>
+  <span class="p">}</span>
+<span class="p">}).</span><span class="n">execute</span><span class="p">()</span></code></pre></figure>
+
+<p>That callback is called a lambda or function expression. In fact, since the callback object only has one callback function, I can even further simplify this:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">AWSMobileClient</span><span class="p">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="p">{</span> <span class="n">_</span> <span class="p">-&gt;</span> <span class="p">{</span> <span class="cm">/* Do Something */</span><span class="p">}</span> <span class="p">})</span>
+  <span class="p">.</span><span class="n">execute</span><span class="p">()</span></code></pre></figure>
+
+<p>If there is more than one callback function, you have to specify all of them.</p>
+
+<h3 id="better-type-safety">Better Type Safety</h3>
+
+<p>You don’t see this, except very occasionally. I’m setting up Amazon Pinpoint and there is a possibility that the <code class="highlighter-rouge">pinpointManager</code> is not set up before I decide to click back and destroy the activity, but the <code class="highlighter-rouge">onDestroy()</code> method has something to record an event to the <code class="highlighter-rouge">pinpointManager</code>. In Java:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onDestroy</span><span class="o">()</span> <span class="o">{</span>
+  <span class="kd">super</span><span class="o">.</span><span class="na">onDestroy</span><span class="o">();</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">pinpointManager</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">pinpointManager</span><span class="o">.</span><span class="na">recordStopEvent</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>That guard around the <code class="highlighter-rouge">recordStopEvent()</code> call is necessary because if it isn’t there, I leave open the prospect of a crash. If the app crashes on something as inconsequential as analytics, there is a direct user impact. Fortunately, Kotlin comes with override checking, nullability checks, and generally better type safety. My new code is this:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">public</span> <span class="k">fun</span> <span class="nf">onDestroy</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">super</span><span class="p">.</span><span class="n">onDestroy</span><span class="p">()</span>
+  <span class="n">pinpointManager</span><span class="o">?.</span><span class="n">let</span> <span class="p">{</span> <span class="n">it</span><span class="p">.</span><span class="n">recordStopEvent</span><span class="p">()</span> <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>If I have multiple calls (for example, I may have to do a <code class="highlighter-rouge">submitEvents()</code> call as well), it’s just as easy:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">public</span> <span class="k">fun</span> <span class="nf">onDestroy</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">super</span><span class="p">.</span><span class="n">onDestroy</span><span class="p">()</span>
+  <span class="n">pinpointManager</span><span class="o">?.</span><span class="n">let</span> <span class="p">{</span>
+    <span class="n">it</span><span class="p">.</span><span class="n">recordStopEvent</span><span class="p">()</span>
+    <span class="n">it</span><span class="p">.</span><span class="n">submitEvents</span><span class="p">()</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>We can even get more concise:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">public</span> <span class="k">fun</span> <span class="nf">onDestroy</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">super</span><span class="p">.</span><span class="n">onDestroy</span><span class="p">()</span>
+  <span class="n">pinpointManager</span><span class="o">?.</span><span class="n">recordStopEvent</span><span class="p">()</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>It’s nice and concise while still being readable and produces the intent of my original code.</p>
+
+<h3 id="the--operator-does-what-you-expect">The == operator does what you expect</h3>
+
+<p>Ok, this is just a placeholder for “Kotlin fixed all the annoyances of Java”. When I say ==, I mean “this object is equal to another”. Take these:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nc">String</span> <span class="n">a</span><span class="o">,</span> <span class="n">b</span><span class="o">;</span>
+<span class="c1">// Do some work with a and b</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="o">)</span> <span class="o">{</span> <span class="cm">/* Never */</span> <span class="o">}</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">a</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">b</span><span class="o">))</span> <span class="o">{</span> <span class="cm">/* Possibly */</span> <span class="o">}</span></code></pre></figure>
+
+<p><code class="highlighter-rouge">a</code> and <code class="highlighter-rouge">b</code> are two different strings. If I use the <code class="highlighter-rouge">==</code> operator, they will never be equal even if they hold the same value. That’s because <code class="highlighter-rouge">==</code> in Java assumes referential equality — the two objects are actually the same object. Let’s look in Kotlin:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="s">"foo"</span><span class="p">,</span> <span class="n">b</span> <span class="p">=</span> <span class="s">"foo"</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="p">==</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* Definitely */</span> <span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="p">===</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* Never */</span> <span class="p">}</span></code></pre></figure>
+
+<p>Here, the <code class="highlighter-rouge">==</code> operator does what you expect. There is a completely different operator for referential integrity.</p>
+
+<p>It isn’t the only place where Kotlin has done “the right thing”. They’ve liberally borrowed from other languages when those other languages have done the right thing. See how <a href="https://kotlinlang.org/docs/reference/generics.html">Kotlin does generics</a>, for example. Note how similar it is to C#?</p>
+
+<h3 id="async-promises">Async promises</h3>
+
+<p>Nothing annoys me more than async callbacks in Java. Fortunately, <a href="http://kovenant.komponents.nl/">Kotlin has an answer</a>. Ok, so it’s not in the core Kotlin libraries, but neither are a lot of Java things either:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">task</span> <span class="p">{</span>
+    <span class="c1">//some (long running) operation, or just:</span>
+    <span class="m">1</span> <span class="p">+</span> <span class="m">1</span>
+<span class="p">}</span> <span class="n">then</span> <span class="p">{</span>
+    <span class="n">i</span> <span class="p">-&gt;</span> <span class="s">"result: $i"</span>
+<span class="p">}</span> <span class="n">success</span> <span class="p">{</span>
+    <span class="n">msg</span> <span class="p">-&gt;</span> <span class="n">println</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><strong>Edit</strong>: Antonio D’Souza pointed out that <a href="http://www.deadcoderising.com/java8-writing-asynchronous-code-with-completablefuture/">Java8 does in fact have promises</a>, but they are called <code class="highlighter-rouge">CompletableFuture</code>. I still like the syntax of Kotlin for async work better.</p>
+
+<h3 id="kotlin-has-better-community-support">Kotlin has better community support</h3>
+
+<p>Ok, this might be arguable. When I look at the number of people developing in Kotlin vs. Java, this shouldn’t happen. Kotlin developers are more community focused than Java developers. They love Kotlin and aren’t shy about sharing that love.</p>
+
+<p>However, I’m going to point to <a href="https://github.com/KotlinBy/awesome-kotlin">Awesome Kotlin</a> and call it a day. Seriously — I spent three hours just on this one site. It was primarily why Kotlin took a day to learn. I could probably have been done with my first app in a couple of hours if it hadn’t been for the wealth of information out there that just kept drawing me in.</p>
+
+<h2 id="wrap-up">Wrap Up</h2>
+
+<p>In two years time, all new Android apps will be written in Kotlin. It’s easier to learn, easier to read and now, with the <a href="https://android-developers.googleblog.com/2017/11/update-on-kotlin-for-android.html">introduction of Kotlin projects in Android Studio 3.2</a>, it’s easier to use.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

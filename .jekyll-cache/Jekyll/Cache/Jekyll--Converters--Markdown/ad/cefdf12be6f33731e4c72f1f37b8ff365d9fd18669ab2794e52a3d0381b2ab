@@ -1,0 +1,93 @@
+I"7<p>There has always been a bit of a problem between deploying your backend and then integrating that same backend with your front end code. The front end needs to know where the back end is located. The traditional approach is to create a configuration file for the purpose. But how?</p>
+
+<p>The AWS Mobile team created the awsmobile CLI and followed that with the <a href="https://aws-amplify.github.io?utm_source=da&amp;utm_medium=blog&amp;utm_campaign=adrianha">AWS Amplify</a> CLI. These tools are great for new projects. They provide for best practices deployment capabilities on the backend — and automatic maintenance of the required configuration file on the front end.</p>
+
+<h2 id="what-about-existing-projects">What about existing projects?</h2>
+
+<p>Let’s say you have a nice deployment of a backend on AWS with the <a href="https://serverless.com/">Serverless Framework</a>. You’ve may have configured Amazon Cognito, plus an Amazon DynamoDB table connected together with some AWS Lambda functions and an AWS AppSync API layer. Things are good. Now you want to create some mobile apps to leverage this infrastructure.</p>
+
+<p>In the old world, you would create an <code class="highlighter-rouge">aws-exports.js</code> file for your web and React Native projects, or an <code class="highlighter-rouge">awsconfiguration.json</code> file for your Android and iOS native projects — probably by hand. The alternative would be to create a constants file with the appropriate values for initializing connectivity to your backend. Either way, it’s a laborious process.</p>
+
+<p>That is why I created the <a href="https://www.npmjs.com/package/aws-amplify-serverless-plugin">aws-amplify-serverless-plugin</a>. This is a plugin for the Serverless Framework that takes the resources that you have deployed and creates the appropriate configuration file(s) for you.</p>
+
+<h2 id="lets-look-at-an-example">Let’s look at an example</h2>
+
+<p>To get started with a simple example, let’s say we have a GitHub repository with four directories at the top level:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">backend</code> contains my Serverless Framework files, including the <code class="highlighter-rouge">serverless.yml</code> file, GraphQL schema and mapping templates.</li>
+  <li><code class="highlighter-rouge">android</code> contains my typical Android project.</li>
+  <li><code class="highlighter-rouge">ios</code> contains my typical iOS project.</li>
+  <li><code class="highlighter-rouge">web</code> contains my web project that I will deploy to an S3 bucket that is specified in the <code class="highlighter-rouge">serverless.yml</code> backend configuration.</li>
+</ul>
+
+<p>To deploy, we just type:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(cd backend &amp;&amp; sls deploy -v)
+</code></pre></div></div>
+
+<p>Then we’ll build each of the clients, maybe deploying the web like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>(cd android &amp;&amp; ./gradlew build)
+(cd ios &amp;&amp; ./build.sh)
+(cd backend &amp;&amp; sls clinet deploy -v)
+</code></pre></div></div>
+
+<p>It’s a fairly normal build cycle. Now, let’s update the project to include the <code class="highlighter-rouge">aws-amplify-serverless-plugin</code>. First, we’ll need to install the plugin:</p>
+
+<figure class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="na">plugins</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">aws-amplify-serverless-plugin</span></code></pre></figure>
+
+<p>Then, add a custom section to configure the plugin:</p>
+
+<figure class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="na">custom</span><span class="pi">:</span>
+  <span class="na">amplify</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">filename</span><span class="pi">:</span> <span class="s">../android/app/src/main/res/raw/awsconfiguration.json</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s">native</span>
+      <span class="na">appClient</span><span class="pi">:</span> <span class="s">AndroidUserPoolClient</span>
+    <span class="pi">-</span> <span class="na">filename</span><span class="pi">:</span> <span class="s">../ios/App/awsconfiguration.json</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s">native</span>
+      <span class="na">appClient</span><span class="pi">:</span> <span class="s">iOSUserPoolClient</span>
+    <span class="pi">-</span> <span class="na">filename</span><span class="pi">:</span> <span class="s">../web/src/aws-exports.js</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s">javascript</span>
+      <span class="na">appClient</span><span class="pi">:</span> <span class="s">WebUserPoolClient</span></code></pre></figure>
+
+<p>Each appClient entry is an <code class="highlighter-rouge">AWS::Cognito::UserPoolAppClient</code> resource listed in the <code class="highlighter-rouge">resources</code> section of your <code class="highlighter-rouge">serverless.yml</code> file.</p>
+
+<p>Now, run the deployment using <code class="highlighter-rouge">sls deploy -v</code>.</p>
+
+<p>At the end of the deployment, you should see the three files written out. Android, React Native, and web clients can use the files directly. For iOS, you will have to add the <code class="highlighter-rouge">awsconfiguration.json</code> file to your project.  Ensure you do not check the “Copy files” box when adding the file to your project. You want any updates to be automatically included in your project.</p>
+
+<h2 id="how-does-it-work">How does it work?</h2>
+
+<p>The Serverless Framework turns your configuration into a CloudFormation template. The plugin cycles through all the resources that are a part of the CloudFormation stack that has been deployed, and queries those resources for settings that are relevant to a mobile or web client. Once it has all the settings, it then turns the resulting configuration into the appropriate file format.</p>
+
+<h2 id="supported-features">Supported Features</h2>
+
+<p>The <code class="highlighter-rouge">aws-amplify-serverless-plugin</code> supports the following features</p>
+
+<ul>
+  <li><a href="https://aws.amazon.com/appsync">AWS AppSync</a> (including generation via the excellent <code class="highlighter-rouge">serverless-appsync-plugin</code> as well as through the Resources section)</li>
+  <li>Amazon Cognito Federated Identities</li>
+  <li>Amazon Cognito User Pools — you can specify a different user pool app client for each client.</li>
+  <li>Amazon S3 buckets — the first listed S3 bucket (aside from the deployment bucket) is registered as the transfer bucket.</li>
+</ul>
+
+<p>In addition, it supports two different file formats:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">awsconfiguration.json</code> is the native format for the AWS Mobile SDK for Android and iOS</li>
+  <li><code class="highlighter-rouge">aws-exports.js</code> is the javascript format for AWS Amplify library for JavaScript, React, Angular, Ember, Vue and React Native.</li>
+</ul>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>I hope this plug-in helps developers who have a significant investment in Serverless Framework to continue to use that investment — yet still get the benefits of the AWS Mobile SDK and AWS Amplify libraries. The plugin is far from perfect, but feel free to leave questions, bugs, and feature requests on <a href="https://github.com/awslabs/aws-amplify-serverless-plugin">the GitHub repository</a>.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

@@ -1,0 +1,394 @@
+I"��<p>This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.</p>
+
+<ul>
+  <li><a href="/android/2018/09/18/auth-with-aws-amplify-1/">The basics - a username/password system</a>.</li>
+  <li><a href="/android/2018/09/23/auth-with-aws-amplify-2/">Customizing the UI</a>.</li>
+  <li><a href="/android/2018/10/01/auth-with-aws-amplify-3/">Authenticating with Facebook</a>.</li>
+  <li><a href="/android/2018/10/08/auth-with-aws-amplify-4/">Authenticating with Google</a>.</li>
+  <li><a href="/android/2018/10/15/auth-with-aws-amplify-5/">Using third-party authentication providers</a>.</li>
+  <li><a href="/android/2018/10/22/auth-with-aws-amplify-6/">Using Time-based One-time passwords (TOTP)</a>.</li>
+  <li><a href="/android/2018/10/29/auth-with-aws-amplify-7/">Using Biometric authentication</a>.</li>
+  <li><a href="/android/2018/11/05/auth-with-aws-amplify-8/">Doing fraud protection and analytics</a>.</li>
+</ul>
+
+<p>In the last two articles, I’ve covered Facebook and Google - probably the most important authentication providers that there are out there and for which there is specific support in Amazon Cognito. However, that is not always the case. You might want to authenticate against Salesforce, GitHub, or other OpenID Connect (OIDC) providers - providers that aren’t directly supported by Amazon Cognito. In fact, you could <a href="https://www.scottbrady91.com/OpenID-Connect/Getting-Started-with-oidc-provider">write your own OIDC provider</a>, although I would not recommend it. Use a service!</p>
+
+<p>So, what’s involved?</p>
+
+<ol>
+  <li>Set up authentication with the provider of choice.</li>
+  <li>Configure Amazon Cognito to federate with the provider.</li>
+  <li>When you receive an authentication token from the provider, pass it to the Amazon Cognito identity pool for federation.</li>
+</ol>
+
+<p>Sound familiar? It’s exactly the same as the process we used for Facebook and Google. </p>
+
+<p>In this article, I’m going to set up Auth0 as an authentication source. Auth0 is an OIDC compliant authentication provider that aggregates other providers (like Google and Facebook). It’s main advantage for this purpose, however, is that it is very developer friendly.</p>
+
+<h2 id="step-1-set-up-authentication-with-the-provider-of-choice">Step 1: Set up authentication with the provider of choice</h2>
+
+<p>All authentication providers require you to register with them. This is the process:</p>
+
+<ul>
+  <li>Go to <a href="https://auth0.com">auth0.com</a> and click on the <strong>Login</strong> button to authenticate.</li>
+  <li>If this is your first time, you’ll be asked to register through a simple and short process. Eventually, you will land on your dashboard.</li>
+  <li>Click <strong>New Application</strong>.</li>
+  <li>Give your application a name, select the <strong>Native</strong> button, then click <strong>Create</strong>.</li>
+  <li>Click <strong>Settings</strong>. Make a note of the <strong>Domain</strong> and <strong>Client ID</strong>. You will need these later.</li>
+  <li>
+    <p>Add the following string to the <strong>Allowed Callback URLs</strong>, then click <strong>Save Changes</strong>:</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://DOMAIN.auth0.com/android/PACKAGE/callback
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>Here <strong>DOMAIN</strong> is the Domain of your application (you just made a note of it) and <strong>PACKAGE</strong> is the root package for your app. You can find <strong>PACKAGE</strong> as the <code class="highlighter-rouge">android.applicationId</code> within the app-level <code class="highlighter-rouge">build.gradle</code> or the <code class="highlighter-rouge">package</code> parameter on the <code class="highlighter-rouge">application</code> node within the <code class="highlighter-rouge">AndroidManifest.xml</code> file.</p>
+
+<p>Yes, Auth0 is truly that quick and easy to set up. In many respects, it’s much easier to get started than Google or Facebook, since they’ve done most of the work for you. Now, let’s get started on the client side. Open up your project in Android Studio.</p>
+
+<p>Add the following strings to your <code class="highlighter-rouge">strings.xml</code> file:</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="c">&lt;!-- Auth0 SDK --&gt;</span>
+<span class="nt">&lt;string</span> <span class="na">name=</span><span class="s">"com_auth0_client_id"</span><span class="nt">&gt;</span>CLIENT-ID<span class="nt">&lt;/string&gt;</span>
+<span class="nt">&lt;string</span> <span class="na">name=</span><span class="s">"com_auth0_domain"</span><span class="nt">&gt;</span>DOMAIN.auth0.com<span class="nt">&lt;/string&gt;</span></code></pre></figure>
+
+<p>The <strong>Client ID</strong> and <strong>Domain</strong> are from the <strong>Settings</strong> page for your application from the Auth0 console.</p>
+
+<p>Next, add the Auth0 SDK as a dependency in your app-level <code class="highlighter-rouge">build.gradle</code> file:</p>
+
+<figure class="highlight"><pre><code class="language-gradle" data-lang="gradle"><span class="n">implementation</span> <span class="s2">"com.auth0.android:auth0:$versions.authzero"</span></code></pre></figure>
+
+<p>Right now, my <code class="highlighter-rouge">$versions.authzero</code> is set to 1.13.2. Ensure you add the <code class="highlighter-rouge">INTERNET</code> permission to your <code class="highlighter-rouge">AndroidManifest.xml</code> (it should really already be there!)  Before you synchronize your project, add the following to the app level <code class="highlighter-rouge">build.gradle</code> in the android section as well:</p>
+
+<figure class="highlight"><pre><code class="language-gradle" data-lang="gradle"><span class="n">defaultConfig</span> <span class="o">{</span>
+    <span class="c1">// Other settings here</span>
+    <span class="c1">// Auth0 Requirement</span>
+    <span class="n">manifestPlaceholders</span> <span class="o">=</span> <span class="o">[</span>
+        <span class="nl">auth0Domain:</span> <span class="s2">"@string/com_auth0_domain"</span><span class="o">,</span>
+        <span class="nl">auth0Scheme:</span> <span class="s2">"https"</span>
+    <span class="o">]</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>You should now be able to sync the project and that will download the SDK.</p>
+
+<blockquote>
+  <p>Yes, I’m just following the official instructions for integrating their SDK.  That is perfectly normal here since that is what we are doing.</p>
+</blockquote>
+
+<p>Now, let’s take stock of the code. When we go to the <code class="highlighter-rouge">AuthenticatorActivity</code>, we want an icon to appear that will initiate the authentication process for Auth0. That will have an <code class="highlighter-rouge">onClick</code> handler to do the actual work. We also need some code to process the response from the authentication process. I’ve already added an <code class="highlighter-rouge">ImageButton</code> to my activity layout for the icon. Here is how I configure the button in the <code class="highlighter-rouge">onCreate()</code> method:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="c1">// Configure the Auth0 requirements</span>
+<span class="kd">val</span> <span class="py">auth0Settings</span> <span class="p">=</span> <span class="n">Auth0</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="n">apply</span> <span class="p">{</span>
+    <span class="n">isOIDCConformant</span> <span class="p">=</span> <span class="k">true</span>
+<span class="p">}</span>
+<span class="kd">val</span> <span class="py">audience</span> <span class="p">=</span> <span class="n">String</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="s">"https://%s/userinfo"</span><span class="p">,</span> <span class="n">resources</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">string</span><span class="p">.</span><span class="n">com_auth0_domain</span><span class="p">))</span>
+<span class="n">loginFormAuth0LoginButton</span><span class="p">.</span><span class="n">onClick</span> <span class="p">{</span>
+    <span class="n">WebAuthProvider</span><span class="p">.</span><span class="n">init</span><span class="p">(</span><span class="n">auth0Settings</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">withAudience</span><span class="p">(</span><span class="n">audience</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="k">this</span><span class="nd">@AuthenticatorActivity</span><span class="p">,</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">AuthCallback</span> <span class="p">{</span>
+            <span class="k">override</span> <span class="k">fun</span> <span class="nf">onSuccess</span><span class="p">(</span><span class="nv">credentials</span><span class="p">:</span> <span class="nc">Credentials</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">runOnUiThread</span> <span class="p">{</span> <span class="n">toast</span><span class="p">(</span><span class="s">"Auth0 Authenticated Successfully"</span><span class="p">)</span> <span class="p">}</span>
+                <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"ID Token = ${credentials.idToken}"</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="k">override</span> <span class="k">fun</span> <span class="nf">onFailure</span><span class="p">(</span><span class="nv">dialog</span><span class="p">:</span> <span class="nc">Dialog</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Auth0 Error displayed in dialog"</span><span class="p">)</span>
+                <span class="n">runOnUiThread</span> <span class="p">{</span> <span class="n">dialog</span><span class="p">.</span><span class="n">show</span><span class="p">()</span> <span class="p">}</span>
+            <span class="p">}</span>
+            <span class="k">override</span> <span class="k">fun</span> <span class="nf">onFailure</span><span class="p">(</span><span class="nv">exception</span><span class="p">:</span> <span class="nc">AuthenticationException</span><span class="p">?)</span> <span class="p">{</span>
+                <span class="n">runOnUiThread</span> <span class="p">{</span> <span class="n">toast</span><span class="p">(</span><span class="s">"Auth0 Authentication Failed"</span><span class="p">)</span> <span class="p">}</span>
+                <span class="n">Log</span><span class="p">.</span><span class="n">e</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Auth0 Error: ${exception?.localizedMessage}"</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Note that the <code class="highlighter-rouge">AuthCallback</code> is called on a background thread - not the UI thread. Any further UI interaction has to take that into account.</p>
+
+<p>At this point, you’ve completed the task of authenticating with Auth0. It’s important to note that you must use whatever process that the authentication provider suggests to get to this point. We have not touch AWS resources yet - only the authentication provider. </p>
+
+<p>Run the app and authenticate with the new provider. I’ve deliberately printed out the <code class="highlighter-rouge">idToken</code> so we can take a look. Copy it into the form field at <a href="https://jwt.io">jwt.io</a> to take a look at the decoded token:</p>
+
+<p><img src="/assets/images/2018-10-15-image1.png" alt="Decoded Token" class="center-image" /></p>
+
+<p>Note the <code class="highlighter-rouge">iss</code> field. This is the issuer and is required in order to configure Amazon Cognito identity pools, so we will be using this later on. Also note that the algorithm is RS256. This is also important, but it’s the default so there is no need to worry about it.</p>
+
+<p>At this point, you should have two important pieces of information:</p>
+
+<ul>
+  <li>The Client ID </li>
+  <li>The Issuer </li>
+</ul>
+
+<p>You will need these for the next steps.</p>
+
+<h2 id="step-2-configure-amazon-cognito-identity-pools">Step 2: Configure Amazon Cognito identity pools</h2>
+
+<p>The AWS Amplify CLI provides a simplified process for configuring the back end if you are using one of the supported paths. Generic OIDC providers is definitely off the beaten path, so how do we configure Amazon Cognito to use an OIDC provider when it’s not supported?</p>
+
+<p>You edit the CloudFormation template.</p>
+
+<p>Admittedly, if you like the simplicity of the AWS Amplify CLI, this may not be your first choice. However, when you want to do something a little different, tweaking the CloudFormation templates may be just the thing to get you productive again. When you first start with raw CloudFormation, it can be intimidating. Fortunately, AWS Amplify splits up the work, so you are only editing the authentication and authorization section - not API, Storage, Analytics or anything else. This isolates your changes, making it less prone to mistakes.</p>
+
+<blockquote>
+  <p><strong>Note</strong>: If you edit the CloudFormation templates, then run amplify update auth, then your changes will be over-written. Once you switch to editing the CloudFormation templates, you must continue on that route for configuration changes.</p>
+</blockquote>
+
+<p>So, what do we do to effect this change? All the CloudFormation templates are stored in <code class="highlighter-rouge">amplify/backend</code>, with each category that AWS Amplify supports getting it’s own directory:</p>
+
+<p><img src="/assets/images/2018-10-15-image2.png" alt="The file structure" class="center-image" /></p>
+
+<p>You want to edit the CloudFormation template. This can be done within Android Studio - just switch to the <strong>Project</strong> view, then expand the amplify directory until you find the file.</p>
+
+<p>Since we have already added Google, there are three changes needed. First, edit the <code class="highlighter-rouge">OpenIdLambdaIAMPolicy</code> policy document to include the new issuer. This is what mine looks like:</p>
+
+<figure class="highlight"><pre><code class="language-yaml" data-lang="yaml"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+</pre></td><td class="code"><pre><span class="na">OpenIdLambdaIAMPolicy</span><span class="pi">:</span>
+  <span class="c1"># Sets policy for the role that executes the OpenId Lambda</span>
+  <span class="c1"># Depends on OpenIdLambda for Arn</span>
+  <span class="c1"># Marked as depending on MFALambda for easier to understand CFN sequencing</span>
+    <span class="na">Type</span><span class="pi">:</span> <span class="s1">'</span><span class="s">AWS::IAM::Policy'</span>
+    <span class="na">Properties</span><span class="pi">:</span>
+      <span class="na">PolicyName</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="s">openIdLambdaIAMPolicy</span>
+      <span class="na">Roles</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="kt">!Ref</span> <span class="s">openIdLambdaRoleName</span>
+      <span class="na">PolicyDocument</span><span class="pi">:</span>
+        <span class="na">Version</span><span class="pi">:</span> <span class="s1">'</span><span class="s">2012-10-17'</span>
+        <span class="na">Statement</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+            <span class="na">Action</span><span class="pi">:</span>
+              <span class="pi">-</span> <span class="s1">'</span><span class="s">iam:CreateOpenIDConnectProvider'</span>
+              <span class="pi">-</span> <span class="s1">'</span><span class="s">iam:GetOpenIDConnectProvider'</span>
+              <span class="pi">-</span> <span class="s1">'</span><span class="s">iam:AddClientIDToOpenIDConnectProvider'</span>
+            <span class="na">Resource</span><span class="pi">:</span> <span class="kt">!Sub</span>
+              <span class="pi">-</span> <span class="s">arn:aws:iam::${account}:oidc-provider/accounts.google.com</span>
+              <span class="pi">-</span> <span class="pi">{</span> <span class="nv">account</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="s2">"</span><span class="s">AWS::AccountId"</span><span class="pi">}</span>
+          <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+            <span class="na">Action</span><span class="pi">:</span>
+              <span class="pi">-</span> <span class="s1">'</span><span class="s">iam:CreateOpenIDConnectProvider'</span>
+              <span class="pi">-</span> <span class="s1">'</span><span class="s">iam:GetOpenIDConnectProvider'</span>
+              <span class="pi">-</span> <span class="s1">'</span><span class="s">iam:AddClientIDToOpenIDConnectProvider'</span>
+            <span class="na">Resource</span><span class="pi">:</span> <span class="kt">!Sub</span>
+              <span class="pi">-</span> <span class="s">arn:aws:iam::${account}:oidc-provider/fizzyinthehall.auth0.com</span>
+              <span class="pi">-</span> <span class="pi">{</span> <span class="nv">account</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="s2">"</span><span class="s">AWS::AccountId"</span><span class="pi">}</span>
+          <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+            <span class="na">Action</span><span class="pi">:</span>
+              <span class="pi">-</span> <span class="s1">'</span><span class="s">iam:ListOpenIDConnectProviders'</span>
+            <span class="na">Resource</span><span class="pi">:</span> <span class="kt">!Sub</span>
+              <span class="pi">-</span> <span class="s">arn:aws:iam::${account}:oidc-provider/${selector}</span>
+              <span class="pi">-</span> <span class="pi">{</span> <span class="nv">account</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="s2">"</span><span class="s">AWS::AccountId"</span><span class="pi">,</span> <span class="nv">selector</span><span class="pi">:</span> <span class="s1">'</span><span class="s">*'</span><span class="pi">}</span>
+    <span class="na">DependsOn</span><span class="pi">:</span> <span class="s">OpenIdLambda</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>The additional lines are lines 21–28. Just copy the Google version, replacing <code class="highlighter-rouge">accounts.google.com</code> with your issuer. Next, add a new inputs block:</p>
+
+<figure class="highlight"><pre><code class="language-yaml" data-lang="yaml"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+</pre></td><td class="code"><pre><span class="na">AuthZeroLambdaInputs</span><span class="pi">:</span>
+  <span class="na">Type</span><span class="pi">:</span> <span class="s1">'</span><span class="s">Custom::LambdaCallout'</span>
+  <span class="na">Properties</span><span class="pi">:</span>
+    <span class="na">ServiceToken</span><span class="pi">:</span> <span class="kt">!GetAtt</span> <span class="s">OpenIdLambda.Arn</span>
+    <span class="na">clientIdList</span><span class="pi">:</span> <span class="s">CLIENT_ID</span>
+    <span class="na">url</span><span class="pi">:</span> <span class="s1">'</span><span class="s">https://fizzyinthehall.auth0.com'</span>
+  <span class="na">DependsOn</span><span class="pi">:</span> <span class="s">OpenIdLogPolicy</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>Replace the <strong>CLIENT_ID</strong> with your client ID, and make sure the <code class="highlighter-rouge">url</code> field matches your issuer. Give this section a unique name. You are going to use it again in the next step.</p>
+
+<p>The final edit is to add the new OIDC provider to the identity pool:</p>
+
+<figure class="highlight"><pre><code class="language-yaml" data-lang="yaml"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+</pre></td><td class="code"><pre>  <span class="na">IdentityPool</span><span class="pi">:</span>
+  <span class="c1"># Always created</span>
+    <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::Cognito::IdentityPool</span>
+    <span class="na">Properties</span><span class="pi">:</span>
+      <span class="na">IdentityPoolName</span><span class="pi">:</span> <span class="s">photos_identitypool_9551db82</span>
+
+      <span class="na">CognitoIdentityProviders</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">ClientId</span><span class="pi">:</span>  <span class="kt">!Ref</span> <span class="s">UserPoolClient</span>
+          <span class="na">ProviderName</span><span class="pi">:</span> <span class="kt">!Sub</span>
+            <span class="pi">-</span> <span class="s">cognito-idp.${region}.amazonaws.com/${client}</span>
+            <span class="pi">-</span> <span class="pi">{</span> <span class="nv">region</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="s2">"</span><span class="s">AWS::Region"</span><span class="pi">,</span>  <span class="nv">client</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="nv">UserPool</span><span class="pi">}</span>
+        <span class="pi">-</span> <span class="na">ClientId</span><span class="pi">:</span>  <span class="kt">!Ref</span> <span class="s">UserPoolClientWeb</span>
+          <span class="na">ProviderName</span><span class="pi">:</span> <span class="kt">!Sub</span>
+            <span class="pi">-</span> <span class="s">cognito-idp.${region}.amazonaws.com/${client}</span>
+            <span class="pi">-</span> <span class="pi">{</span> <span class="nv">region</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="s2">"</span><span class="s">AWS::Region"</span><span class="pi">,</span>  <span class="nv">client</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="nv">UserPool</span><span class="pi">}</span>
+
+      <span class="na">SupportedLoginProviders</span><span class="pi">:</span>
+          <span class="s">graph.facebook.com</span><span class="pi">:</span> <span class="s1">'</span><span class="s">314325172480112'</span>
+
+      <span class="na">AllowUnauthenticatedIdentities</span><span class="pi">:</span> <span class="kt">!Ref</span> <span class="s">allowUnauthenticatedIdentities</span>
+
+      <span class="na">OpenIdConnectProviderARNs</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="kt">!GetAtt</span> <span class="s">OpenIdLambdaInputs.providerArn</span>
+        <span class="pi">-</span> <span class="kt">!GetAtt</span> <span class="s">AuthZeroLambdaInputs.providerArn</span>
+    <span class="na">DependsOn</span><span class="pi">:</span> <span class="s">OpenIdLambdaInputs</span>
+</pre></td></tr></tbody></table></code></pre></figure>
+
+<p>The additional line is line 24, and references the section we added immediately prior. Now, deploy this backend:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>amplify push
+</code></pre></div></div>
+
+<p>If you have not added Google (or another OIDC provider that is supported), you need to add a lot more boilerplate to the CloudFormation template. I’d recommend adding Google, Twitter or another provider, and then making the edits so you aren’t typing a lot of boiler plate.</p>
+
+<p>AWS Amplify CLI is an amazing tool for getting started with best practices in developing the backend, but it isn’t the end point. The fact that you can edit the auth settings, but still use AWS Amplify for the other categories allows you to be as flexible as you need to be.</p>
+
+<p>The final step that you probably will need to do is to add the HTTPS thumbprint to the Cognito settings. This is currently not supported by the AWS Amplify CLI, so we need to put it in the web console. AWS has <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc_verify-thumbprint.html">written an article on obtaining the thumbprint</a>, and you should follow that to obtain the  thumbprint of your provider. If you are lucky, your provider will just give it to you (Auth0 does not do this).</p>
+
+<p>Once you have the thumbprint:</p>
+
+<ul>
+  <li>Log onto the <a href="https://console.aws.amazon.com/iam/home">AWS IAM Console</a>.</li>
+  <li>Select <strong>Identity providers</strong> in the left-hand menu.</li>
+  <li>Select your identity provider from the list.</li>
+  <li>Click <strong>Add a Thumbprint</strong>.</li>
+  <li>Paste your thumbprint into the box, then click <strong>Save Changes</strong>.</li>
+</ul>
+
+<p>You can also remove the existing thumbprint (which is all zeros). It isn’t required. </p>
+
+<h2 id="step-3-federate-with-the-identity-pool">Step 3: Federate with the Identity Pool</h2>
+
+<p>Given that we are using the same process as for both the Facebook and Google authentication providers, this should be familiar now. First, add a federation method to the <code class="highlighter-rouge">IndentityRepository</code> interface:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**</span><span class="err">
+</span><span class="cm"> * Federate with OIDC Providers</span><span class="err">
+</span><span class="cm"> */</span>
+<span class="k">fun</span> <span class="nf">federateWithOIDC</span><span class="p">(</span><span class="nv">token</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="nv">issuer</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Now, add a call to the <code class="highlighter-rouge">AuthenticatorViewModel</code> class:</p>
+
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">fun</span> <span class="nf">federateWithOIDC</span><span class="p">(</span><span class="nv">token</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="nv">issuer</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span>
+  <span class="p">=</span> <span class="n">identityRepository</span><span class="p">.</span><span class="n">federateWithOIDC</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">issuer</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Also, add a concrete implementation to the <code class="highlighter-rouge">AWSIdentityRepository</code> class:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="cm">/**</span><span class="err">
+</span><span class="cm">  * Federate with OIDC</span><span class="err">
+</span><span class="cm">  */</span>
+<span class="k">override</span> <span class="k">fun</span> <span class="nf">federateWithOIDC</span><span class="p">(</span><span class="nv">token</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="nv">issuer</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Federating with $issuer"</span><span class="p">)</span>
+    <span class="n">thread</span><span class="p">(</span><span class="n">start</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">with</span><span class="p">(</span><span class="n">service</span><span class="p">.</span><span class="n">identityManager</span><span class="p">.</span><span class="n">underlyingProvider</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">clear</span><span class="p">()</span>
+            <span class="n">withLogins</span><span class="p">(</span><span class="n">mapOf</span><span class="p">(</span><span class="n">issuer</span> <span class="n">to</span> <span class="n">token</span><span class="p">))</span>
+            <span class="n">refresh</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="kd">val</span> <span class="py">user</span> <span class="p">=</span> <span class="n">User</span><span class="p">().</span><span class="n">apply</span> <span class="p">{</span>
+            <span class="n">tokens</span><span class="p">[</span><span class="n">TokenType</span><span class="p">.</span><span class="n">ID_TOKEN</span><span class="p">]</span> <span class="p">=</span> <span class="n">token</span>
+            <span class="n">userAttributes</span><span class="p">[</span><span class="s">"provider"</span><span class="p">]</span> <span class="p">=</span> <span class="n">issuer</span>
+        <span class="p">}</span>
+        <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Federated result: ${service.identityManager.isUserSignedIn}"</span><span class="p">)</span>
+        <span class="n">runOnUiThread</span> <span class="p">{</span> <span class="n">mCurrentUser</span><span class="p">.</span><span class="n">postValue</span><span class="p">(</span><span class="n">user</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>There is definitely more to do here, especially if you want to add in profile information to the user object. However, obtaining profile information is very provider dependent. Auth0 will place the profile information into the JWT that is returned if you need it.</p>
+
+<p>To federate, you just need the access token.</p>
+
+<p>Talking of which, let’s update the Auth0 callback to call the federation:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">WebAuthProvider</span><span class="p">.</span><span class="n">init</span><span class="p">(</span><span class="n">auth0Settings</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">withAudience</span><span class="p">(</span><span class="n">audience</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="k">this</span><span class="nd">@AuthenticatorActivity</span><span class="p">,</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">AuthCallback</span> <span class="p">{</span>
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onSuccess</span><span class="p">(</span><span class="nv">credentials</span><span class="p">:</span> <span class="nc">Credentials</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">model</span><span class="p">.</span><span class="n">federateWithOIDC</span><span class="p">(</span><span class="n">credentials</span><span class="p">.</span><span class="n">accessToken</span><span class="o">!!</span><span class="p">,</span> <span class="n">resources</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">string</span><span class="p">.</span><span class="n">com_auth0_domain</span><span class="p">))</span>
+            <span class="k">this</span><span class="nd">@AuthenticatorActivity</span><span class="p">.</span><span class="n">finish</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onFailure</span><span class="p">(</span><span class="nv">dialog</span><span class="p">:</span> <span class="nc">Dialog</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Auth0 Error displayed in dialog"</span><span class="p">)</span>
+            <span class="n">runOnUiThread</span> <span class="p">{</span> <span class="n">dialog</span><span class="p">.</span><span class="n">show</span><span class="p">()</span> <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">onFailure</span><span class="p">(</span><span class="nv">exception</span><span class="p">:</span> <span class="nc">AuthenticationException</span><span class="p">?)</span> <span class="p">{</span>
+            <span class="n">runOnUiThread</span> <span class="p">{</span> <span class="n">toast</span><span class="p">(</span><span class="s">"Auth0 Authentication Failed"</span><span class="p">)</span> <span class="p">}</span>
+            <span class="n">Log</span><span class="p">.</span><span class="n">e</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Auth0 Error: ${exception?.localizedMessage}"</span><span class="p">)</span>
+        <span class="p">}</span>
+   <span class="p">})</span></code></pre></figure>
+
+<p>Again, this change should be very familiar since we did the same thing in Facebook and Google.</p>
+
+<p>The final thing to do is something that is not covered here. In the case of Facebook and Google, there were SDK methods to refresh the Facebook and Google tokens silently on start-up. We added code to the init block to access the refreshed token and federate with the identity pool.</p>
+
+<p>With a generic OIDC provider, you need to do the same. However, the details are provider dependent. Just follow their instructions for storing and refreshing the token (perhaps using shared preferences for refresh token storage), and federate with the identity pool when needed.</p>
+
+<h2 id="common-errors">Common Errors</h2>
+
+<p>There are two common errors:</p>
+
+<ol>
+  <li>Submitting the wrong token. You must submit the <strong>idToken</strong>, not the accessToken. Ensure that you are submitting the right token to the back end.</li>
+  <li>Invalid HTTPS Thumbprint. Amazon Cognito requires the signature of the remote end to match the recorded thumbprint. Federation will fail if this is not the case.</li>
+</ol>
+
+<h2 id="wrap-up">Wrap Up</h2>
+
+<p>This is the last of the primary authentication methods that we will cover. In the next article, I’m going to cover TOTP (Time-based one-time passwords) for Amazon Cognito user pools, including configuration and usage.</p>
+
+:ET

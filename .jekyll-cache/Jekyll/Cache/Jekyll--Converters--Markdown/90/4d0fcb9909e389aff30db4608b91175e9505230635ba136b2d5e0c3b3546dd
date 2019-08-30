@@ -1,0 +1,253 @@
+I"�r<p>Today, I am continuing with the authentication story for my app - Tailwind Photos - and tackling <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/">Microsoft authentication</a>. 
+The story so far:</p>
+
+<ul>
+  <li><a href="/android/tailwind%20photos/2019/08/15/tailwind-photos-1/">The Splash Screen</a></li>
+  <li><a href="/android/tailwind%20photos/2019/08/17/tailwind-photos-2/">Facebook Login</a></li>
+  <li><a href="/android/tailwind%20photos/2019/08/19/tailwinds-photos-3/">Google Login</a></li>
+</ul>
+
+<p>You will see a lot of the same techniques as previous methods - just updated for todays topic.  Let’s get started!</p>
+
+<p>The bright side of todays topic is that, with a few twists, you can use this same code if your app targets enterprise users.  There is a point in the configuration where you need to select “Anyone” and “Enterprise users only” - just make the right selection!</p>
+
+<h2 id="the-azure-active-directory-side-of-things">The Azure Active Directory side of things</h2>
+
+<p>Start by signing onto the <a href="https://portal.azure.com">Azure portal</a>.  The <a href="https://azure.microsoft.com/en-us/free/">account is free</a>, and doing the actual sign-up is like any other cloud provider.  Once you have got into your account:</p>
+
+<ul>
+  <li>Open the Azure Active Directory blade:
+    <ul>
+      <li>Click <strong>All services</strong> in the left-hand menu.</li>
+      <li>Enter <em>Active Directory</em> in the search box</li>
+      <li>Click <strong>Azure Active Directory</strong>.</li>
+    </ul>
+  </li>
+</ul>
+
+<blockquote>
+  <p>You can favorite any resource types you use on a regular basis to get easy access to them in the left-hand menu.</p>
+</blockquote>
+
+<ul>
+  <li>Click <strong>App registrations</strong> in the blade menu.</li>
+  <li>Click <strong>New registration</strong>.
+    <ul>
+      <li>Enter a name for this app.  I used <code class="highlighter-rouge">Tailwind Photos for Android</code>.</li>
+      <li>Select the supported account types.  I used <em>Accounts in any organizational directory and personal Microsoft accounts (e.g. Skype, Xbox)</em>.  This is where you can lock your authentication down to just enterpise users if needed.</li>
+      <li>Under <strong>Redirect URI</strong>, select **Public client (mobile &amp; desktop), then enter a redirect URI that is unique to your app.  I’m using <code class="highlighter-rouge">tailwind-photos://auth</code>.  Pick your own redirect, though.</li>
+    </ul>
+  </li>
+  <li>Click <strong>Register</strong>.</li>
+</ul>
+
+<p>This will give you an <strong>Application (client) ID</strong> which you will need later.</p>
+
+<h2 id="the-app-side-of-things">The app side of things</h2>
+
+<p>As with the other libraries, we need to do a little bit of setup.  Let’s start with the library.  We previously added <code class="highlighter-rouge">mavenCentral()</code> as a repository, so we only need to add the library in the module level <code class="highlighter-rouge">build.gradle</code> file:</p>
+
+<figure class="highlight"><pre><code class="language-gradle" data-lang="gradle"><span class="k">dependencies</span> <span class="o">{</span>
+  <span class="c1">// Rest of the dependencies go here</span>
+	<span class="n">implementation</span> <span class="s1">'com.facebook.android:facebook-android-sdk:5.2.0'</span>
+	<span class="n">implementation</span> <span class="s1">'com.google.android.gms:play-services-auth:17.0.0'</span>
+	<span class="n">implementation</span> <span class="s1">'com.microsoft.identity.client:msal:0.2.2'</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>Next, we already have the <code class="highlighter-rouge">INTERNET</code> permission, but we also need the <code class="highlighter-rouge">ACCESS_NETWORK_STATE</code> permission in the <code class="highlighter-rouge">AndroidManifest.xml</code> file:</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml">	<span class="nt">&lt;uses-permission</span> <span class="na">android:name=</span><span class="s">"android.permission.INTERNET"</span> <span class="nt">/&gt;</span>
+	<span class="nt">&lt;uses-permission</span> <span class="na">android:name=</span><span class="s">"android.permission.ACCESS_NETWORK_STATE"</span> <span class="nt">/&gt;</span></code></pre></figure>
+
+<p>Also in the <code class="highlighter-rouge">AndroidManifest.xml</code>, we need to add a definition of the activity that the MSAL (Microsoft Authentication Library) uses:</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml">		<span class="c">&lt;!-- Microsoft Authentication --&gt;</span>
+		<span class="nt">&lt;activity</span> <span class="na">android:name=</span><span class="s">"com.microsoft.identity.client.BrowserTabActivity"</span><span class="nt">&gt;</span>
+			<span class="nt">&lt;intent-filter&gt;</span>
+				<span class="nt">&lt;action</span> <span class="na">android:name=</span><span class="s">"android.intent.action.VIEW"</span><span class="nt">/&gt;</span>
+				<span class="nt">&lt;category</span> <span class="na">android:name=</span><span class="s">"android.intent.category.DEFAULT"</span><span class="nt">/&gt;</span>
+				<span class="nt">&lt;category</span> <span class="na">android:name=</span><span class="s">"android.intent.category.BROWSABLE"</span><span class="nt">/&gt;</span>
+				<span class="nt">&lt;data</span> <span class="na">android:scheme=</span><span class="s">"tailwind-photos"</span> <span class="na">android:host=</span><span class="s">"auth"</span><span class="nt">/&gt;</span>
+			<span class="nt">&lt;/intent-filter&gt;</span>
+		<span class="nt">&lt;/activity&gt;</span></code></pre></figure>
+
+<p>The <code class="highlighter-rouge">data</code> values come from the redirect URI that you entered in the configuration.  I entered <code class="highlighter-rouge">tailwind-photos://auth</code>, so that is where the scheme and host are derived from.  Notice how this activity definition is similar to the Facebook definition!</p>
+
+<p>We need to create an <code class="highlighter-rouge">msal_config.json</code> file that contains the configuration we have set up.  Here is an example:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+	</span><span class="nl">"client_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"12345678-abcd-4dc1-96f0-14c0ccaf829c"</span><span class="p">,</span><span class="w">
+	</span><span class="nl">"authorization_user_agent"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DEFAULT"</span><span class="p">,</span><span class="w">
+	</span><span class="nl">"redirect_uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tailwind-photos://auth"</span><span class="p">,</span><span class="w">
+	</span><span class="nl">"authorities"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+		</span><span class="p">{</span><span class="w">
+			</span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AAD"</span><span class="p">,</span><span class="w">
+			</span><span class="nl">"audience"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+				</span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AzureADandPersonalMicrosoftAccount"</span><span class="w">
+			</span><span class="p">}</span><span class="w">
+		</span><span class="p">}</span><span class="w">
+	</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>To create this:</p>
+
+<ul>
+  <li>Right-click on <code class="highlighter-rouge">res</code>, select <strong>New</strong> &gt; <strong>Directory</strong>.  Enter the name <code class="highlighter-rouge">raw</code>.</li>
+  <li>Right-click on the newly created <code class="highlighter-rouge">res/raw</code> directory, select <strong>New</strong> &gt; <strong>File</strong>.  Enter the name <code class="highlighter-rouge">msal_config.json</code>.</li>
+  <li>Copy the above JSON into the newly created file, replacing the <code class="highlighter-rouge">client_id</code> and <code class="highlighter-rouge">redirect_uri</code> values with your own.</li>
+</ul>
+
+<p>Let’s get on with the code.  As before, I’ve added calls into <code class="highlighter-rouge">AuthenticatorActivity</code> to call the abstracted authentication class:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="kd">class</span> <span class="nc">AuthenticatorActivity</span> <span class="p">:</span> <span class="n">AppCompatActivity</span><span class="p">()</span> <span class="p">{</span>
+	<span class="c1">// Facebook and Google manager variables</span>
+	<span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">msaManager</span><span class="p">:</span> <span class="n">MicrosoftManager</span>
+
+	<span class="k">override</span> <span class="k">fun</span> <span class="nf">onCreate</span><span class="p">(</span><span class="nv">savedInstanceState</span><span class="p">:</span> <span class="nc">Bundle</span><span class="p">?)</span> <span class="p">{</span>
+		<span class="k">super</span><span class="p">.</span><span class="n">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">)</span>
+		<span class="n">setContentView</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">layout</span><span class="p">.</span><span class="n">activity_authenticator</span><span class="p">)</span>
+
+		<span class="cm">/* FACEBOOK AUTH INITIALIZATION */</span>
+		<span class="cm">/* GOOGLE AUTH INITIALIZATION */</span>
+
+		<span class="cm">/* MICROSOFT AUTH INITIALIZATION */</span>
+		<span class="n">msaManager</span> <span class="p">=</span> <span class="n">MicrosoftManager</span><span class="p">(</span><span class="n">applicationContext</span><span class="p">)</span>
+		<span class="n">msaManager</span>
+			<span class="p">.</span><span class="n">onSuccess</span> <span class="p">{</span> <span class="n">user</span> <span class="p">-&gt;</span> <span class="n">moveToNextActivity</span><span class="p">(</span><span class="n">user</span><span class="p">)</span> <span class="p">}</span>
+			<span class="p">.</span><span class="n">onFailure</span> <span class="p">{</span> <span class="n">error</span> <span class="p">-&gt;</span> <span class="n">displayErrorAlert</span><span class="p">(</span><span class="s">"Microsoft"</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span> <span class="p">}</span>
+		<span class="n">microsoft_login</span><span class="p">.</span><span class="n">setOnClickListener</span> <span class="p">{</span>
+			<span class="n">msaManager</span><span class="p">.</span><span class="n">beginSignin</span><span class="p">(</span><span class="k">this</span><span class="nd">@AuthenticatorActivity</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="k">override</span> <span class="k">fun</span> <span class="nf">onActivityResult</span><span class="p">(</span><span class="nv">requestCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">resultCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="nc">Intent</span><span class="p">?)</span> <span class="p">{</span>
+		<span class="k">super</span><span class="p">.</span><span class="n">onActivityResult</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">resultCode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+		<span class="c1">// Facebook and Google onActivityResult calls</span>
+		<span class="n">msaManager</span><span class="p">.</span><span class="n">onActivityResult</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">resultCode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+	<span class="p">}</span>
+
+  <span class="c1">// Rest of the activity</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>This code should be familiar by now since we’ve done the same thing for each authentication implementation.  Let’s take a look at the <code class="highlighter-rouge">MicrosoftManager</code> class:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">typealias</span> <span class="n">OnMicrosoftSuccessCallback</span> <span class="p">=</span> <span class="p">(</span><span class="n">AuthenticatedUser</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="n">Unit</span>
+<span class="k">typealias</span> <span class="n">OnMicrosoftCancelCallback</span> <span class="p">=</span> <span class="p">()</span> <span class="p">-&gt;</span> <span class="n">Unit</span>
+<span class="k">typealias</span> <span class="n">OnMicrosoftFailureCallback</span> <span class="p">=</span> <span class="p">(</span><span class="n">Exception</span><span class="p">?)</span> <span class="p">-&gt;</span> <span class="n">Unit</span>
+
+<span class="kd">class</span> <span class="nc">MicrosoftManager</span><span class="p">(</span><span class="nv">context</span><span class="p">:</span> <span class="nc">Context</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">private</span> <span class="kd">var</span> <span class="py">onSuccessCallback</span><span class="p">:</span> <span class="n">OnMicrosoftSuccessCallback</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+	<span class="k">private</span> <span class="kd">var</span> <span class="py">onCancelCallback</span><span class="p">:</span> <span class="n">OnMicrosoftCancelCallback</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+	<span class="k">private</span> <span class="kd">var</span> <span class="py">onFailureCallback</span><span class="p">:</span> <span class="n">OnMicrosoftFailureCallback</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+
+	<span class="k">private</span> <span class="kd">val</span> <span class="py">scopes</span> <span class="p">=</span> <span class="n">arrayOf</span><span class="p">(</span>
+		<span class="s">"https://graph.microsoft.com/User.Read"</span>
+	<span class="p">)</span>
+
+	<span class="k">private</span> <span class="kd">val</span> <span class="py">client</span> <span class="p">=</span> <span class="n">PublicClientApplication</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">R</span><span class="p">.</span><span class="n">raw</span><span class="p">.</span><span class="n">msal_config</span><span class="p">)</span>
+
+	<span class="k">fun</span> <span class="nf">onSuccess</span><span class="p">(</span><span class="nv">callback</span><span class="p">:</span> <span class="nc">OnMicrosoftSuccessCallback</span><span class="p">):</span> <span class="nc">MicrosoftManager</span> <span class="p">{</span>
+		<span class="k">this</span><span class="p">.</span><span class="n">onSuccessCallback</span> <span class="p">=</span> <span class="n">callback</span>
+		<span class="k">return</span> <span class="k">this</span>
+	<span class="p">}</span>
+
+	<span class="k">fun</span> <span class="nf">onCancel</span><span class="p">(</span><span class="nv">callback</span><span class="p">:</span> <span class="nc">OnMicrosoftCancelCallback</span><span class="p">):</span> <span class="nc">MicrosoftManager</span> <span class="p">{</span>
+		<span class="k">this</span><span class="p">.</span><span class="n">onCancelCallback</span> <span class="p">=</span> <span class="n">callback</span>
+		<span class="k">return</span> <span class="k">this</span>
+	<span class="p">}</span>
+
+	<span class="k">fun</span> <span class="nf">onFailure</span><span class="p">(</span><span class="nv">callback</span><span class="p">:</span> <span class="nc">OnMicrosoftFailureCallback</span><span class="p">):</span> <span class="nc">MicrosoftManager</span> <span class="p">{</span>
+		<span class="k">this</span><span class="p">.</span><span class="n">onFailureCallback</span> <span class="p">=</span> <span class="n">callback</span>
+		<span class="k">return</span> <span class="k">this</span>
+	<span class="p">}</span>
+
+	<span class="k">fun</span> <span class="nf">beginSignin</span><span class="p">(</span><span class="nv">activity</span><span class="p">:</span> <span class="nc">Activity</span><span class="p">)</span> <span class="p">{</span>
+		<span class="kd">val</span> <span class="py">account</span> <span class="p">=</span> <span class="k">if</span> <span class="p">(</span><span class="n">client</span><span class="p">.</span><span class="n">accounts</span><span class="p">.</span><span class="n">isEmpty</span><span class="p">())</span> <span class="k">null</span> <span class="k">else</span> <span class="n">client</span><span class="p">.</span><span class="n">accounts</span><span class="p">[</span><span class="m">0</span><span class="p">]</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">account</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">client</span><span class="p">.</span><span class="n">acquireTokenSilentAsync</span><span class="p">(</span><span class="n">scopes</span><span class="p">,</span> <span class="n">account</span><span class="p">,</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">AuthenticationCallback</span> <span class="p">{</span>
+				<span class="k">override</span> <span class="k">fun</span> <span class="nf">onSuccess</span><span class="p">(</span><span class="nv">authenticationResult</span><span class="p">:</span> <span class="nc">AuthenticationResult</span><span class="p">?)</span> <span class="p">{</span>
+					<span class="n">userInformationCallback</span><span class="p">(</span><span class="n">authenticationResult</span><span class="p">)</span>
+				<span class="p">}</span>
+
+				<span class="k">override</span> <span class="k">fun</span> <span class="nf">onCancel</span><span class="p">()</span> <span class="p">{</span>
+					<span class="n">onCancelCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">()</span>
+				<span class="p">}</span>
+
+				<span class="k">override</span> <span class="k">fun</span> <span class="nf">onError</span><span class="p">(</span><span class="nv">exception</span><span class="p">:</span> <span class="nc">MsalException</span><span class="p">?)</span> <span class="p">{</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">exception</span> <span class="k">is</span> <span class="n">MsalUiRequiredException</span><span class="p">)</span>
+						<span class="n">signInInteractively</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+					<span class="k">else</span>
+						<span class="n">onFailureCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+				<span class="p">}</span>
+			<span class="p">})</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">signInInteractively</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="k">private</span> <span class="k">fun</span> <span class="nf">signInInteractively</span><span class="p">(</span><span class="nv">activity</span><span class="p">:</span> <span class="nc">Activity</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">client</span><span class="p">.</span><span class="n">acquireToken</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="n">scopes</span><span class="p">,</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">AuthenticationCallback</span> <span class="p">{</span>
+			<span class="k">override</span> <span class="k">fun</span> <span class="nf">onSuccess</span><span class="p">(</span><span class="nv">authenticationResult</span><span class="p">:</span> <span class="nc">AuthenticationResult</span><span class="p">?)</span> <span class="p">{</span>
+				<span class="n">userInformationCallback</span><span class="p">(</span><span class="n">authenticationResult</span><span class="p">)</span>
+			<span class="p">}</span>
+
+			<span class="k">override</span> <span class="k">fun</span> <span class="nf">onCancel</span><span class="p">()</span> <span class="p">{</span>
+				<span class="n">onCancelCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">()</span>
+			<span class="p">}</span>
+
+			<span class="k">override</span> <span class="k">fun</span> <span class="nf">onError</span><span class="p">(</span><span class="nv">exception</span><span class="p">:</span> <span class="nc">MsalException</span><span class="p">?)</span> <span class="p">{</span>
+				<span class="n">onFailureCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+			<span class="p">}</span>
+		<span class="p">})</span>
+	<span class="p">}</span>
+
+  <span class="k">private</span> <span class="k">fun</span> <span class="nf">userInformationCallback</span><span class="p">(</span><span class="nv">authenticationResult</span><span class="p">:</span> <span class="nc">AuthenticationResult</span><span class="p">?)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">authenticationResult</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">onFailureCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">(</span><span class="n">RuntimeException</span><span class="p">(</span><span class="s">"auth result is null"</span><span class="p">))</span>
+      <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="s">"MicrosoftManager"</span><span class="p">,</span> <span class="s">"SUCCESS!"</span><span class="p">)</span>
+  <span class="p">}</span>
+
+	<span class="k">fun</span> <span class="nf">onActivityResult</span><span class="p">(</span><span class="nv">requestCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">resultCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="nc">Intent</span><span class="p">?)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">data</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+			<span class="n">onFailureCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">(</span><span class="n">RuntimeException</span><span class="p">(</span><span class="s">"response data is null"</span><span class="p">))</span>
+		<span class="k">else</span>
+			<span class="n">client</span><span class="p">.</span><span class="n">handleInteractiveRequestRedirect</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">resultCode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>This is all fairly standard boiler-plate code for MSAL.  However, I’ve not completed the task.  Specifically, I’ve left what happens in <code class="highlighter-rouge">userInformationCallback()</code>.  When you press the Microsoft login button, it will go through the normal authentication mechanism, eventually calling <code class="highlighter-rouge">userInformationCallback()</code> with an authentication result.  The authentication result only contains the access token.  This is a JWT used for authentication purposes on back end services.</p>
+
+<p>We need the name and email address as well.  Fortunately, the information is contained within the JWT and JSON web tokens are not hard to decode.  If you need to validate a JSON web token, then it is best to use a library.  If you want to decode a JSON web token, they you just have to be aware that they are made up of two JSON sections that are base-64 encoded, plus a signature.  You can replace the <code class="highlighter-rouge">userInformationCallback()</code> with the following code:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin">	<span class="k">private</span> <span class="k">fun</span> <span class="nf">userInformationCallback</span><span class="p">(</span><span class="nv">authenticationResult</span><span class="p">:</span> <span class="nc">AuthenticationResult</span><span class="p">?)</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">authenticationResult</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">onFailureCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">(</span><span class="n">RuntimeException</span><span class="p">(</span><span class="s">"auth result is null"</span><span class="p">))</span>
+			<span class="k">return</span>
+		<span class="p">}</span>
+
+		<span class="k">try</span> <span class="p">{</span>
+			<span class="kd">val</span> <span class="py">b64body</span> <span class="p">=</span> <span class="n">authenticationResult</span><span class="p">.</span><span class="n">idToken</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">"."</span><span class="p">)[</span><span class="m">1</span><span class="p">]</span>
+			<span class="kd">val</span> <span class="py">body</span> <span class="p">=</span> <span class="n">JSONObject</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="n">Base64</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">b64body</span><span class="p">,</span> <span class="n">Base64</span><span class="p">.</span><span class="n">URL_SAFE</span><span class="p">)))</span>
+			<span class="kd">val</span> <span class="py">name</span> <span class="p">=</span> <span class="n">body</span><span class="p">.</span><span class="n">optString</span><span class="p">(</span><span class="s">"name"</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
+			<span class="kd">val</span> <span class="py">email</span> <span class="p">=</span> <span class="n">authenticationResult</span><span class="p">.</span><span class="n">account</span><span class="p">.</span><span class="n">username</span>
+			<span class="kd">val</span> <span class="py">user</span> <span class="p">=</span> <span class="n">AuthenticatedUser</span><span class="p">(</span>
+						<span class="n">authenticationResult</span><span class="p">.</span><span class="n">idToken</span><span class="p">,</span>
+						<span class="n">AuthenticationProvider</span><span class="p">.</span><span class="n">MICROSOFT</span><span class="p">,</span>
+						<span class="n">name</span><span class="p">,</span> <span class="n">email</span><span class="p">)</span>
+			<span class="n">onSuccessCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+		<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">exception</span><span class="p">:</span> <span class="nc">Exception</span><span class="p">)</span> <span class="p">{</span>
+			<span class="n">onFailureCallback</span><span class="o">?.</span><span class="n">invoke</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span></code></pre></figure>
+
+<p>This will now construct the right <code class="highlighter-rouge">AuthenticatedUser</code> object without further network calls.  You could, instead, do a Graph lookup to Microsoft Graph for the information.  However, that’s an additional network call; mobile apps have enough to do!</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>You should be able to run the app at this point and authenticate with Microsoft authentication.  If you stop and start the app again, pressing the Microsoft authentication button will silently authenticate you - there is no need for another prompt if the token is still valid.</p>
+
+<p>In the next article, I’ll tackle Twitter authentication.  Until then, the <a href="https://github.com/adrianhall/tailwind-photos-for-android/tree/blog-4">code is in GitHub</a>.</p>
+:ET

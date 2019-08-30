@@ -1,0 +1,9 @@
+I"R<ul class="toc__menu">
+  <li><a href="#step-1-convert-to-using-aws_iam">Step 1: Convert to using AWS_IAM</a></li>
+  <li><a href="#step-2-add-a-mutation-to-your-graphql-schema">Step 2: Add a mutation to your GraphQL schema</a></li>
+  <li><a href="#step-3-add-policy-to-the-authenticated-role">Step 3: Add policy to the authenticated role</a></li>
+  <li><a href="#step-4-add-a-role-for-the-lambda-function">Step 4: Add a role for the Lambda function</a></li>
+  <li><a href="#step-5-write-a-lambda-function">Step 5: Write a Lambda function</a></li>
+  <li><a href="#wrap-up">Wrap up</a></li>
+</ul>
+:ET

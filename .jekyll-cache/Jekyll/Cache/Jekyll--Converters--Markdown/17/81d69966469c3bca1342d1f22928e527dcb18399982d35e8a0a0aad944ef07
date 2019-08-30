@@ -1,0 +1,203 @@
+I"�V<p>In previous posts, we’ve explored how to deploy a GraphQL service based on <a href="https://aws.amazon.com/appsync">AWS AppSync</a> and Amazon DynamoDB using <a href="https://aws.amazon.com/cloudformation">AWS CloudFormation</a>. The articles reinforce how automatic and repeatable deployments are central to moving towards a DevOps mindset.</p>
+
+<p>However, there are a few problems with the <a href="https://aws.amazon.com/cloudformation">AWS CloudFormation</a> template. The most notable issue is the inability to separate the schema and resolver mapping templates from the actual CloudFormation template. Overcoming this obstacle requires developers to embed these resources — and that makes it harder than necessary.</p>
+
+<blockquote>
+  <p>AWS AppSync is a serverless backend-as-a-service for mobile and web applications. It’s a fully managed scalable platform that provides real-time data synchronization and offline capabilities for data driven applications. It leverages GraphQL, a powerful API query language that efficiently uses the network to reduce bandwidth requirements and network latencies.</p>
+</blockquote>
+
+<p>There are two common deployment frameworks that can be used instead of CloudFormation — the <a href="https://serverless.com">Serverless Framework</a>, originally intended for deploying serverless applications based on AWS Lambda, and <a href="https://www.terraform.io/">Terraform</a>, which has the same aim. Both these tools aim to make infrastructure as maintainable as code, allowing you to check them in and test them.</p>
+
+<h2 id="getting-started-with-serverless-framework">Getting started with Serverless Framework</h2>
+
+<p>In this article, I’m going to use the Serverless Framework to deploy the same GraphQL service that I deployed previously. To start, you need to have the Serverless Framework installed:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">npm <span class="nb">install</span> <span class="nt">-g</span> serverless</code></pre></figure>
+
+<p>This gives you two new commands: <code class="highlighter-rouge">serverless</code> and <code class="highlighter-rouge">sls — they</code> are equivalent to one another. Now, let’s create a new serverless project:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">serverless create <span class="nt">--template</span> aws-nodejs <span class="nt">--path</span> sls-appsync-backend
+<span class="nb">cd </span>sls-appsync-backend
+npm init <span class="nt">-y</span>
+git init
+git add <span class="nt">-A</span>
+git commit <span class="nt">-m</span> <span class="s2">"Initial Commit"</span></code></pre></figure>
+
+<p>The directory that is created contains two files — <code class="highlighter-rouge">handler.js</code> is the initial Lambda function for the project. We won’t be using it. The <code class="highlighter-rouge">serverless.yml</code> file contains the definition of the backend.</p>
+
+<h2 id="add-plugins">Add plugins</h2>
+
+<p>One of the neat things about the Serverless Framework is the number of plugins that are available. You can create your own plugin and plenty of people have. You can see <a href="https://github.com/serverless/plugins">a big list on GitHub</a>.</p>
+
+<p>To use a plugin, download it via npm and then add it to the serverless.yml file. In this project, I’m going to use just one plugin: <a href="https://github.com/sid88in/serverless-appsync-plugin">serverless-appsync-plugin</a>. This is a plugin for, you guessed it, configuring AWS AppSync, written by <a href="https://twitter.com/sidg_sid">Siddharth Gupta</a>.</p>
+
+<p>To install, run the following (all on one line):</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">npm <span class="nb">install</span> <span class="nt">-s</span> serverless serverless-appsync-plugin</code></pre></figure>
+
+<p>I also like to add a scripts section within the <code class="highlighter-rouge">package.json</code> file so that I don’t have to remember how to deploy the service:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="nl">"scripts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"deploy"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./node_modules/.bin/serverless deploy -v"</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>Don’t deploy the service yet. We haven’t finished things! Edit the <code class="highlighter-rouge">serverless.yml</code> file and add the plugin to that:</p>
+
+<figure class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="na">plugins</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="s">serverless-appsync-plugin</span></code></pre></figure>
+
+<p>You can put this new section right under the service name.</p>
+
+<h2 id="define-dependent-services">Define dependent services</h2>
+
+<p>If you followed my prior article for using CloudFormation, you will know that I need a DynamoDB database, and Amazon Cognito user pool, and some IAM roles to hook them all together. These are placed in the <code class="highlighter-rouge">resources</code> section of the <code class="highlighter-rouge">serverless.yml</code> file and they look pretty much the same because they are the same.</p>
+
+<p>Here is the list of resources you will need to define:</p>
+
+<ul>
+  <li>An Amazon Cognito user pool</li>
+  <li>A user pool app client</li>
+  <li>The DynamoDB table</li>
+  <li>A policy document for allowing access to the DynamoDB table</li>
+  <li>An IAM role for implementing the policy document</li>
+</ul>
+
+<p>I haven’t covered these here since I covered them in my prior article and they are identical in form.</p>
+
+<p>There is a little complexity here, however. When I was doing a CloudFormation template, I could use operations like <code class="highlighter-rouge">!Join</code> and <code class="highlighter-rouge">!GetAtt</code>. These are not available with Serverless Framework. Instead, you have to use the JSON versions — mostly because Serverless Framework translates the configuration into a JSON CloudFormation file. That means using arrays and objects and the <code class="highlighter-rouge">Fn::</code> versions of the functions. As an example, the resource definition for the <code class="highlighter-rouge">AppSyncDynamoDBPolicy</code> became a bit cumbersome:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ Fn::Join: [ '', [ { Fn::GetAtt: [ NotesTable, Arn ] }, '/*' ] ] }
+</code></pre></div></div>
+
+<p>This is bit incoherent and I hope that the Serverless Framework folks improve this so we can do something a little easier.</p>
+
+<h2 id="define-the-aws-appsync-schema-and-mapping-files">Define the AWS AppSync schema and mapping files</h2>
+
+<p>This portion gets to the crux of the reason for switching to the Serverless Framework in the first place — we get to separate out the files that are used to define the AWS AppSync service. This means writing a schema and some mapping template files.</p>
+
+<p>First, let’s look at the schema. This should be named <code class="highlighter-rouge">schema.graphql</code>. Yes — that specifically. Although you can specify the name of the file in the configuration file, I like the convention over configuration approach here.</p>
+
+<p>The GraphQL schema is pulled from my CloudFormation template:</p>
+
+<figure class="highlight"><pre><code class="language-graphql" data-lang="graphql"><span class="k">type</span><span class="w"> </span><span class="n">Note</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">NoteId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!</span><span class="w">
+  </span><span class="n">title</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+  </span><span class="n">content</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="k">type</span><span class="w"> </span><span class="n">PaginatedNotes</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">notes</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="n">Note</span><span class="p">!]!</span><span class="w">
+  </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="k">type</span><span class="w"> </span><span class="n">Query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">allNotes</span><span class="p">(</span><span class="n">limit</span><span class="p">:</span><span class="w"> </span><span class="nb">Int</span><span class="p">,</span><span class="w"> </span><span class="n">nextToken</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">):</span><span class="w"> </span><span class="n">PaginatedNotes</span><span class="p">!</span><span class="w">
+  </span><span class="n">getNote</span><span class="p">(</span><span class="n">NoteId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Note</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="k">type</span><span class="w"> </span><span class="n">Mutation</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">saveNote</span><span class="p">(</span><span class="n">NoteId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!,</span><span class="w"> </span><span class="n">title</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!,</span><span class="w"> </span><span class="n">content</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!):</span><span class="w"> </span><span class="n">Note</span><span class="w">
+  </span><span class="n">deleteNote</span><span class="p">(</span><span class="n">NoteId</span><span class="p">:</span><span class="w"> </span><span class="nb">ID</span><span class="p">!):</span><span class="w"> </span><span class="n">Note</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span><span class="k">type</span><span class="w"> </span><span class="n">Schema</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">query</span><span class="p">:</span><span class="w"> </span><span class="n">Query</span><span class="w">
+  </span><span class="n">mutation</span><span class="p">:</span><span class="w"> </span><span class="n">Mutation</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>Similarly, the mapping files must be located in a directory called <code class="highlighter-rouge">mapping-templates</code> relative to the <code class="highlighter-rouge">serverless.yml</code> file. Again, you can rename this directory, but why would you. The nice thing about this approach is that you can duplicate the mapping templates. For example, most of us have multiple response mapping templates that look like this:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$util.toJson($ctx.result)
+</code></pre></div></div>
+
+<p>That can become <code class="highlighter-rouge">common-response.vtl</code>. I like using the <code class="highlighter-rouge">.vtl</code> as an extension as it can enable some extra highlighting in editors. Visual Studio Code has a couple of potential syntax highlighters for VTL code. As with the resources, I’m not going to duplicate each and every mapping template here.</p>
+
+<h2 id="define-the-aws-appsync-api-in-serverlessyml">Define the AWS AppSync API in serverless.yml</h2>
+
+<p>Now comes the interesting part — at least for me. That’s defining the AWS AppSync resource. It is not, as you might expect, included in the Resources section. Rather, it is included in a <code class="highlighter-rouge">custom</code> section.</p>
+
+<p>Here is the example for my specific resource:</p>
+
+<figure class="highlight"><pre><code class="language-yaml" data-lang="yaml"><span class="na">custom</span><span class="pi">:</span>
+  <span class="na">accountId</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Ref</span><span class="pi">:</span> <span class="nv">AWS</span><span class="pi">::</span><span class="nv">AccountId</span> <span class="pi">}</span>
+  <span class="na">appSync</span><span class="pi">:</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">${self:provider.apiname}</span>
+    <span class="na">authenticationType</span><span class="pi">:</span> <span class="s">AMAZON_COGNITO_USER_POOLS</span>
+    <span class="na">userPoolConfig</span><span class="pi">:</span>
+      <span class="na">awsRegion</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Ref</span><span class="pi">:</span> <span class="nv">AWS</span><span class="pi">::</span><span class="nv">Region</span> <span class="pi">}</span>
+      <span class="na">defaultAction</span><span class="pi">:</span> <span class="s">ALLOW</span>
+      <span class="na">userPoolId</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Ref</span><span class="pi">:</span> <span class="nv">UserPool</span> <span class="pi">}</span>
+    <span class="na">schema</span><span class="pi">:</span> <span class="s">schema.graphql</span> <span class="c1"># In case you want to change it</span>
+    <span class="na">serviceRole</span><span class="pi">:</span> <span class="s2">"</span><span class="s">AppSyncServiceRole"</span>
+    <span class="na">dataSources</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">type</span><span class="pi">:</span> <span class="s">AMAZON_DYNAMODB</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s">NotesTableDS</span>
+        <span class="na">description</span><span class="pi">:</span> <span class="s2">"</span><span class="s">DynamoDB</span><span class="nv"> </span><span class="s">Notes</span><span class="nv"> </span><span class="s">Table"</span>
+        <span class="na">config</span><span class="pi">:</span>
+          <span class="na">tableName</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Ref</span><span class="pi">:</span> <span class="nv">NotesTable</span> <span class="pi">}</span>
+          <span class="na">serviceRoleArn</span><span class="pi">:</span> <span class="pi">{</span> <span class="nv">Fn</span><span class="pi">::</span><span class="nv">GetAtt</span><span class="pi">:</span> <span class="pi">[</span> <span class="nv">DynamoDBRole</span><span class="pi">,</span> <span class="nv">Arn</span> <span class="pi">]</span> <span class="pi">}</span>
+    <span class="na">mappingTemplates</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">dataSource</span><span class="pi">:</span> <span class="s">NotesTableDS</span>
+        <span class="na">type</span><span class="pi">:</span> <span class="s">Query</span>
+        <span class="na">field</span><span class="pi">:</span> <span class="s">allNotes</span>
+        <span class="na">request</span><span class="pi">:</span> <span class="s2">"</span><span class="s">allnotes-request.vtl"</span>
+        <span class="na">response</span><span class="pi">:</span> <span class="s2">"</span><span class="s">allnotes-response.vtl"</span>
+      <span class="pi">-</span> <span class="na">dataSource</span><span class="pi">:</span> <span class="s">NotesTableDS</span>
+        <span class="na">type</span><span class="pi">:</span> <span class="s">Query</span>
+        <span class="na">field</span><span class="pi">:</span> <span class="s">getNote</span>
+        <span class="na">request</span><span class="pi">:</span> <span class="s2">"</span><span class="s">getnote-request.vtl"</span>
+        <span class="na">response</span><span class="pi">:</span> <span class="s2">"</span><span class="s">common-response.vtl"</span>
+      <span class="pi">-</span> <span class="na">dataSource</span><span class="pi">:</span> <span class="s">NotesTableDS</span>
+        <span class="na">type</span><span class="pi">:</span> <span class="s">Mutation</span>
+        <span class="na">field</span><span class="pi">:</span> <span class="s">saveNote</span>
+        <span class="na">request</span><span class="pi">:</span> <span class="s2">"</span><span class="s">savenote-request.vtl"</span>
+        <span class="na">response</span><span class="pi">:</span> <span class="s2">"</span><span class="s">common-response.vtl"</span>
+      <span class="pi">-</span> <span class="na">dataSource</span><span class="pi">:</span> <span class="s">NotesTableDS</span>
+        <span class="na">type</span><span class="pi">:</span> <span class="s">Mutation</span>
+        <span class="na">field</span><span class="pi">:</span> <span class="s">deleteNote</span>
+        <span class="na">request</span><span class="pi">:</span> <span class="s2">"</span><span class="s">deletenote-request.vtl"</span>
+        <span class="na">response</span><span class="pi">:</span> <span class="s2">"</span><span class="s">common-response.vtl"</span></code></pre></figure>
+
+<p>Each query and mutation has an entry in the <code class="highlighter-rouge">mappingTemplates</code>. You can also provide mapping templates for individual fields and for subscriptions if you so desire. Note how I use the <code class="highlighter-rouge">common-response.vtl</code> in three out of four of the resolvers — code re-use is a beautiful thing.</p>
+
+<p>The other parts of the AWS AppSync configuration — authentication, schema, and data sources — get their own sections. Where necessary, I reference the appropriate resources from the <code class="highlighter-rouge">resources</code> section.</p>
+
+<h2 id="deploy-your-api">Deploy your API</h2>
+
+<p>To deploy your API, run the following:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">serverless deploy <span class="nt">-v</span></code></pre></figure>
+
+<p>The Serverless Framework will get to work. First, it converts your serverless.yml and files to a CloudFormation template, then it will create an S3 bucket to handle the deployment, and finally it will deploy the CloudFormation template for you. You can check out the contents of the <code class="highlighter-rouge">.serverless</code> directory to see this in action.</p>
+
+<p>If you’ve made an error (I made a few dozen while building this), then you can adjust the files and run <code class="highlighter-rouge">serverless deploy -v</code> again to correct the issue. The Serverless Framework will figure it all out for you.</p>
+
+<p>How do you figure out the error? Well, I go to the AWS CloudFormation console, click the CloudFormation stack I am deploying, and then view the failure event details. There is usually something in there that indicates which resource failed and why.</p>
+
+<p>Normally, there will be multiple failures, but you will have one that is an actual error in the template. Then you can go to the resource within your <code class="highlighter-rouge">serverless.yml</code> file and try and figure out what is wrong with it.</p>
+
+<p>Sometimes, the differences between the YAML for Serverless Framework and for CloudFormation will be surprising. I find the majority of my errors are in specifying IAM roles and policies, and the error messages don’t necessarily point to the exact error here — although they do point to the right resources.</p>
+
+<p>The good news? We are using CloudFormation underneath. That means if there is an error, the whole stack is rolled back, allowing you to correct the error and re-try the deployment.</p>
+
+<h2 id="remove-your-api">Remove your API</h2>
+
+<p>Removing the API can be done via the serverless command as well:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">serverless remove <span class="nt">-v</span></code></pre></figure>
+
+<p>This, again, does CloudFormation underneath. That means that resources that contain data (such as S3 buckets and DynamoDB tables) won’t be deleted through this mechanism. You will have to manually delete those resources.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Is Serverless Framework “better” than straight-up CloudFormation? Well, the answer is “it depends”. I like the separation of the AWS AppSync schema and mapping templates into their own components.</p>
+
+<p>I also daresay that if I added in AWS Lambda resolvers, the Serverless Framework would definitely be better. However, I had problems with the syntax of the resources section. It just wasn’t as clean as the CloudFormation version, partly because of the way that things were constructed.</p>
+
+<p>There are also other concerns. I am hardly ever deploying a single API. It’s more likely to be part of a native app or web app. In this case, I would want the Serverless Framework to be part of a deployment step that also extracts the appropriate configuration files that my front end application would use. I’m not saying it isn’t doable, but it is definitely harder. I also have to learn yet another syntax with yet another set of quirks.</p>
+
+<p>That being said, the splitting of concerns and the ability to check your infrastructure definition into a source code repository are definitely on the plus side. Whether you use CloudFormation, Serverless Framework, Terraform, the awsmobile CLI or your own special deployment scripts, automation is the key to trouble-free deployments.</p>
+
+<!-- AWS Links -->
+
+<!-- Consoles -->
+
+<!-- My Links -->
+
+:ET

@@ -1,0 +1,240 @@
+I"�g<p>This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.</p>
+
+<ul>
+  <li><a href="/android/2018/09/18/auth-with-aws-amplify-1/">The basics - a username/password system</a>.</li>
+  <li><a href="/android/2018/09/23/auth-with-aws-amplify-2/">Customizing the UI</a>.</li>
+  <li><a href="/android/2018/10/01/auth-with-aws-amplify-3/">Authenticating with Facebook</a>.</li>
+  <li><a href="/android/2018/10/08/auth-with-aws-amplify-4/">Authenticating with Google</a>.</li>
+  <li><a href="/android/2018/10/15/auth-with-aws-amplify-5/">Using third-party authentication providers</a>.</li>
+  <li><a href="/android/2018/10/22/auth-with-aws-amplify-6/">Using Time-based One-time passwords (TOTP)</a>.</li>
+  <li><a href="/android/2018/10/29/auth-with-aws-amplify-7/">Using Biometric authentication</a>.</li>
+  <li><a href="/android/2018/11/05/auth-with-aws-amplify-8/">Doing fraud protection and analytics</a>.</li>
+</ul>
+
+<p>This is part 4 — authenticating with Google. It builds on what we have done in parts 1 and 2. If you haven’t looked at the identity repository and how to build a custom UI, you should definitely go do that first.</p>
+
+<p>So far, we’ve covered implementing a username and password authentication scheme with Amazon Cognito user pools. We’ve looked at how to get the basics going, connecting the sign in action to a button, and customizing all the flows — sign-in, sign-up and self-service password reset. We’ve also added the ability to authenticate with Facebook since most users don’t want to remember yet another password, however. Giving the user the option to use Facebook, Google, or some other authentication provider is a good practice. Today, we are going to use Google authentication.</p>
+
+<p>The process is fairly simple, but it is a multi-step process:</p>
+
+<ol>
+  <li>Create a Google Developers project.</li>
+  <li>Add an Android Client ID to the project.</li>
+  <li>Configure the Amazon Cognito identity pool to federate using the client ID you just received.</li>
+  <li>Integrate the Google authentication provider into your app.</li>
+  <li>Send the Google authentication token you receive from signing in with Facebook to the Amazon Cognito identity pool for federation.</li>
+</ol>
+
+<p>You will notice that this is very similar to the Facebook authentication example. Indeed, just about every single authentication provider that Amazon Cognito identity pools supports can be integrated in the same manner.</p>
+
+<h2 id="step-1-create-a-google-developers-project">Step 1: Create a Google Developers project</h2>
+
+<p>The first step in this process is always to set up the third party authentication provider. This is, unfortunately, a multi-part step done mostly on a web console. As with Facebook, I’m going to try and avoid the screen shots except where things get confusing. This is because web consoles change over time.</p>
+
+<ul>
+  <li>Log on to the <a href="https://console.developers.google.com/">Google Developers Console</a> with a google ID. If this is your first time through, you may need to agree to additional licenses.</li>
+  <li>Go to the project list page. Depending on your situation, this may be available directly on the top page, or you may need to go to <strong>IAM &amp; Admin</strong> &gt; <strong>Manage Resources</strong> in the left-hand (hamburger) menu. It may also appear under <strong>Select a project</strong> in the top-level menu.</li>
+  <li>Click <strong>Create Project</strong>.</li>
+  <li>Enter a good name, then click <strong>Create</strong>.</li>
+  <li>You should be taken directly to the Google API page for the new app. However, when I did this, I wasn’t — I had to select the new project from the list of apps in the top-level banner.</li>
+  <li>Click <strong>Enable APIs and Services</strong>.</li>
+  <li>Enable the <strong>Google+ API</strong>. This can be found in the big list by searching for it, or scrolling down until you see it. Once found, click the box.</li>
+  <li>On the next page, click the <strong>Enable</strong> button.</li>
+  <li>On the next page, click the <strong>Create Credentials</strong> button.</li>
+  <li>You want to create a Client ID for the identity pool next. This is a choice in the menu:</li>
+</ul>
+
+<p><img src="/assets/images/2018-10-08-image1.png" alt="" /></p>
+
+<ul>
+  <li>Click the <strong>Configure Consent Screen</strong> button.</li>
+  <li>Enter the name of your app in the <strong>Product name to be shown to users</strong> box, then click <strong>Save</strong>.</li>
+  <li>Choose <strong>Web application</strong>.</li>
+</ul>
+
+<blockquote>
+  <p>Even though we are integrating with an Android app, we still need a web application client ID so that the identity pool can check the tokens.</p>
+</blockquote>
+
+<ul>
+  <li>Enter a name for the client (I chose <em>PictureFeed identity pool</em>), then click <strong>Create</strong>.
+Copy the client ID and secret somewhere safe — you will need them later.
+Click <strong>OK</strong>.</li>
+</ul>
+
+<h2 id="step-2-create-an-android-client-id">Step 2: Create an Android Client ID</h2>
+
+<p>Carrying on from our previous step, you should be at the Credentials page on the Google developers console for your project. We will now create a client ID for the Android app. Before you get started, you need to obtain the SHA1 fingerprint for your app. When you created the Facebook login, you created a key store for your app. Obtain the SHA1 fingerprint from the key store with the following command:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>keytool <span class="nt">-exportcert</span> <span class="nt">-keystore</span> ~/.android/debug.keystore <span class="nt">-list</span> <span class="nt">-v</span>
+</code></pre></div></div>
+
+<p>The output will be similar to the following:</p>
+
+<p><img src="/assets/images/2018-10-08-image2.png" alt="" /></p>
+
+<p>Note the highlighted area. You should copy this as you will soon need it.</p>
+
+<ul>
+  <li>Choose <strong>Create credentials</strong> &gt; <strong>OAuth Client ID</strong>.</li>
+  <li>Choose <strong>Android client</strong>.</li>
+  <li>Enter a name in the appropriate box.</li>
+  <li>Paste the SHA1 fingerprint into the appropriate box.</li>
+  <li>Enter the package name in the appropriate box. This is the top level of your <code class="highlighter-rouge">package</code> structure for your app and is listed as the package field on the <code class="highlighter-rouge">manifest</code> node within the <code class="highlighter-rouge">AndroidManifest.xml</code> file.</li>
+  <li>Click <strong>Create</strong>.</li>
+</ul>
+
+<p>As before, you will get a Client ID (but no client secret this time as your key store is used as the secret) before you click <strong>OK</strong>. Make sure you record the Client ID before progressing.</p>
+
+<h2 id="step-3-configure-amazon-cognito-identity-pool">Step 3: Configure Amazon Cognito identity pool</h2>
+
+<p>Since we are using [AWS Amplify] CLI for our backend configuration, this becomes easily accomplished:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>amplify update auth
+</code></pre></div></div>
+
+<p>The answers to the questions are the same, except for this one:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>? Do you want to <span class="nb">enable </span>3rd party authentication providers <span class="k">in </span>your identity pool <span class="o">(</span>Use arrow keys<span class="o">)</span>
+</code></pre></div></div>
+
+<p>Answer <strong>Yes</strong> here. Then select <strong>Google</strong>. AWS Amplify CLI will ask you for both client IDs. You can copy/paste these into the form. The rest of the configuration remains the same, so just press Enter to move past the question.</p>
+
+<p>Once complete, push the configuration to deploy the resources:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>amplify push
+</code></pre></div></div>
+
+<h2 id="step-4-integrate-google-authentication">Step 4: Integrate Google authentication</h2>
+
+<p>You should always follow the <a href="https://developers.google.com/identity/sign-in/android/start-integrating">Google documentation</a> for the latest instructions. However, here is how I integrated it into my app. Start by adding the SDK into your app dependencies within <code class="highlighter-rouge">build.gradle</code>:</p>
+
+<figure class="highlight"><pre><code class="language-gradle" data-lang="gradle"><span class="n">implementation</span> <span class="s2">"com.google.android.gms:play-services-auth:15.0.1"</span></code></pre></figure>
+
+<p>Ensure you click <strong>Sync Now</strong> to download the new SDK before continuing.</p>
+
+<p>Add the Google Sign-in button in the appropriate spot in your layout. I am placing mine in the <code class="highlighter-rouge">activity_authenticator.xml</code> file since that is where all sign-in is done:</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;com.google.android.gms.common.SignInButton</span>
+    <span class="na">android:id=</span><span class="s">"@+id/loginFormGoogleLoginButton"</span>
+    <span class="na">android:layout_width=</span><span class="s">"wrap_content"</span>
+    <span class="na">android:layout_height=</span><span class="s">"wrap_content"</span>
+    <span class="na">android:layout_gravity=</span><span class="s">"end"</span> <span class="nt">/&gt;</span></code></pre></figure>
+
+<p>Now, let’s turn our attention to the <code class="highlighter-rouge">AuthenticatorActivity</code> class. Based on the documentation, here is what I added to the <code class="highlighter-rouge">onCreate()</code> method:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="c1">// Configure the Google Sign in requirements</span>
+<span class="kd">val</span> <span class="py">googleSignInOptions</span> <span class="p">=</span> <span class="n">GoogleSignInOptions</span><span class="p">.</span><span class="n">Builder</span><span class="p">(</span><span class="n">GoogleSignInOptions</span><span class="p">.</span><span class="n">DEFAULT_SIGN_IN</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">requestIdToken</span><span class="p">(</span><span class="n">resources</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">string</span><span class="p">.</span><span class="n">google_client</span><span class="p">))</span>
+        <span class="p">.</span><span class="n">requestEmail</span><span class="p">()</span>
+        <span class="p">.</span><span class="n">build</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">googleSignInClient</span> <span class="p">=</span> <span class="n">GoogleSignIn</span><span class="p">.</span><span class="n">getClient</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">googleSignInOptions</span><span class="p">)</span>
+<span class="n">loginFormGoogleLoginButton</span><span class="p">.</span><span class="n">onClick</span> <span class="p">{</span>
+    <span class="n">startActivityForResult</span><span class="p">(</span><span class="n">googleSignInClient</span><span class="p">.</span><span class="n">signInIntent</span><span class="p">,</span> <span class="n">GOOGLE_SIGN_IN</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>You will need to add the WEB Client ID to your strings.xml file:</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="c">&lt;!-- Google SDK --&gt;</span>
+<span class="nt">&lt;string</span> <span class="na">name=</span><span class="s">"google_client"</span><span class="nt">&gt;</span>ID.apps.googleusercontent.com<span class="nt">&lt;/string&gt;</span></code></pre></figure>
+
+<p>The <code class="highlighter-rouge">.requestIdToken()</code> method ensures you get an idToken, which is required to federate with Amazon Cognito identity pools. If you do not include this, the <code class="highlighter-rouge">.idToken</code> on the account (used later on) will be null.</p>
+
+<p>Since we are starting the sign-in client as an activity, we need to deal with its response in <code class="highlighter-rouge">onActivityResult()</code>. This is the code for the entire function (which incorporates both Facebook and Google responses):</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">fun</span> <span class="nf">onActivityResult</span><span class="p">(</span><span class="nv">requestCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">resultCode</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="nv">data</span><span class="p">:</span> <span class="nc">Intent</span><span class="p">?)</span> <span class="p">{</span>
+    <span class="k">super</span><span class="p">.</span><span class="n">onActivityResult</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">resultCode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="k">when</span> <span class="p">(</span><span class="n">requestCode</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">GOOGLE_SIGN_IN</span> <span class="p">-&gt;</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">task</span> <span class="p">=</span> <span class="n">GoogleSignIn</span><span class="p">.</span><span class="n">getSignedInAccountFromIntent</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">try</span> <span class="p">{</span>
+                <span class="kd">val</span> <span class="py">account</span> <span class="p">=</span> <span class="n">task</span><span class="p">.</span><span class="n">getResult</span><span class="p">(</span><span class="n">ApiException</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span>
+                <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Authenticated with Google: token = ${account.idToken}"</span><span class="p">)</span>
+                <span class="n">model</span><span class="p">.</span><span class="n">federateWithGoogle</span><span class="p">(</span><span class="n">account</span><span class="p">)</span>
+                <span class="k">this</span><span class="nd">@AuthenticatorActivity</span><span class="p">.</span><span class="n">finish</span><span class="p">()</span>
+            <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">error</span><span class="p">:</span> <span class="nc">ApiException</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">toast</span><span class="p">(</span><span class="s">"Google Authentication failed: ${error.message}"</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">else</span> <span class="p">-&gt;</span> <span class="p">{</span>
+            <span class="n">callbackManager</span><span class="p">.</span><span class="n">onActivityResult</span><span class="p">(</span><span class="n">requestCode</span><span class="p">,</span> <span class="n">resultCode</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>That <code class="highlighter-rouge">model.federateWithGoogle()</code> call is for the integration with Amazon Cognito, and we will handle that next.</p>
+
+<h2 id="step-5-integrate-with-amazon-cognito-identity-pool">Step 5: Integrate with Amazon Cognito identity pool</h2>
+
+<p>We have four layers of code: UI, ViewModel, interface, and repository. I’ve already shown the UI code, so let’s concentrate on the others. I’ve added the following to the <code class="highlighter-rouge">AuthenticatorViewModel</code>:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">fun</span> <span class="nf">federateWithGoogle</span><span class="p">(</span><span class="nv">account</span><span class="p">:</span> <span class="nc">GoogleSignInAccount</span><span class="p">)</span> <span class="p">=</span> <span class="n">identityRepository</span><span class="p">.</span><span class="n">federateWithGoogle</span><span class="p">(</span><span class="n">account</span><span class="p">)</span></code></pre></figure>
+
+<p>This is just a pass-through to the identity repository, which is defined in the <code class="highlighter-rouge">IdentityRepository</code> interface:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="cm">/**</span><span class="err">
+</span><span class="cm"> * Federate with Google</span><span class="err">
+</span><span class="cm"> */</span>
+<span class="k">fun</span> <span class="nf">federateWithGoogle</span><span class="p">(</span><span class="nv">account</span><span class="p">:</span> <span class="nc">GoogleSignInAccount</span><span class="p">)</span></code></pre></figure>
+
+<p>… and implemented in the <code class="highlighter-rouge">AWSIdentityRepository</code>:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="cm">/**</span><span class="err">
+</span><span class="cm">  * Federate with Google authentication</span><span class="err">
+</span><span class="cm">  */</span>
+<span class="k">override</span> <span class="k">fun</span> <span class="nf">federateWithGoogle</span><span class="p">(</span><span class="nv">account</span><span class="p">:</span> <span class="nc">GoogleSignInAccount</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">account</span><span class="p">.</span><span class="n">idToken</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Federating with Google"</span><span class="p">)</span>
+        <span class="n">thread</span><span class="p">(</span><span class="n">start</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">with</span><span class="p">(</span><span class="n">service</span><span class="p">.</span><span class="n">identityManager</span><span class="p">.</span><span class="n">underlyingProvider</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">clear</span><span class="p">()</span>
+                <span class="n">withLogins</span><span class="p">(</span><span class="n">mapOf</span><span class="p">(</span><span class="s">"accounts.google.com"</span> <span class="n">to</span> <span class="n">account</span><span class="p">.</span><span class="n">idToken</span><span class="p">))</span>
+                <span class="n">refresh</span><span class="p">()</span>
+            <span class="p">}</span>
+
+            <span class="kd">val</span> <span class="py">user</span> <span class="p">=</span> <span class="n">User</span><span class="p">().</span><span class="n">apply</span> <span class="p">{</span>
+                <span class="n">username</span> <span class="p">=</span> <span class="n">account</span><span class="p">.</span><span class="n">id</span><span class="o">!!</span>
+                <span class="n">tokens</span><span class="p">[</span><span class="n">TokenType</span><span class="p">.</span><span class="n">ACCESS_TOKEN</span><span class="p">]</span> <span class="p">=</span> <span class="n">account</span><span class="p">.</span><span class="n">idToken</span><span class="o">!!</span>
+                <span class="n">userAttributes</span><span class="p">[</span><span class="s">"provider"</span><span class="p">]</span> <span class="p">=</span> <span class="s">"accounts.google.com"</span>
+                <span class="n">userAttributes</span><span class="p">[</span><span class="s">"email"</span><span class="p">]</span> <span class="p">=</span> <span class="n">account</span><span class="p">.</span><span class="n">email</span><span class="o">!!</span>
+            <span class="p">}</span>
+            <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Federated result: ${service.identityManager.isUserSignedIn}"</span><span class="p">)</span>
+            <span class="n">runOnUiThread</span> <span class="p">{</span> <span class="n">mCurrentUser</span><span class="p">.</span><span class="n">postValue</span><span class="p">(</span><span class="n">user</span><span class="p">)</span> <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Federating with Google (ID token is null, so nothing happening)"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>This looks eerily similar to the Facebook federation, and it is. The only real difference is the “magic string” that associates the token with the Google provider.</p>
+
+<p>If you run now, you will be able to click on the <em>Login with Google</em> button in the UI. However, the authentication will not persist. As with Facebook, we need to add some code into the init section of the <code class="highlighter-rouge">AWSIdentityRepository</code>:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="c1">// Check to see if Google is authenticated - if it is, then federate with Google</span>
+<span class="kd">val</span> <span class="py">googleAccount</span> <span class="p">=</span> <span class="n">GoogleSignIn</span><span class="p">.</span><span class="n">getLastSignedInAccount</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">googleAccount</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">Log</span><span class="p">.</span><span class="n">d</span><span class="p">(</span><span class="n">TAG</span><span class="p">,</span> <span class="s">"Google Signed In Account found - account=${googleAccount.toJson()} "</span><span class="p">)</span>
+    <span class="n">thread</span><span class="p">(</span><span class="n">start</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">googleOptions</span> <span class="p">=</span> <span class="n">GoogleSignInOptions</span><span class="p">.</span><span class="n">Builder</span><span class="p">(</span><span class="n">GoogleSignInOptions</span><span class="p">.</span><span class="n">DEFAULT_SIGN_IN</span><span class="p">)</span>
+                    <span class="p">.</span><span class="n">requestIdToken</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">getString</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">string</span><span class="p">.</span><span class="n">google_client</span><span class="p">))</span>
+                    <span class="p">.</span><span class="n">requestEmail</span><span class="p">()</span>
+                    <span class="p">.</span><span class="n">build</span><span class="p">()</span>
+            <span class="n">GoogleSignIn</span><span class="p">.</span><span class="n">getClient</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">googleOptions</span><span class="p">).</span><span class="n">silentSignIn</span><span class="p">().</span><span class="n">continueWith</span> <span class="p">{</span>
+                <span class="kd">val</span> <span class="py">account</span> <span class="p">=</span> <span class="n">it</span><span class="p">.</span><span class="n">getResult</span><span class="p">(</span><span class="n">ApiException</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span>
+                <span class="n">federateWithGoogle</span><span class="p">(</span><span class="n">account</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">error</span><span class="p">:</span> <span class="nc">ApiException</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Silent ignore</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Note that the code is practically the same as the code used for the active login. However, instead of using an intent, we use .silentSignin(). This authentication will be transparent to the user and will re-establish the federation on application start-up if the user authenticated with Google and the token is still valid.</p>
+
+<h2 id="wrap-up">Wrap up</h2>
+
+<p>Thus far, we have used supported authentication providers — Amazon Cognito user pools, Facebook and Google authentication. This will be suitable for probably 90+% of all consumer apps. However, there will be times when you want to federate with something else. We’ll cover that topic next time.</p>
+:ET

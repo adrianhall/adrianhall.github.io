@@ -1,0 +1,10 @@
+I"%<ul class="toc__menu">
+  <li><a href="#amazon-dyanmodb">Amazon DyanmoDB</a></li>
+  <li><a href="#amazon-dynamodb--elasticsearch-service">Amazon DynamoDB + ElasticSearch Service</a></li>
+  <li><a href="#aurora-serverless">Aurora Serverless</a></li>
+  <li><a href="#which-should-i-choose">Which should I choose?</a></li>
+  <li><a href="#implementing-the-data-storagelayer">Implementing the Data Storage Layer</a></li>
+  <li><a href="#testing-the-data-transfer">Testing the data transfer</a></li>
+  <li><a href="#next-steps">Next Steps</a></li>
+</ul>
+:ET

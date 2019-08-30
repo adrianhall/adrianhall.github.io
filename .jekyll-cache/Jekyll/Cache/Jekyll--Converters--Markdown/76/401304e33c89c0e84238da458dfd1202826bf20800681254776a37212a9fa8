@@ -1,0 +1,157 @@
+I"�I<p>There are many tutorials online on how to produce an Android app bar with an options menu — so much so that it can be boiled down to a few steps, and I’ll reproduce them here:</p>
+
+<h2 id="step-1-create-resources">Step 1: Create resources</h2>
+
+<p>You actually need two resources. The first is a menu:</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="cp">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span>
+<span class="nt">&lt;menu</span> <span class="na">xmlns:android=</span><span class="s">"http://schemas.android.com/apk/res/android"</span>
+    <span class="na">xmlns:app=</span><span class="s">"http://schemas.android.com/apk/res-auto"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;item</span>
+        <span class="na">android:id=</span><span class="s">"@+id/mainActionCamera"</span>
+        <span class="na">android:icon=</span><span class="s">"@drawable/ic_camera_48dp"</span>
+        <span class="na">android:title=</span><span class="s">"@string/mainActionCamera"</span>
+        <span class="na">app:showAsAction=</span><span class="s">"ifRoom"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/menu&gt;</span></code></pre></figure>
+
+<p>Notice that I include an icon.  This is the second resource.  I create it by making a vector icon in the <code class="highlighter-rouge">drawable</code> resource directory with a 48x48dp size. I also need a string resource for the title. The <code class="highlighter-rouge">app:showAsAction</code> takes one of several values. The important ones here are:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">always</code> will always put an icon on the toolbar</li>
+  <li><code class="highlighter-rouge">never</code> will always put a menu item in the overflow options menu</li>
+  <li><code class="highlighter-rouge">ifRoom</code> will put an icon on the toolbar if it fits, but otherwise place it in the overflow options menu.</li>
+</ul>
+
+<h2 id="step-2-add-a-toolbar-to-your-layout">Step 2: Add a toolbar to your layout</h2>
+
+<p>I’m using ConstraintLayout these days, so this is my entry at the top of my layout:</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;android.support.v7.widget.Toolbar</span>
+    <span class="na">android:id=</span><span class="s">"@+id/mainToolbar"</span>
+    <span class="na">android:layout_width=</span><span class="s">"match_parent"</span>
+    <span class="na">android:layout_height=</span><span class="s">"?attr/actionBarSize"</span>
+    <span class="na">android:background=</span><span class="s">"?attr/colorPrimary"</span>
+    <span class="na">android:elevation=</span><span class="s">"4dp"</span>
+    <span class="na">android:theme=</span><span class="s">"@style/ToolbarTheme"</span>
+    <span class="na">app:popupTheme=</span><span class="s">"@style/ThemeOverlay.AppCompat.Light"</span><span class="nt">/&gt;</span></code></pre></figure>
+
+<p>I also create a style and modify my main app theme:</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">"AppTheme"</span> <span class="na">parent=</span><span class="s">"Theme.AppCompat.Light.NoActionBar"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">"colorPrimary"</span><span class="nt">&gt;</span>@color/colorPrimary<span class="nt">&lt;/item&gt;</span>
+    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">"colorPrimaryDark"</span><span class="nt">&gt;</span>@color/colorPrimaryDark<span class="nt">&lt;/item&gt;</span>
+    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">"colorAccent"</span><span class="nt">&gt;</span>@color/colorAccent<span class="nt">&lt;/item&gt;</span>
+<span class="nt">&lt;/style&gt;</span>
+<span class="nt">&lt;style</span> <span class="na">name=</span><span class="s">"ToolbarTheme"</span> <span class="na">parent=</span><span class="s">"ThemeOverlay.AppCompat.Dark.ActionBar"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;item</span> <span class="na">name=</span><span class="s">"android:textColorSecondary"</span><span class="nt">&gt;</span>@android:color/black<span class="nt">&lt;/item&gt;</span>
+<span class="nt">&lt;/style&gt;</span></code></pre></figure>
+
+<p>I match the parent of the <code class="highlighter-rouge">ToolbarTheme</code> to the color of the background. if the background is dark, then I use <code class="highlighter-rouge">ThemeOverlay.AppCompat.Dark.ActionBar</code>. If the background is light, then I use <code class="highlighter-rouge">ThemeOverlay.AppCompat.ActionBar</code>. This ensures the title of the page on the action bar is the right color. My options menu is always a light background and I set the appropriate text color in the theme.</p>
+
+<h2 id="step-3-add-code-to-your-activity">Step 3: Add code to your activity</h2>
+
+<p>You need to add a single line to the <code class="highlighter-rouge">onCreate()</code> fun:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">fun</span> <span class="nf">onCreate</span><span class="p">(</span><span class="nv">savedInstanceState</span><span class="p">:</span> <span class="nc">Bundle</span><span class="p">?)</span> <span class="p">{</span>
+    <span class="k">super</span><span class="p">.</span><span class="n">onCreate</span><span class="p">(</span><span class="n">savedInstanceState</span><span class="p">)</span>
+    <span class="n">setContentView</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">layout</span><span class="p">.</span><span class="n">activity_main</span><span class="p">)</span>
+    <span class="n">setSupportActionBar</span><span class="p">(</span><span class="n">mainToolbar</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Also, add an <code class="highlighter-rouge">onCreateOptionsMenu()</code> fun:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">fun</span> <span class="nf">onCreateOptionsMenu</span><span class="p">(</span><span class="nv">menu</span><span class="p">:</span> <span class="nc">Menu</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+    <span class="n">menuInflater</span><span class="p">.</span><span class="n">inflate</span><span class="p">(</span><span class="n">R</span><span class="p">.</span><span class="n">menu</span><span class="p">.</span><span class="n">main_menu</span><span class="p">,</span> <span class="n">menu</span><span class="p">)</span>
+    <span class="k">return</span> <span class="k">true</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Run this and you have a collapsible menu. Change the <code class="highlighter-rouge">app:ShowAsAction</code> between <code class="highlighter-rouge">always</code> and <code class="highlighter-rouge">never</code> to see both states.</p>
+
+<blockquote>
+  <p>What if you want the icon to appear next to the menu item? Material Design says this is a big no today. Later APIs have removed the ability to enable icons next to menu items. Thanks Google!</p>
+</blockquote>
+
+<h2 id="step-4-customize-the-toolbar">Step 4: Customize the toolbar</h2>
+
+<p>We could go completely with a completely custom toolbar. After all, the toolbar is just a container with some default content. Replace the content and you can do whatever you want. However, the underlying capabilities like displaying a menu with icons are still in the code. They are just hidden so we can’t see them. We can use reflection to expose them.</p>
+
+<p>So, let’s display the icons. The <code class="highlighter-rouge">onCreateOptionsMenu()</code> fun is called only once when the activity is started. The <code class="highlighter-rouge">onPrepareOptionsMenu()</code> fun is called whenever it is needed, so it handles typical things that may adjust the menu (like orientation changes). This makes it an appropriate place to put out adjustments.</p>
+
+<p>Put a breakpoint on the <code class="highlighter-rouge">onCreateOptionsMenu()</code> fun and inspect the <code class="highlighter-rouge">menu</code> object that is passed to the fun. Note that it is actually a <code class="highlighter-rouge">MenuBuilder</code> object. The variable <code class="highlighter-rouge">mOptionalIconsVisible</code> within the <code class="highlighter-rouge">MenuBuilder</code> class determines if the icons are visible. We can make that variable accessible using the built-in reflection capabilities:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">fun</span> <span class="nf">onPrepareOptionsMenu</span><span class="p">(</span><span class="nv">menu</span><span class="p">:</span> <span class="nc">Menu</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+    <span class="n">menu</span><span class="o">?.</span><span class="n">let</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">menu</span> <span class="k">is</span> <span class="n">MenuBuilder</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">try</span> <span class="p">{</span>
+                <span class="kd">val</span> <span class="py">field</span> <span class="p">=</span> <span class="n">menu</span><span class="p">.</span><span class="n">javaClass</span><span class="p">.</span><span class="n">getDeclaredField</span><span class="p">(</span><span class="s">"mOptionalIconsVisible"</span><span class="p">)</span>
+                <span class="n">field</span><span class="p">.</span><span class="n">isAccessible</span> <span class="p">=</span> <span class="k">true</span>
+                <span class="n">field</span><span class="p">.</span><span class="n">setBoolean</span><span class="p">(</span><span class="n">menu</span><span class="p">,</span> <span class="k">true</span><span class="p">)</span>
+            <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">ignored</span><span class="p">:</span> <span class="nc">Exception</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// ignored exception</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="k">super</span><span class="p">.</span><span class="n">onPrepareOptionsMenu</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>I guess you could put this in a pair of extension methods to <code class="highlighter-rouge">MenuBuilder</code>, but it’s only used in this one place, so why bother? Set the <code class="highlighter-rouge">app:ShowAsAction</code> value to never in your menu, then run the app. You will have icons, but the icons will be white (because that’s what goes on the toolbar). If your toolbar has a dark background and the menu has a light background, you need to alter the tint of the icon.</p>
+
+<p>Fortunately, altering the tint of the background is easy. I have an extension function on <code class="highlighter-rouge">Drawable</code> to do this:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">import</span> <span class="nn">android.graphics.PorterDuff</span>
+<span class="k">import</span> <span class="nn">android.graphics.drawable.Drawable</span>
+
+<span class="k">fun</span> <span class="nc">Drawable</span><span class="p">.</span><span class="nf">setIconColor</span><span class="p">(</span><span class="nv">color</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">mutate</span><span class="p">()</span>
+    <span class="n">setColorFilter</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">PorterDuff</span><span class="p">.</span><span class="n">Mode</span><span class="p">.</span><span class="n">SRC_ATOP</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Now I can write something like:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="n">menuItem</span><span class="p">.</span><span class="n">icon</span><span class="p">.</span><span class="n">setIconColor</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="n">BLACK</span><span class="p">)</span></code></pre></figure>
+
+<p>and it will produce a black icon instead of a white icon.</p>
+
+<p>The next problem is that there is no standard way of determining if the icon will be shown as an action (on the toolbar) or in the menu. When Google deprecated the ability to show icons on the menus, they also removed the ability to detect whether a menu item will be an action or not. (Thanks again Google!)</p>
+
+<p>As before, there is a variable — this time on the <code class="highlighter-rouge">MenuItem</code>. But it’s hidden. I use the following extension method to expose it:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">import</span> <span class="nn">android.view.MenuItem</span>
+
+<span class="k">fun</span> <span class="nc">MenuItem</span><span class="p">.</span><span class="nf">getShowAsAction</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="py">f</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">javaClass</span><span class="p">.</span><span class="n">getDeclaredField</span><span class="p">(</span><span class="s">"mShowAsAction"</span><span class="p">)</span>
+    <span class="n">f</span><span class="p">.</span><span class="n">isAccessible</span> <span class="p">=</span> <span class="k">true</span>
+    <span class="k">return</span> <span class="n">f</span><span class="p">.</span><span class="n">getInt</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<p><code class="highlighter-rouge">getShowAsAction()</code> returns 1 if it is shown as an action or 0 if it is in a menu. Now I can use this method to update the menu. Here is my final <code class="highlighter-rouge">onPrepareOptionsMenu()</code>:</p>
+
+<figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><span class="k">override</span> <span class="k">fun</span> <span class="nf">onPrepareOptionsMenu</span><span class="p">(</span><span class="nv">menu</span><span class="p">:</span> <span class="nc">Menu</span><span class="p">?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+    <span class="n">menu</span><span class="o">?.</span><span class="n">let</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">menu</span> <span class="k">is</span> <span class="n">MenuBuilder</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">try</span> <span class="p">{</span>
+                <span class="kd">val</span> <span class="py">field</span> <span class="p">=</span> <span class="n">menu</span><span class="p">.</span><span class="n">javaClass</span><span class="p">.</span><span class="n">getDeclaredField</span><span class="p">(</span><span class="s">"mOptionalIconsVisible"</span><span class="p">)</span>
+                <span class="n">field</span><span class="p">.</span><span class="n">isAccessible</span> <span class="p">=</span> <span class="k">true</span>
+                <span class="n">field</span><span class="p">.</span><span class="n">setBoolean</span><span class="p">(</span><span class="n">menu</span><span class="p">,</span> <span class="k">true</span><span class="p">)</span>
+            <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nv">ignored</span><span class="p">:</span> <span class="nc">Exception</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">logger</span><span class="p">.</span><span class="n">debug</span><span class="p">(</span><span class="s">"ignored exception: ${ignored.javaClass.simpleName}"</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">item</span> <span class="k">in</span> <span class="m">0</span> <span class="n">until</span> <span class="n">menu</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">menuItem</span> <span class="p">=</span> <span class="n">menu</span><span class="p">.</span><span class="n">getItem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="n">menuItem</span><span class="p">.</span><span class="n">icon</span><span class="p">.</span><span class="n">setIconColor</span><span class="p">(</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">menuItem</span><span class="p">.</span><span class="n">getShowAsAction</span><span class="p">()</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span> <span class="n">Color</span><span class="p">.</span><span class="n">BLACK</span>
+                <span class="k">else</span> <span class="n">Color</span><span class="p">.</span><span class="n">WHITE</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="k">super</span><span class="p">.</span><span class="n">onPrepareOptionsMenu</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+<span class="p">}</span></code></pre></figure>
+
+<h2 id="wrap-up">Wrap Up</h2>
+<p>Firstly, thank you Google for making this stuff difficult. It’s almost forcing us to go hunting for a new library. It’s well worth taking a look at some of these libraries. However, using reflection will fix the problems with the current toolbar. A new library will increase the size of your binary, so it’s not without cost.</p>
+
+<p>Using reflection isn’t without its problems. The most major problem is that Google is signalling that these APIs will go away in the future, so your app could break with any new release. Set a maximum API level and test as each new release of Android comes out.</p>
+
+:ET
