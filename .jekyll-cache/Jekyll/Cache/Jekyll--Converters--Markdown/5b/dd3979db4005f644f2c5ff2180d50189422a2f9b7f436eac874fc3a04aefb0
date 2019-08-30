@@ -1,9 +1,0 @@
-I"<ul class="toc__menu">
-  <li><a href="#start-local">Start Local</a></li>
-  <li><a href="#build-an-analytics-service-with-amazon-pinpoint">Build an Analytics Service with Amazon Pinpoint</a></li>
-  <li><a href="#add-the-aws-sdk-to-your-project">Add the AWS SDK to your project</a></li>
-  <li><a href="#create-a-new-awsanalyticsservice-class">Create a new AWSAnalyticsService class</a></li>
-  <li><a href="#check-out-the-analytics">Check out the analytics</a></li>
-  <li><a href="#recording-other-events">Recording other events</a></li>
-</ul>
-:ET

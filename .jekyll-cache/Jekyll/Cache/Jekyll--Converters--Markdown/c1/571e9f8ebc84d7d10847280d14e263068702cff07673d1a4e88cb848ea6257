@@ -1,9 +1,0 @@
-I"x<ul class="toc__menu">
-  <li><a href="#step-1-create-a-google-developers-project">Step 1: Create a Google Developers project</a></li>
-  <li><a href="#step-2-create-an-android-client-id">Step 2: Create an Android Client ID</a></li>
-  <li><a href="#step-3-configure-amazon-cognito-identity-pool">Step 3: Configure Amazon Cognito identity pool</a></li>
-  <li><a href="#step-4-integrate-google-authentication">Step 4: Integrate Google authentication</a></li>
-  <li><a href="#step-5-integrate-with-amazon-cognito-identity-pool">Step 5: Integrate with Amazon Cognito identity pool</a></li>
-  <li><a href="#wrap-up">Wrap up</a></li>
-</ul>
-:ET

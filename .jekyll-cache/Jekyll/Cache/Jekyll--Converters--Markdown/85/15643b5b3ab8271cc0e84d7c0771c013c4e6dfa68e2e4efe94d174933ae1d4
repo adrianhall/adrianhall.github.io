@@ -1,8 +1,0 @@
-I"<ul class="toc__menu">
-  <li><a href="#get-as-close-to-the-source-as-you-can">Get as close to the source as you can</a></li>
-  <li><a href="#abstract-away-from-the-virtual-machine-as-much-as-you-can">Abstract away from the virtual machine as much as you can</a></li>
-  <li><a href="#dont-pay-for-more-than-you-use">Don’t pay for more than you use</a></li>
-  <li><a href="#dont-ship-secrets-in-your-app">Don’t ship secrets in your app</a></li>
-  <li><a href="#how-i-structure-cloud-backends">How I structure cloud backends</a></li>
-</ul>
-:ET

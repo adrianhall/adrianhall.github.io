@@ -1,8 +1,0 @@
-I"¨<ul class="toc__menu">
-  <li><a href="#step-1-get-an-application-id-from-facebook">Step 1: Get an Application ID from Facebook</a></li>
-  <li><a href="#step-2-add-your-application-to-the-application-registration">Step 2: Add your application to the Application registration</a></li>
-  <li><a href="#step-3-add-facebook-to-the-amazon-cognito-identity-pool">Step 3: Add Facebook to the Amazon Cognito identity pool</a></li>
-  <li><a href="#step-4-integrate-the-facebook-sdk-into-your-app">Step 4: Integrate the Facebook SDK into your app</a></li>
-  <li><a href="#step-5-federate-with-amazon-cognito-identity-pools">Step 5: Federate with Amazon Cognito identity pools</a></li>
-</ul>
-:ET

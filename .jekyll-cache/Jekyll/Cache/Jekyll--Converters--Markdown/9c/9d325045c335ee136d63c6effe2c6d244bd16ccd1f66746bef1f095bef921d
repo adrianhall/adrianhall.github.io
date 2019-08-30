@@ -1,2 +1,0 @@
-I"3<p>In a recent post, I described how I can do app analytics by using the AWS Mobile SDK and an AWS Mobile Hub project. This is a great way to get usage analytics for your app, but it requires a tight coupling between the provider (the AWS Provider and <code class="highlighter-rouge">AnalyticsClient</code>) and the app. You need to initialize the provider early on (preferably in the <code class="highlighter-rouge">Application</code> wrapper or the first activity). That causes a tight linkage between the activities where it is used and the client object.</p>
-:ET

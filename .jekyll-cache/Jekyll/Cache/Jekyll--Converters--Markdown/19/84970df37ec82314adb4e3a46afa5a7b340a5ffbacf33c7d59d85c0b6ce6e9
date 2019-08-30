@@ -1,2 +1,0 @@
-I"Û<p>Itâ€™s been a while since I have worked on a React Native app. In that time, <code class="highlighter-rouge">create-react-native-app</code> (CRNA) has been deprecated, and <code class="highlighter-rouge">expo-cli</code> has taken its place as the advised route. There is still <code class="highlighter-rouge">react-native init</code>, and Infinite Red has <code class="highlighter-rouge">ignite</code>. That is four different ways of bootstrapping a React Native app.</p>
-:ET
