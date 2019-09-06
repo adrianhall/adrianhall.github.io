@@ -347,5 +347,117 @@ POST that and see the `200 OK` result.  Also, check the result of the database u
 
 You can also take a look at what happens when the user is not registered but you submit a code, and what happens when the code is wrong if you like.
 
+## Authentication
+
+Let's take a look at authentication next.  What we are going to do is to send a JWT access token as a header (the `Authorization` header) in the HTTP request.  However, the service (in this case, our function) needs to decode it, authenticate it, and understand it.  Fortunately, Azure App Service helps here.  First, let's take a look at how to do the settings in the Azure portal:
+
+* Open the [Azure portal](https://portal.azure.com) and sign in.
+* Select **Resource groups**, then the resource group containing the resources.
+* Select the function app (in my case, `twprodfunction`).
+* Select the **Platform features** tab.
+* Select **Authentication / Authorization**.
+* Turn the **App Service Authentication** on.
+
+You'll now get a much expanded page with a selection of authentication providers.  Make sure the "Action to take when request is not authenticated" is set to "Allow Anonymous requests".  Then configure each authentication provider:
+
+* For Facebook, you need to copy the App ID and App Secret from the Facebook developers page into the form.  Also, select `public_profile` and `email` scopes before clicking **OK**.
+* For Google, you need to copy the Client ID and Client Secret of the auto-generated web client.
+* For Azure Active Directory, you need to select the **Advanced** Management mode, then copy the Client ID for the app.  The issuer URL is `https://login.microsoftonline.com/<tenant-id>`, where the tenant-id is the tenant-id of your Azure AD resource.
+
+Once done, click **Save**.
+
+You will, of course, want to take a look at deploying these automatically in the future.  You can do this by clicking on **Export template** in the platform features tab.  However, this comes down to altering the `azuredeploy.json` deployment script so that the resource looks like the following:
+
+{% highlight json %}
+{
+    "type": "Microsoft.Web/sites",
+    "name": "[variables('functionAppName')]",
+    "apiVersion": "2018-11-01",
+    "location": "[parameters('location')]",
+    "kind": "functionapp",
+    "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('appHostingPlanName'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('appHostingPlanName'))]",
+        "[resourceId('Sendgrid.Email/accounts', variables('sendgridAccountName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbName'))]"
+    ],
+    "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appHostingPlanName'))]",
+        "siteAuthEnabled": true,
+        "siteAuthSettings": {
+            "clientId": "[parameters('aadClientId')]",
+            "issuer": "[concat('https://login.microsoftonline.com/',parameters('aadTenantId'))]",
+            "googleClientId": "[parameters('googleClientId')]",
+            "googleClientSecret": "[parameters('googleClientSecret')]",
+            "googleOAuthScopes": "public_profile,email",
+            "facebookAppId": "[parameters('facebookAppId')]",
+            "facebookAppSecret": "[parameters('facebookAppSecret')]"
+        },
+        "siteConfig": {
+            "ftpsState": "Disabled",
+            "appSettings": [
+                {
+                    "name": "AzureWebJobsDashboard",
+                    "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2019-04-01').keys[0].value)]"
+                },
+                {
+                    "name": "AzureWebJobsStorage",
+                    "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2019-04-01').keys[0].value)]"
+                },
+                {
+                    "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                    "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2019-04-01').keys[0].value)]"
+                },
+                {
+                    "name": "WEBSITE_CONTENTSHARE",
+                    "value": "[toLower(variables('functionAppName'))]"
+                },
+                {
+                    "name": "FUNCTIONS_EXTENSION_VERSION",
+                    "value": "~2"
+                },
+                {
+                    "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                    "value": "10.14.1"
+                },
+                {
+                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                    "value": "[reference(resourceId('Microsoft.Insights/components/', variables('appInsightsName')), '2018-05-01-preview').InstrumentationKey]"
+                },
+                {
+                    "name": "FUNCTIONS_WORKER_RUNTIME",
+                    "value": "[variables('functionAppRuntime')]"
+                },
+                {
+                    "name": "SENDGRID_CONNECTIONSTRING",
+                    "value": "[concat('Server=',reference(resourceId('Sendgrid.Email/accounts',variables('sendgridAccountName'))).smtpServer,';User=',reference(resourceId('Sendgrid.Email/accounts', variables('sendgridAccountName'))).username,';Password=',parameters('sendgridPassword'))]"
+                },
+                {
+                    "name": "COSMOSDB_CONNECTIONSTRING",
+                    "value": "[concat('Endpoint=https://',variables('cosmosDbName'),'.documents.azure.com;Key=',listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbName')), '2015-04-08').primaryMasterKey)]"
+                }
+            ]
+        }
+    }
+}
+{% endhighlight %}
+
+Note how I've made all the new auth settings parameters.  This allows me to place them in a secure file that is maintained "elsewhere" - in my case, it's in an `azuredeploy.parameters.json` file that I can add to the `.gitignore` file and use during deployment:
+
+{% highlight bash %}
+az group deployment create \
+  --name prod \
+  --resource-group twprod \
+  --template-file azuredeploy.json \
+  --parameters @azuredeploy.parameters.json 
+{% endhighlight %}
+
+> When I don't know how to configure a resource, I always use the portal and then export the template.  However, the template is not generally useable directly - you have to take what the portal gives you and then adjust as a deployment script, potentially extracting the resource or combining multiple entries into one.
+
+You can now cause the function to only be run if there is a valid token from one of the known authentication providers.  To do this, edit the `function.json` and change the `authLevel` from `anonymous` to `user`.  Don't forget to deploy the change!
+
+
+
 
 
