@@ -1,2 +1,2 @@
 # adrianhall.github.io
-My Website
+My [Blog](https://adrianhall.github.io)
