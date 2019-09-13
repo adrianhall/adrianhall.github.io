@@ -55,146 +55,35 @@ Replace the "something" with the real values from your configuration.  You can f
 * For Google, go to the [API Console](https://console.developers.google.com/), select your app, then **Credentials**, select the web client for Google Sign-in.  The Client ID and secret are shown at the top of the page.
 * For Microsoft, log into the [Azure portal](https://portal.azure.com), select **Azure Active Directory**, then go to **App Registration**, followed by your app.  The client ID and tenant ID are shown at the top of the page.
 
-Since we have new parameters, we need to define them in our `azuredeploy.json` file:
-
-{% highlight json %}
-"parameters": {
-  "prefix": {
-    "type": "string",
-    "defaultValue": "twprod",
-    "metadata": {
-      "description": "The prefix for all the resources"
-    }
-},
-  "location": {
-    "type": "string",
-    "defaultValue": "[resourceGroup().location]",
-    "metadata": {
-      "description": "The location for all resources"
-    }
-  },
-  "sendgridPassword": {
-    "type": "string",
-    "defaultValue": "enter-a-password-here",
-    "metadata": {
-      "description": "The password for the Sendgrid service"
-    }
-  },
-  "aadClientId": {
-    "type": "string",
-    "metadata": {
-      "description": "The client ID for the app registration in Azure Active Directory"
-    }
-  },
-  "aadTenantId": {
-    "type": "string",
-    "metadata": {
-      "description": "The tenant ID for the Azure Active Directory that holds the app registration"
-    }
-  },
-  "facebookAppId": {
-    "type": "string",
-    "metadata": {
-      "description": "The Facebook App ID for facebook authentication"
-    }
-  },
-  "facebookAppSecret": {
-    "type": "string",
-    "metadata": {
-      "description": "The Facebook App Secret for facebook authentication"
-    }
-  },
-  "googleClientId": {
-    "type": "string",
-    "metadata": {
-      "description": "The Client ID for google authentication"
-    }
-  },
-  "googleClientSecret": {
-    "type": "string",
-    "metadata": {
-      "description": "The Client Secret for google authentication"
-    }
-  }
-},
-{% endhighlight %}
-
-Finally, we need to add some properties to the `Microsoft.Web/sites` resource.  Here is my current site resource definition:
-
-{% highlight json %}
-{
-  "type": "Microsoft.Web/sites",
-  "name": "[variables('functionAppName')]",
-  "apiVersion": "2018-11-01",
-  "location": "[parameters('location')]",
-  "kind": "functionapp",
-  "dependsOn": [
-    "[resourceId('Microsoft.Web/serverfarms', variables('appHostingPlanName'))]",
-    "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
-    "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-  ],
-  "resources": [
-    {
-      "type": "config",
-      "name": "authsettings",
-      "apiVersion": "2018-11-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
-        "[resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'appsettings')]"
-      ],
-      "properties": {
-        "siteAuthSettings": {
-          "enabled": true,
-          "defaultProvider": 0,
-          "tokenStoreEnabled": true,
-          "unauthenticatedClientAction": 1,
-          "clientId": "[parameters('aadClientId')]",
-          "issuer": "[concat('https://sts.windows.net/', parameters('aadTenantId'))]"
-        }
-      }
-    },
-    {
-      "type": "config",
-      "name": "appsettings",
-      "apiVersion": "2018-11-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
-        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
-      ],
-      "properties": {
-        "AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2019-04-01').keys[0].value)]",
-        "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2019-04-01').keys[0].value)]",
-        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2019-04-01').keys[0].value)]",
-        "WEBSITE_CONTENTSHARE": "[toLower(variables('functionAppName'))]",
-        "FUNCTIONS_EXTENSION_VERSION": "~2",
-        "WEBSITE_NODE_DEFAULT_VERSION": "10.14.1",
-        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components/', variables('appInsightsName')), '2018-05-01-preview').InstrumentationKey]",
-        "FUNCTIONS_WORKER_RUNTIME": "[variables('functionAppRuntime')]"
-      }
-    }
-  ],
-  "properties": {
-    "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appHostingPlanName'))]",
-    "siteConfig": {
-      "ftpsState": "Disabled"
-    }
-  }
-}
-{% endhighlight %}
-
-> **TODO** This resource definition does not work just yet, so I specified the auth settings manually through the portal instead.  Really want to do everything via ARM though.
-
-We can now deploy this new template to update the existing deployment:
+The easiest way to set up authentication is with the `az webapp auth update` command.  First, run the following:
 
 {% highlight bash %}
-az group deployment create \
-  --name prod \
-  --resource-group tailwind-photos \
-  --template-file azuredeploy.json \
-  --parameters @azuredeploy.parameters.json 
+az webapp auth show --name twprodfunctions --resource-group tailwind-photos
 {% endhighlight %}
 
-Now, go get a cup of coffee as this will take a while!  Once done, check out the **Authentication / Authorization** section of your function app to make sure it's done the job correctly.
+This will show you the current settings.  Now, run the following to update:
+
+{% highlight bash %}
+az webapp auth update \
+  --name twprodfunctions \
+  --resource-group tailwind-photos \
+  --aad-client-id $aadClientId \
+  --aad-token-issuer-url https://sts.windows.net/$aadTenantId \
+  --action AllowAnonymous \
+  --enabled true \
+  --facebook-app-id $facebookAppId \
+  --facebook-app-secret $facebookAppSecret \
+  --facebook-oauth-scopes "public_profile email" \
+  --google-client-id $googleClientId \
+  --google-client-secret $googleClientSecret \
+  --token-store true
+{% endhighlight %}
+
+Replace the strings prefixed with `$` with the appropriate strings from the identity providers.
+
+You can also do this via an ARM template by setting up an `authsettings` embedded resource on the `Microsoft.Web/site` resource.  Check the [ARM template documentation](https://docs.microsoft.com/en-us/azure/templates/microsoft.web/2018-11-01/sites/config-authsettings) for more information.
+
+> **Why place the strings in a file at all?**  I place the strings in a file so I can construct the small script I use to deploy the authentication settings.  I use the same format as the `azuredeploy.parameters.json` so that I can update the Azure ARM deployment configuration to do this for me as well.
 
 ## The authentication process
 
@@ -234,7 +123,5 @@ Once this is done, you have a valid token with which to do further requests to t
 
 Next, I'm going to write the Android side of what I've been doing manually in this article.  I'll update my authentication process to do the token flow and only do the LiveData update when the result of `/.auth/me` returns.
 
-Until, and as always, check out the code within my [tailwind-photos-backend](https://github.com/adrianhall/tailwind-photos-backend) repository.
-
-> **TODO** Update this repo reference to a tag reference.
+Until, and as always, check out the code within my [tailwind-photos-backend](https://github.com/adrianhall/tailwind-photos-backend/tree/blog-7) repository.
 
