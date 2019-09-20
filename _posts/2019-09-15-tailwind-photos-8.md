@@ -173,7 +173,7 @@ If something goes wrong, then the `onError` will be called and you can inspect t
 
 ## Next steps
 
-We are just two articles away from having a complete social identity provider based authentication and registration process for Android.  In the next article, I'll cover the Azure Function that interacts with the Cosmos database to do registration.  The article after that will cover detecting registration is required and displaying the registration screen.
+We are just one article away from having a complete social identity provider based authentication and registration process for Android.  In the next article, I'll cover the Azure Function that interacts with the Cosmos database to do registration.  The article after that will cover detecting registration is required and displaying the registration screen.
 
 Until then, you can take a look at [my latest code](https://github.com/adrianhall/tailwind-photos-for-android/tree/blog-8) on my GitHub repository.
 
