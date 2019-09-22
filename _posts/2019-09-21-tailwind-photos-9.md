@@ -268,7 +268,7 @@ For now, I'm going to take a look at three cases just to see the code.  These ca
 
 First of all, we need to see if the IdP record matches a record in our database.  The records in the database will look like this:
 
-{% highlgiht json %}
+{% highlight json %}
 {
   "id": "some guid",
   "name": "My Name",
