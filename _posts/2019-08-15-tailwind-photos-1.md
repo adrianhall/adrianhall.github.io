@@ -39,7 +39,7 @@ Now that I've got the images for the background, I can create a `SplashActivity`
 
 The code for this SplashActivity is fairly simple:
 
-```kotlin
+{% highlight kotlin %}
 package com.tailwind.app.photos
 
 import android.content.Intent
@@ -55,13 +55,13 @@ class SplashActivity : AppCompatActivity() {
         finish()
     }
 }
-```
+{% endhighlight %}
 
 Note the lack of `setContentView()` call that is commonly used inside of activities.  This is deliberate and ensures the activity starts as quickly as possible.
 
 We'll come back to the `AuthenticatorActivity` class later on.  In the `AndroidManifest.xml` file, you need to remove the launcher codes from the `MainActivity` if you have one, and also set a new theme on the splash activity:
 
-```xml
+{% highlight xml %}
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.tailwind.app.photos">
@@ -82,15 +82,15 @@ We'll come back to the `AuthenticatorActivity` class later on.  In the `AndroidM
         </activity>
     </application>
 </manifest>
-```
+{% endhighlight %}
 
 Finally, add a theme to `res/values/styles.xml` to ensure the `splashscreen.png` is displayed:
 
-```xml
+{% highlight xml %}
    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:background">@drawable/splashscreen</item>
     </style>
-```
+{% endhighlight %}
 
 You can now create an `AuthenticatorActivity` that does whatever you want.  The app will display the splash screen and then a moment later it will switch to your next activity.  At no point will it display a white screen.
 
@@ -98,7 +98,7 @@ You can now create an `AuthenticatorActivity` that does whatever you want.  The 
 
 I decided to make my authenticator the next screen.  It will handle all the initialization and then handle the authentication as well.  I could probably have split the work (add an `InitializerActivity` and an `AuthenticatorActivity`) and there are certainly reasons to do that, but the code for each one is so small that I decided against it.  Here is my plan.  I'm going to put a spinner to indicate "network activity" on the screen (along with a title), then I will do to the initialization in a separate thread.  Once I am done, I'll bring up the rest of the UI for the page and hide the spinner.  This will be done using the same background as my splash screen.  The user should not see any shifts in the background as a result of the activity change.  Let's start with the `AndroidManifest.xml`:
 
-```xml hl_lines="12"
+{% highlight xml hl_lines="12" %}
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.tailwind.app.photos">
@@ -120,11 +120,11 @@ I decided to make my authenticator the next screen.  It will handle all the init
         </activity>
     </application>
 </manifest>
-```
+{% endhighlight %}
 
 I'm using the same `SplashTheme` for the new activity so that I get the same background.  Now, onto the layout:
 
-```xml
+{% highlight xml %}
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -164,7 +164,7 @@ I'm using the same `SplashTheme` for the new activity so that I get the same bac
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
-```
+{% endhighlight %}
 
 Most of this is visual design.  I'm using a font called [Frederika the Great](https://www.1001fonts.com/fredericka-the-great-font.html).  Once you have downloaded the font, place it in `res/font/frederika.ttf` so that it can be referenced properly.
 
@@ -172,7 +172,7 @@ Most of this is visual design.  I'm using a font called [Frederika the Great](ht
 
 In order to use this sort of font embedding, you need to have a `minSdkVersion` of 26.   You can set this in the `build.gradle` for the module:
 
-```gradle hl_lines="3"
+{% highlight gradle hl_lines="3" %} 
 android {
     defaultConfig {
         applicationId "com.tailwind.app.photos"
@@ -182,11 +182,11 @@ android {
         versionName "1.0"
     }
 }
-```
+{% endhighlight %}
 
 Onto the `res/values/styles.xml` file.  We have two new styles we have referenced here:
 
-```xml
+{% highlight xml %}
     <style name="SplashTheme.TextView" parent="TextAppearance.AppCompat.Headline">
         <item name="android:background">@android:color/transparent</item>
         <item name="android:textColor">@color/grey_100</item>
@@ -197,19 +197,19 @@ Onto the `res/values/styles.xml` file.  We have two new styles we have reference
     <style name="SplashTheme.Progress" parent="Widget.AppCompat.ProgressBar">
         <item name="android:background">@android:color/transparent</item>
     </style>
-```
+{% endhighlight %}
 
 Don't forget to include the `grey_100` color in your `colors.xml` file:
 
-```xml
+{% highlight xml %}
     <color name="grey_100">#F5F5F5</color>
-```
+{% endhighlight %}
 
 > I've included all the Material Design colors in my `colors.xml` so I can reference them anywhere!
 
 The style for the progress bar is fairly simple.  However, there are two notes for the style for my app name.  Firstly, note how I specify the font.  Secondly, let's talk about dynamic text sizing.  I want the title to be as big as possible relative to the width of the phone.  To do this, I create a `TextView` within the `ConstraintLayout` that is of maximal width and has a `0dp` (or `match_constraint`) height.  I've created a horizontal guide at 33% down the screen.  The constraints mean the `TextView` fills that area.  However, let's look at the `TextView`:
 
-```xml hl_lines="6-7"
+{% highlight xml hl_lines="6-7" %}
     <TextView android:text="@string/app_name"
               android:layout_width="match_parent"
               android:layout_height="0dp"
@@ -222,7 +222,7 @@ The style for the progress bar is fairly simple.  However, there are two notes f
               app:layout_constraintStart_toStartOf="parent"
               app:layout_constraintTop_toTopOf="parent"
               app:layout_constraintBottom_toTopOf="@+id/authenticator_g_h50"/>
-```
+{% endhighlight %}
 
 The `android:lines` property ensures that the title will appear on one line.  The `android:gravity` will center the text between the top of the screen and the guideline.  Don't use `wrap_content` on this view - it doesn't work with dynamic text sizing.
 
@@ -230,7 +230,7 @@ In retrospect, this would have been easier by just including the title on the sp
 
 Moving onto the class, the next step is to do the initialization.  Right now, I don't have any initialization code, but I know it's coming.  It's best to plan for these things.  Here is the initial code for the `AuthenticatorActivity`:
 
-```kotlin
+{% highlight kotlin %}
 package com.tailwind.app.photos
 
 import android.os.Bundle
@@ -264,7 +264,7 @@ class AuthenticatorActivity : AppCompatActivity() {
         }
     }
 }
-```
+{% endhighlight %}
 
 The major note here is that the thread that does the initialization is done in the `onResume()` method.  This allows the layout to be hydrated so you can see it before initialization starts.
 
@@ -274,7 +274,7 @@ I need a little more UI to handle the authentication requirements.  I'm going to
 
 Let's start with the layout additions:
 
-```xml hl_lines="9"
+{% highlight xml hl_lines="9" %}
     <androidx.cardview.widget.CardView
         android:id="@+id/social_media_login_buttons"
         android:layout_width="match_parent"
@@ -327,7 +327,7 @@ Let's start with the layout additions:
                 android:layout_weight="1" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-```
+{% endhighlight %}
 
 Line 9 sets the top constraint of this layout so that it's off the bottom of the screen.  That's my starting point - I don't want the user to see the pill until I slide it into view.  In addition, note that I have to specify two properties on the card view to get the right background color and corner radius.  I wish these were available in a style instead, but I don't use this format regularly.  The `LinearLayout` places my four image buttons side by side equally in the pill.
 
@@ -335,7 +335,7 @@ Line 9 sets the top constraint of this layout so that it's off the bottom of the
 
 The styles in use here are as follows:
 
-```xml
+{% highlight xml %}
     <style name="SplashTheme.SocialMediaButtons" parent="Widget.AppCompat.PopupWindow">
         <item name="android:background">@color/background</item>
         <item name="android:textColor">@color/foreground</item>
@@ -346,23 +346,23 @@ The styles in use here are as follows:
         <item name="android:layout_gravity">center</item>
         <item name="android:gravity">center</item>
     </style>
-```
+{% endhighlight %}
 
 The `colors.xml` has the following:
 
-```xml
+{% highlight xml %}
     <color name="foreground">@color/grey_900</color>
     <color name="background">@color/grey_100</color>
-```
+{% endhighlight %}
 
 I've also added a dimension that I will need later.  This is in `res/values/dimens.xml`, but you can place it in any of the values files that has `resources` as a root node.  They are all treated equivalently.
 
-```xml
+{% highlight xml %}
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="social_media_button_offset">64dp</dimen>
 </resources>
-```
+{% endhighlight %}
 
 How did I pick this number? Well, it overwrites the progress bar when it moves up, so I wanted it to be in the same position.  Also, it's high enough that if any bottom navigation bar is covering the bottom of the screen, the pill will float above that bottom navigation bar.
 
@@ -370,7 +370,7 @@ Finally, I've also created four 48x48dp drawables.  I did this by downloading th
 
 Now that I've got the UI defined in XML, it's time to animate the pill into the display.  This is done in the `runOnIoThread` section of the `onResume()` method from earlier:
 
-```kotlin
+{% highlight kotlin %}
     runOnUiThread {
         val distance = resources.getDimensionPixelSize(R.dimen.social_media_button_offset).toFloat()
 
@@ -382,7 +382,7 @@ Now that I've got the UI defined in XML, it's time to animate the pill into the 
             .alpha(1.0f)
             .setListener(null)
     }
-```
+{% endhighlight %}
 
 My first step is to work out how far I should move the pill.  I specify the dimension in display points, but I need to animate based on pixels.  Fortunately, the resource manager will do the conversion for me based on the device I am on right now.  Once I've got that, I make the progress bar disappear (abruptly - no need to slide it out), and then do a simple animation, which will take a half second.  I love the `.animate()` method here as it makes these simple transitions really easy.
 
