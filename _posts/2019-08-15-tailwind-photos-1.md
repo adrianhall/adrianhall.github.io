@@ -98,7 +98,7 @@ You can now create an `AuthenticatorActivity` that does whatever you want.  The 
 
 I decided to make my authenticator the next screen.  It will handle all the initialization and then handle the authentication as well.  I could probably have split the work (add an `InitializerActivity` and an `AuthenticatorActivity`) and there are certainly reasons to do that, but the code for each one is so small that I decided against it.  Here is my plan.  I'm going to put a spinner to indicate "network activity" on the screen (along with a title), then I will do to the initialization in a separate thread.  Once I am done, I'll bring up the rest of the UI for the page and hide the spinner.  This will be done using the same background as my splash screen.  The user should not see any shifts in the background as a result of the activity change.  Let's start with the `AndroidManifest.xml`:
 
-{% highlight xml hl_lines="12" %}
+{% highlight xml %}
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.tailwind.app.photos">
@@ -172,7 +172,7 @@ Most of this is visual design.  I'm using a font called [Frederika the Great](ht
 
 In order to use this sort of font embedding, you need to have a `minSdkVersion` of 26.   You can set this in the `build.gradle` for the module:
 
-{% highlight gradle hl_lines="3" %} 
+{% highlight gradle %} 
 android {
     defaultConfig {
         applicationId "com.tailwind.app.photos"
@@ -209,7 +209,7 @@ Don't forget to include the `grey_100` color in your `colors.xml` file:
 
 The style for the progress bar is fairly simple.  However, there are two notes for the style for my app name.  Firstly, note how I specify the font.  Secondly, let's talk about dynamic text sizing.  I want the title to be as big as possible relative to the width of the phone.  To do this, I create a `TextView` within the `ConstraintLayout` that is of maximal width and has a `0dp` (or `match_constraint`) height.  I've created a horizontal guide at 33% down the screen.  The constraints mean the `TextView` fills that area.  However, let's look at the `TextView`:
 
-{% highlight xml hl_lines="6-7" %}
+{% highlight xml %}
     <TextView android:text="@string/app_name"
               android:layout_width="match_parent"
               android:layout_height="0dp"
@@ -274,7 +274,7 @@ I need a little more UI to handle the authentication requirements.  I'm going to
 
 Let's start with the layout additions:
 
-{% highlight xml hl_lines="9" %}
+{% highlight xml %}
     <androidx.cardview.widget.CardView
         android:id="@+id/social_media_login_buttons"
         android:layout_width="match_parent"
