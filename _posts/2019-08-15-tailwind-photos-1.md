@@ -388,6 +388,6 @@ My first step is to work out how far I should move the pill.  I specify the dime
 
 ## Next steps
 
-THe app is now runnable.  When you run it, you will see the background, then the title and progress spinner will appear for 3 seconds, then the social media login buttons will slide in from the bottom.  If you want to see the app code for yourself, take a look at [my repository](https://github.com/adrianhall/tailwind-photos-for-android/tree/blog-1).
+The app is now runnable.  When you run it, you will see the background, then the title and progress spinner will appear for 3 seconds, then the social media login buttons will slide in from the bottom.  If you want to see the app code for yourself, take a look at [my repository](https://github.com/adrianhall/tailwind-photos-for-android/tree/blog-1).
 
 Next for me is going to be a series of posts on how to do specific authentication schemes for my buttons.  I'll wire each one up and integrate each platform SDK, then work on the initialization code.  If you want to follow along, feel free to follow the repository, or check the new category for [Tailwind Photos](https://adrianhall.github.io/categories/#tailwind-photos)
