@@ -18,6 +18,6 @@ I could, and it only took my about half an hour.
 
 The project I chose was a [Weather app](https://dribbble.com/shots/7106462-Weather-App?utm_source=Clipboard_Shot&utm_campaign=Chrisiwan&utm_content=Weather%20App&utm_medium=Social_Share) by Chris Iwan, who provided the screen shots and colors. Here is the screen shot:
 
-![Weather app Screenshot](/assets/images/2019-10-31-image1.jpg){: base-image}
+![Weather app Screenshot](/assets/images/2019-10-31-image1.png =600x){: center-image}
 
 He also provided five colors for a palette, which we will get onto within the code.
