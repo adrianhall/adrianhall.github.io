@@ -235,7 +235,7 @@ struct HourlyWeather_Previews: PreviewProvider {
 
 We need to integrate the hourly weather data into this as otherwise it won't be a proper list.  To do this, the `HourlyWeather` object needs to take an `Hourly` object.  Here is how I adjusted it:
 
-{% highlight swift hl_lines="4,7-8,10,13,16,30" %}
+{% highlight swift "4,7-8,10,13,16,30" %}
 import SwiftUI
 
 struct HourlyWeather: View {
