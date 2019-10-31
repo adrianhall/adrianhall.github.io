@@ -50,7 +50,7 @@ Sometimes, it's better to use a serverless technology (for example, when you hav
 
 The architecture looks like the following:
 
-![](/assets/images/2019-09-03-image1.png)
+![]({{ site.baseurl }}/assets/images/2019-09-03-image1.png)
 
 Of course, I want repeatable deployments, so everything is going to be deployed via Azure Resource Manager (or **ARM**).  This involves writing an ARM template (which I pretty much always write based on a template, but I'll go through the basics here), and then running a deployment script using the Azure CLI.
 
@@ -382,7 +382,7 @@ Once the deployment is running, you can review the deployment in progress:
 
 You will see the resources as they are created.  If any resource fails, look at the **Operation details** to see what is wrong.  For instance, here was my first run of the deployment:
 
-![](/assets/images/2019-09-03-image2.png)
+![]({{ site.baseurl }}/assets/images/2019-09-03-image2.png)
 
 Let's take a look at the errors.  First, the one for Sendgrid:
 

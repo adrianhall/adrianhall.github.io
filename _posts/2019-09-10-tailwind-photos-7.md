@@ -101,13 +101,13 @@ So, how do we actually go about swapping an IdP token for an Azure Functions tok
 
 Not all these are required.  In fact, for some providers, you won't have them.  Google requires the `id_token`, Facebook requires the `access_token` and AAD requires both.  Everything else is optional.
 
-![](/assets/images/2019-09-10-image1.png)
+![]({{ site.baseurl }}/assets/images/2019-09-10-image1.png)
 
 The response from this POST request will be a session authorization token.  You can use this in an `X-ZUMO-AUTH` header for subsequent requests to functions that require authentication.  You can test this out with Postman.  First, run your Android app to get a token of the appropriate sort, then do the post yourself:
 
 The second endpoint is `/.auth/me`.  You use this within the function app code to access the details of the token that you have been provided.  This includes, most notably, the `sub` field appears as `user_id` which will be used to link the provider authentication to our registration.
 
-![](/assets/images/2019-09-10-image2.png)
+![]({{ site.baseurl }}/assets/images/2019-09-10-image2.png)
 
 Note that there is an expiry time.  In this case, you will need to validate that your secret from the IdP is still valid, then go through the process again to get a new token,
 

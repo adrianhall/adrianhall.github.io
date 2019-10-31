@@ -187,7 +187,7 @@ npm run tests
 
 You can run this in the integrated terminal window of Visual Studio Code (just use **View** > **Integrated Terminal** to bring it up). You should be rewarded with nine successful tests:
 
-![Test Run](/assets/images/2018-07-04-image1.png){: .center-image}
+![Test Run]({{ site.baseurl }}/assets/images/2018-07-04-image1.png){: .center-image}
 
 Note that all the code, including the tests, is written in TypeScript. You get compile time type checking, generics, and a whole host of other enhancements to JavaScript.
 
@@ -204,11 +204,11 @@ isEmpty(): boolean {
 
 Re-run the tests and the first test that fails is the third one — “can be pushed upon”. I’d really like to find out what is happening now! Enter the Visual Studio Code debugger:
 
-![Starting the Visual Studio Code Debugger](/assets/images/2018-07-04-image2.png){: .center-image}
+![Starting the Visual Studio Code Debugger]({{ site.baseurl }}/assets/images/2018-07-04-image2.png){: .center-image}
 
 The debugger window changes the left hand area:
 
-![No Configurations are present](/assets/images/2018-07-04-image3.png){: .center-image}
+![No Configurations are present]({{ site.baseurl }}/assets/images/2018-07-04-image3.png){: .center-image}
 
 Before I can debug, I need to tell Visual Studio Code how to run my tests within the debugger. To do this, I add a configuration. Click the drop-down next to No Configurations and select **Add Configuration…**, then select the **Node.js** environment. This will add a further drop-down for selecting a configuration. Select the **{} Node.js: Mocha Tests** configuration. This gets a basic pattern for running mocha tests. However, just as we had to add arguments to the mocha command in the `package.json` file, we need to do so in the configuration. Here is my configuration file:
 
@@ -238,15 +238,15 @@ Note the `args` field here. It contains some “extra” stuff, but the importan
 
 On to debugging. I can set a breakpoint in the `test/stack.ts` file right on the it() call for the failing test by clicking in the left margin next to it. A little red ball will appear:
 
-![A breakpoint is set](/assets/images/2018-07-04-image4.png){: .center-image}
+![A breakpoint is set]({{ site.baseurl }}/assets/images/2018-07-04-image4.png){: .center-image}
 
 Note that I set the breakpoint on the first line of the test, not the `it()` call. Now, go into the debugger screen and click the run button:
 
-![Click this button to start the debugger](/assets/images/2018-07-04-image5.png){: .center-image}
+![Click this button to start the debugger]({{ site.baseurl }}/assets/images/2018-07-04-image5.png){: .center-image}
 
 Once the breakpoint is hit, execution is paused and you can step through the code:
 
-![Stepping controls](/assets/images/2018-07-04-image6.png){: .center-image}
+![Stepping controls]({{ site.baseurl }}/assets/images/2018-07-04-image6.png){: .center-image}
 
 This set of controls appears at the top. From left to right, they are:
 
@@ -273,7 +273,7 @@ The cursor is now at the end of the `push()` method. I can take a look at the va
 * Step into the `this.isEmpty()` call (in `src/Stack.js` now).
 * We are throwing an error.
 
-![We've found the problem](/assets/images/2018-07-04-image7.png){: .center-image}
+![We've found the problem]({{ site.baseurl }}/assets/images/2018-07-04-image7.png){: .center-image}
 
 I could also have found this by checking the box next to **All Exceptions** in the breakpoints window, but it would not have given me the flow through the code, so I would have been left without the context of why this method was called in the first place (although the call stack window gives me some of the context).
 

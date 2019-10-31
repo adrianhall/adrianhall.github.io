@@ -54,7 +54,7 @@ In addition, there are cross-platform UI test frameworks to consider, primarily 
 
 Finally, [AWS Device Farm] has a feature called Explorer for Android apps. This feature investigates your UI and finds things to interact with. When it finds a control, it interacts with the control. This feature works with login screens, allowing you to validate authenticated sessions as well.
 
-![Screenshot of AWS Device Farm](/assets/images/2018-03-11-image1.jpg){: .center-image}
+![Screenshot of AWS Device Farm]({{ site.baseurl }}/assets/images/2018-03-11-image1.jpg){: .center-image}
 
 Ionic and React Native perform UI testing against compiled code, so your UI tests should not include Ionic or React Native code. Instead, you are testing how the app acts on a device.
 

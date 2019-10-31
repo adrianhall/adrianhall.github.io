@@ -46,7 +46,7 @@ override fun recordFailedLogin() {
 
 When I do authentication, I can use `recordSuccessfulLogin()` to record this. The endpoint will get updated and the appropriate signal will be sent to Amazon Pinpoint. The `_userauth.sign_in` is a special event in Amazon Pinpoint for recording a successful authentication. Adding an update to the endpoint profile will enable you to count active users:
 
-![Amazon Pinpoint console](/assets/images/2018-09-11-image1.png){: .center-image}
+![Amazon Pinpoint console]({{ site.baseurl }}/assets/images/2018-09-11-image1.png){: .center-image}
 
 The graphs themselves may be uninteresting. From a developer perspective, though, the daily active users and monthly active users graphs have upticks. That is caused by setting the user ID within the endpoint profile.
 
@@ -218,7 +218,7 @@ amplify analytics console
 
 Now, go to **Segments** > **New Segment** to create a segment. Start building your segment by selecting **Custom Attributes**, then **categories**, then one of your categories:
 
-![Segmentation in the Amazon Pinpoint console](/assets/images/2018-09-11-image2.png){: .center-image}
+![Segmentation in the Amazon Pinpoint console]({{ site.baseurl }}/assets/images/2018-09-11-image2.png){: .center-image}
 
 Your standard attributes are the phone type, manufacturer, app version, and so on. The custom attributes are the ones that you programmatically enable via the endpoint profile.
 

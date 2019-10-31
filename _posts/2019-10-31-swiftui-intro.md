@@ -18,7 +18,7 @@ I could, and it only took my about half an hour.
 
 The project I chose was a [Weather app](https://dribbble.com/shots/7106462-Weather-App?utm_source=Clipboard_Shot&utm_campaign=Chrisiwan&utm_content=Weather%20App&utm_medium=Social_Share) by Chris Iwan, who provided the screen shots and colors. Here is the screen shot:
 
-![Weather app Screenshot](/assets/images/2019-10-31-image1.png{: .center-image}
+![Weather app Screenshot]({{ site.baseurl }}/assets/images/2019-10-31-image1.png){: .center-image}
 
 He also provided five colors for a palette, which we will get onto within the code.
 
@@ -86,7 +86,7 @@ One of the most awesome features about SwiftUI is the live preview.  On the righ
 
 One of the nice things about XCode is its auto-completion for Swift.  It's something that most IDEs do today, and XCodes version isn't as good as (say) Visual Studio Code.  (Honestly, I can't wait until someone writes a SwiftUI for VS Code plugin!)
 
-![The preview screen](/assets/images/2019-10-31-image2.png) {: .center-image}
+![The preview screen]({{ site.baseurl }}/assets/images/2019-10-31-image2.png){: .center-image}
 
 Now I need to integrate that component into my `Scenes/TodaysWeather.swift`:
 
@@ -275,7 +275,7 @@ struct HourlyWeather_Previews: PreviewProvider {
 
 The preview of this is looking pretty good (but not the same as the original):
 
-![The hourly weather pill](/assets/images/2019-10-31-image3.png){: .center-image}
+![The hourly weather pill]({{ site.baseurl }}/assets/images/2019-10-31-image3.png){: .center-image}
 
 This now needs to go into a `ScrollView` object in the `TodaysWeather.swift` file:
 
@@ -305,7 +305,7 @@ struct TodaysWeather: View {
 
 You can't actually see the scrolling in action unless you switch to "live preview".  That's the play button in the lower-left corner of the preview window.  You should now be able to see the preview and slide it:
 
-![hourly weather added](/assets/images/2019-10-31-image4.png)
+![hourly weather added]({{ site.baseurl }}/assets/images/2019-10-31-image4.png)
 
 ## Todays weather
 
@@ -379,7 +379,7 @@ struct WeatherScene_Previews: PreviewProvider {
 
 Take a look at the preview:
 
-![The final preview](/assets/images/2019-10-31-image5.png){: .center-image}
+![The final preview]({{ site.baseurl }}/assets/images/2019-10-31-image5.png){: .center-image}
 
 It looks pretty close to what I am expecting.  I can probably get this even closer by working on replicating the fonts (including sizes and weights) and exact color matching, but this is good enough to get me going on the dynamic data side of things.  That's a topic for next time.
 

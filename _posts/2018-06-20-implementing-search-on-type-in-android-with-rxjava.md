@@ -79,7 +79,7 @@ There are a couple of things that I can do here, but the one I want to concentra
 
 That totally doesn’t explain what it does or its power. Well, it does — but only to those who already know what it does. I also saw diagrams like this:
 
-![Marble chart courtesy of ReactiveX](/assets/images/2018-06-20-image1.png){: .center-image}
+![Marble chart courtesy of ReactiveX]({{ site.baseurl }}/assets/images/2018-06-20-image1.png){: .center-image}
 
 Which explains the role of the operator, but not so much on how to set things up. So let’s see if I can do a better job by way of a simple example that’s also useful.
 
