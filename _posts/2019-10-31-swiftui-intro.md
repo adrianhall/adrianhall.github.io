@@ -240,10 +240,10 @@ import SwiftUI
 
 struct HourlyWeather: View {
     let data: Hourly
-    
+
     var body: some View {
         let timeString: String = data.hour <= 12 ? "AM" : "PM"
-        
+
         return VStack {
             Text(String(data.hour) + timeString)
                 .font(.caption)
