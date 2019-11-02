@@ -90,6 +90,7 @@ struct HeaderBackground: View {
         .foregroundColor(.white)
         .opacity(0.17)
         .position(x: 0, y: 0)
+    }
   }
 }
 {% endhighlight %}
@@ -123,6 +124,7 @@ struct HeaderBackground: View {
           .opacity(0.17)
           .position(x: geometry.size.width - 20, y: 30)
       }
+    }
   }
 }
 {% endhighlight %}
@@ -136,4 +138,4 @@ The resulting code for this one looks like this in the preview:
 
 ![The result]({{ site.baseurl }}/assets/images/2019-11-02-image2.png){: .center-image}
 
-As you can see, it's pretty close!
+As you can see, it's pretty close!  To get an exact match, all I have to do is mess with the x/y positioning and size of each circle.
