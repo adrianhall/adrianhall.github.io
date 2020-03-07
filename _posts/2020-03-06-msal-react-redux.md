@@ -293,12 +293,12 @@ class AuthService {
 
   get icon() { return faMicrosoft; }
 
-  async login() {
+  async signIn() {
     const response = await this.msalClient.loginPopup(this.signInOptions);
     return new Identity(response);
   }
 
-  logout() {
+  signOut() {
     this.msalClient.signOut();
   }
 
