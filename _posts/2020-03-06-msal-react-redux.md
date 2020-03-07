@@ -47,8 +47,6 @@ import { Identity } from '../models';
 import { InteractiveSignInRequired } from '../utils';
 import config from '../assets/config.json';
 
-/* eslint no-console: [ "off" ] */
-
 /**
  * Logger method for the MSAL diagnostic logs.
  *
@@ -172,11 +170,11 @@ The `InteractiveSignInRequired()` class is a custom error class:
 {% highlight javascript %}
 export default class InteractiveSignInRequired extends Error {
   constructor() {
-    super('Interactiver Sign In Required');
+    super('Interactive Sign In Required');
     this.name = 'InteractiveSignInRequired';
   }
 }
-{% endhighlihgt %}
+{% endhighlight %}
 
 Finally, both `getToken()` and `signIn()` return the identity of the user.  It's a simple model, but I only store the bits I need:
 
