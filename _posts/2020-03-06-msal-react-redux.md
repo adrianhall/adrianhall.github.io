@@ -60,10 +60,13 @@ I can use the `store.dispatch()` method to dispatch each action creator.  Depend
 There are two types here - `error` and `identity`.  The `error` type is a basic JavaScript `Error`.  The `identity` type will be a new model called `Identity`:
 
 {% highlight javascript %}
+/**
+ * Encapsulation of the identity of the user.
+ */
 export default class Identity {
   constructor(tokenResponse) {
     this.account = tokenResponse.account;
-    this.idToken = tokenResponse.idToken;
+    this.rawIdToken = tokenResponse.idToken.rawIdToken;
   }
 
   get userId() {
@@ -79,7 +82,7 @@ export default class Identity {
   }
 
   get idToken() {
-    return this.idToken.rawIdToken;
+    return this.rawIdToken;
   }
 }
 {% endhighlight %}
