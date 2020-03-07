@@ -5,178 +5,59 @@ categories:
   - React
 ---
 
-I have a new app I am working on.  It's sort of a 1990's style text MUD, but I'm bringing it "up to this century" with a host of new features.  I'm writing the first front-end in React.  One of the problems - how to deal with signing in with my Microsoft account.
+I have a new app I am working on.  It's sort of a 1990's style text MUD, but I'm bringing it "up to this century" with a host of new features.  I'm writing the first front-end in [React](https://reactjs.org).  
 
-## Step 1: The App Registration
+So, what does a modern MUD app look like?  Well, I'm not into storing usernames and password any more, so I'm going to use a Microsoft OAuth service instead of a user database.  My front end application handles state through [Redux](https://redux.js.org).  
 
-Microsoft accounts are managed through Azure Active Directory.  Sign into your Azure account, then go to [App registrations](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) and follow the quick start.
+## Configuring Redux
 
-The only things you really need to know:
-
-* You are implementing a web client.
-* You need a redirect URI that is the same as your web app.  Locally, mine is `http://localhost:3000/modernmud`.  Later on, it will be something else and I'll add a redirect URI to the configuration at that point.
-
-## Step 2: Create an MSAL configuration
-
-I've create my React app with `create-react-app`.  Then I created a configuration file:
-
-{% highlight json %}
-{
-  "msal": {
-    "authority": "https://login.microsoftonline.com/common",
-    "clientId": "YOUR_APPLICATION_ID_HERE",
-    "scopes": [ "openid", "profile", "user.read" ]
-  }
-}
-{% endhighlight %}
-
-Replace the `YOUR_APPLICATION_ID_HERE` with the application Id of your app registration from the Azure Portal.  I called this file `config.json`.  I'll be using it to configure the rest of the application as well.
-
-## Step 3: Create an authentication service
-
-I like to abstract out the common code into reusable units.  One such unit is the "auth service".  Most of it is fairly easy to follow:
+I've got a store set up as follows:
 
 {% highlight javascript %}
-import {
-  ClientAuthError,
-  InteractionRequiredAuthError,
-  LogLevel, Logger,
-  UserAgentApplication
-} from 'msal';
-import { Identity } from '../models';
-import { InteractiveSignInRequired } from '../utils';
-import config from '../assets/config.json';
+import { applyMiddleware, createStore } from 'redux';
+import thunkMiddleware from 'redux-thunk';
+import { createLogger } from 'redux-logger';
+import appReducer from './reducers';
+import * as actions from './actions';
 
-/**
- * Logger method for the MSAL diagnostic logs.
- *
- * @param {LogLevel} logLevel
- * @param {string} message
- */
-const msalLogger = (logLevel, message) => {
-  switch (logLevel) {
-    case LogLevel.Verbose:
-      console.debug(`MSAL: ${message}`);
-      break;
-    case LogLevel.Info:
-      console.info(`MSAL: ${message}`);
-      break;
-    case LogLevel.Warning:
-      console.warn(`MSAL: ${message}`);
-      break;
-    case LogLevel.Error:
-      console.error(`MSAL: ${message}`);
-      break;
-    default:
-      console.log(`MSAL: ${message}`);
-      break;
-  }
-};
+const loggerMiddleware = createLogger({ collapse: true });
+const store = createStore(
+  appReducer,
+  applyMiddleware(loggerMiddleware, thunkMiddleware)
+);
 
-/**
- * Configuration for the MSAL library.
- */
-const msalConfig = {
-  auth: {
-    authority: config.msal.authority,
-    clientId: config.msal.clientId,
-    redirectUri: window.location.href
-  },
-  cache: {
-    cacheLocation: 'sessionStorage',
-    storeAuthStateInCookie: true
-  },
-  system: {
-    logger: new Logger(msalLogger, { level: LogLevel.Verbose })
-  }
-};
-
-/**
- * Configuration for operations that return a token.
- */
-const signInOptions = {
-  scopes: config.msal.scopes
-};
-
-console.debug('auth-service:: initializing MSAL: config = ', msalConfig);
-const msalClient = new UserAgentApplication(msalConfig);
+export { actions, store };
 {% endhighlight %}
 
-This is all setup.  I'm reading in the configuration file, creating the configuration object required by MSAL, and then creating the client.  I've added a little bit of code to do debug logging along the way.
+This is about as basic a Redux store as it gets.  I've added [redux-logger](https://www.npmjs.com/package/redux-logger) for logging the Redux store state transitions, and [redux-thunk](https://www.npmjs.com/package/redux-thunk) for asynchronous actions.
 
-Next, let's take a look at the `signIn()` and `signOut()` methods.  These will be called when the user clicks on a button to do something, so it's ok to do interactive stuff:
+> Redux is a uni-directional flow state storage system.  Your application initiates actions, which are then handled by reducers that mutate the state of the application.  This then causes rendering changes as a result of the change.  If you don't understand this flow, I recommend [reading this tutorial](https://daveceddia.com/redux-tutorial/).
+
+This gets me thinking about state within the application.  I need three pieces of state within my application:
+
+* The number of network requests in flight right now.  This is used to display a spinner in the title bar when there is something going on.
+* The last network error that was encountered.  This is used to display a warning symbol to alert the user that something went wrong.
+* The current user identity.
+
+In Redux, I need to create an action identifier and an action creator for each state change I want to use:
 
 {% highlight javascript %}
-/**
- * Acquire a token interactively.
- */
-export async function signIn() {
-  console.debug('Initiating interactive sign-in');
-  const response = await msalClient.loginPopup(signInOptions);
-  console.debug('tokenResponse = ', response);
-  return new Identity(response);
-}
+const NETWORK_ERROR  = Symbol.for('network.error');
+const NETWORK_START  = Symbol.for('network.start');
+const NETWORK_STOP   = Symbol.for('network.stop');
+const SIGN_IN        = Symbol.for('network.auth-sign-in');
+const SIGN_OUT       = Symbol.for('network.auth-sign-out');
 
-/**
- * Sign out of the account
- */
-export function signOut() {
-  console.debug('Initiating MSAL sign-out');
-  msalClient.signOut();
-}
+const startNetwork   = () => ({ type: NETWORK_START });
+const stopNetwork    = () => ({ type: NETWORK_STOP });
+const networkError   = (error) => ({ type: NETWORK_ERROR, error });
+const networkSignIn  = (identity) => ({ type: SIGN_IN, identity });
+const networkSignOut = () => ({ type: SIGN_OUT });
 {% endhighlight %}
 
-I'm using async/await instead of promises.  I like how this simplifies and improves the readability of the code.  
+I can use the `store.dispatch()` method to dispatch each action creator.  Depending on how you organize your Redux implementation, you may have to export some and not others.  As an example, for smaller apps, I tend to keep everything for one reducer or section of the state in one file, and export the actions as needed.
 
-There is one method I have left until last.  It's the `getToken()` method.  I expect this to be run on a regular basis to get tokens, so it's the heaviest component:
-
-{% highlight javascript %}
-/**
- * Acquire a token asynchronously (and silently).
- *
- * @returns an Identity object
- * @throws InteractiveSignInRequired if the UI needs to be presented.
- * @throws Error on all other errors.
- */
-export async function getToken() {
-  const account = msalClient.getAccount();
-  if (account) {
-    try {
-      const response = await msalClient.acquireTokenSilent(signInOptions);
-      return new Identity(response);
-    } catch (error) {
-      if (error instanceof InteractionRequiredAuthError) {
-        throw new InteractiveSignInRequired();
-      }
-      if (error instanceof ClientAuthError) {
-        // On mobile devices, ClientAuthError is sometimes thrown when we
-        // can't do silent auth - this isn't generally an issue here.
-        if (error.errorCode === 'block_token_requests') {
-          throw new InteractiveSignInRequired();
-        }
-        console.warn('ClientAuthError: error code = ', error.errorCode);
-      }
-      throw error;
-    }
-  }
-  throw new InteractiveSignInRequired();
-}
-{% endhighlight %}
-
-There are a couple of reasons why an interactive sign-in is required.  The first is "because MSAL said so".  The second is because the features of the platform do not allow silent token requests.  The exception handling provides for both cases.  If there is an alternate `ClientAuthError`, then I print out the `errorCode`.  This allows me to decide if the error needs to be swallowed or thrown.
-
-The `InteractiveSignInRequired()` class is a custom error class:
-
-{% highlight javascript %}
-export default class InteractiveSignInRequired extends Error {
-  constructor() {
-    super('Interactive Sign In Required');
-    this.name = 'InteractiveSignInRequired';
-  }
-}
-{% endhighlight %}
-
-Finally, both `getToken()` and `signIn()` return the identity of the user.  It's a simple model, but I only store the bits I need:
+There are two types here - `error` and `identity`.  The `error` type is a basic JavaScript `Error`.  The `identity` type will be a new model called `Identity`:
 
 {% highlight javascript %}
 export default class Identity {
@@ -203,21 +84,9 @@ export default class Identity {
 }
 {% endhighlight %}
 
-I can use this authentication service module in other applications, including non-React apps.  It's a good abstraction of the functionality I need.
-
-## Step 4: Create a redux reducer and actions
-
-I've already got a redux store, and it's integrated into my app already.  There are plenty of tutorials for creating a redux store.  The important thing is to ensure that you integrate `redux-thunk` so you can do asynchronous actions.  The reducer is simple enough:
+This brings us to the reducer.  The purpose of the reducer is to create a new version of the state that is modified according to the action.  State is immutable in Redux, so you have to create a new one.
 
 {% highlight javascript %}
-import {
-  NETWORK_ERROR,
-  NETWORK_START,
-  NETWORK_STOP,
-  SIGN_IN,
-  SIGN_OUT
-} from '../actions/network';
-
 const initialState = {
   networkRequests: 0,
   identity: null,
@@ -242,27 +111,19 @@ export default function (state = initialState, action) {
 }
 {% endhighlight %}
 
-I've got three things I want to track - errors, whether there is a network request in flight, and the current identity of the sign-in user.  I've got five actions that are possible to update these various values.  
+## Setting up the UI
 
-The actions (which will be dispatched) match up to the three async methods in the authentication service:
+I like to abstract away the implementation details for the authentication service.  This means that I don't leak the authentication service implementation out into the rest of the application and can swap it out with a new implementation easily.
+
+The way I do this is to design the abstraction first, then fill in the details.  So, what do I need?
+
+* Some mechanism for the user to sign in interactively.
+* Action creators that sign in and out interactively.
+* An initialization method to handle silent authentication.
+
+Let's take a look at the action creators first.  I'm using `redux-thunk` for asynchronous action creators.  This allows me to use async/await by returning a function that takes dispatch instead of the normal action.  Code will explain this better:
 
 {% highlight javascript %}
-import * as authService from '../../services/auth-service';
-import { InteractiveSignInRequired } from '../../utils';
-
-
-export const NETWORK_ERROR  = Symbol.for('network.error');
-export const NETWORK_START  = Symbol.for('network.start');
-export const NETWORK_STOP   = Symbol.for('network.stop');
-export const SIGN_IN        = Symbol.for('network.auth-sign-in');
-export const SIGN_OUT       = Symbol.for('network.auth-sign-out');
-
-const startNetwork          = () => ({ type: NETWORK_START });
-const stopNetwork           = () => ({ type: NETWORK_STOP });
-const networkError          = (error) => ({ type: NETWORK_ERROR, error });
-const networkSignIn         = (identity) => ({ type: SIGN_IN, identity });
-const networkSignOut        = () => ({ type: SIGN_OUT });
-
 /**
  * Public action for initializing the network module.  Tries to acquire
  * an auth token silently, and swallows an interactive sign-in required.
@@ -313,18 +174,18 @@ export function signOut() {
 }
 {% endhighlight %}
 
-Redux-thunk takes the effort out of async actions.  A thunk is an action creator that returns a function.  The `dispatch` for the store is passed to the action creator so that the async operation can happen.  With these, I can just `dispatch(signIn())` to initiate the sign-in process, as an example.
+Make sure you add `store.dispatch(actions.initializeNetwork())` when you create your store.  This will dispatch an initialization action, which will then do an asynchronous silent token acquisition. 
 
-## Step 5: Create a sign-in button
+In each of these action creators, we return a function.  The `redux-thunk` middleware will execute the function asynchronously, and then the various methods will get called.  The net result of this is that I only have to dispatch a `signIn()` action creator to get the authentication service to interactively sign in.
 
-Here is the sign-in button code:
+To initiate that, I've got a `SignInButton` component that I can use anywhere on my UI to allow the user to sign-in or sign-out:
 
 {% highlight javascript %}
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMicrosoft } from '@fortawesome/free-brands-svg-icons';
 import { actions } from '../../../redux';
+import authService from '../../../services/auth-service';
 import styles from './SignInButton.module.scss';
 
 const SignInButton = () => {
@@ -336,11 +197,11 @@ const SignInButton = () => {
   };
 
   const buttonText = identity ? 'Sign out' : 'Sign in';
-  const longText = `${buttonText} with Microsoft`;
+  const longText = `${buttonText} with ${authService.serviceName}`;
 
   return (
     <button type="button" className={styles.signInButton} onClick={onClickHandler}>
-      <FontAwesomeIcon icon={faMicrosoft} />
+      <FontAwesomeIcon icon={authService.icon} />
       <span className={styles.shortTitle}>{buttonText}</span>
       <span className={styles.longTitle}>{longText}</span>
     </button>
@@ -350,22 +211,136 @@ const SignInButton = () => {
 export default SignInButton;
 {% endhighlight %}
 
-There have been two big changes in the React world over the past few years, and I love both of them.  The first is functions as components.  A lot of components were very simple with no state, and using functions really made them a lot simpler to write.  The other change was [React Hooks](https://reactjs.org/docs/hooks-intro.html).  It took me a little while to get used to hooks, but it all fell in place when I used them with Redux.  Instead of having to define a method that maps the state to props, define props, then wire up the store via the context with `connect` (which sounds a lot worse than what actually ended up happening), I add two function calls to my component.  I don't have to use classes for this.  The state is in the Redux store.
+A couple of notes about this component (which, as React components go, is fairly straight-forward):
 
-The logical equivalent of `mapStateToProps()` is `useSelector()`.  You basically say "this variable is stored in the state of the store here..." and React Hooks takes care of it.  `connect()` also passed in dispatch, and you can replace that with `useDispatch()`.  The nice thing is that you can keep the props that you want a higher level component to pass in separate from the things you want the store to provide.  
+1. I'm using [React Hooks](https://reactjs.org/docs/hooks-intro.html) to link into the Redux store.  It took me a while to figure out hooks, but once I saw it used with Redux, things fell into place.  I love this syntax now since I don't have to create extra props just to hook up the store.  It feels cleaner.
+2. I get the authentication service name and icon from the authentication service (which we will delve into next).  This sort of encapsulation means I can keep a library of authentication services elsewhere and just re-use them.
+3. I'm using a responsive layout.  The CSS for this component has a media selector that displays the long version above a certain width (768px in my case), and the short version below that same width.
 
-I made the button responsive.  There is a media query that says "on smaller screens, shorten the button title."  This is done by hiding the long text and showing the short text.
+Taking a quick step back:
 
-## So what happens?
+* There is a `SignInButton` on the page somewhere.  When clicked, it triggers the `signIn()` action.
+* The `signIn()` action triggers an interactive sign-in process.  When the response comes back, the store is updated with the new identity.
+* This causes the UI in the `SignInButton` to re-render, switching the text to `Sign out`.
+* If there is an error, the `lastError` is set in the store - I can trigger other UI components on this to display the error.
 
-Final thought, don't forget to `store.dispatch(initializeNetwork())` to get MSAL configured when you create your store!
+## The authentication service
 
-When you start your application, the authentication service will be initialized and the service will attempt to acquire a token silently.  It's not a big deal is the service can't acquire a token.  it just means the user has to click on the sign-in button.
+The only thing remaining is to create the authentication service.  This needs two properties and three methods:
 
-Place the `<SignInButton/>` somewhere on your page for the user to click.  When the user does click the `<SignInButton/>`, it will try to use the MSAL sign-in process.  This will pop-up a window, asking you to sign-in.  Once you've gone throuhg that process, the store will have an identity and the button will say 'Sign out' instead.
+* Property: `serviceName`
+* Property: `icon`
+* Async method: `getIdentity()` to retrieve the identity silently
+* Async method: `signIn()` to sign in interactively
+* Method: `signOut()` to sign out
 
-Along the way, you can put up a spinner when network operations are in progress by listening to the `networkRequests` value in the store, and put up an error sign when `lastError` is true.  I'll probably add an ability to clear the error as well when I do this.
+In addition, I need to set up an app registration in Azure Active Directory.  Microsoft login clients are managed through Azure Active Directory.  Sign into your Azure account, then go to [App registrations](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) and follow the quick start.
 
-One thing that hasn't happened yet?  I haven't got an `accessToken` - only an `idToken`.  To get an access token, I need to adjust the configuration of my app registration and add a scope to the list of scopes in the configuration.  For more information, see [Permissions and consent](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent) in the Microsoft Identity documentation.
+The only things you really need to know:
 
+* You are implementing a web client.
+* You need a redirect URI that is the same as your web app.  Locally, mine is `http://localhost:3000/modernmud`.  Later on, it will be something else and I'll add a redirect URI to the configuration in the Azure portal at that point.
+* You need the application or client ID from the Azure portal.
 
+This last piece of information is placed in a JSON file:
+
+{% highlight json %}
+{
+  "msal": {
+    "authority": "https://login.microsoftonline.com/common",
+    "clientId": "YOUR_APPLICATION_ID_HERE",
+    "scopes": [ "openid", "profile", "user.read" ]
+  }
+}
+{% endhighlight %}
+
+Replace the `YOUR_APPLICATION_ID_HERE` with the application Id of your app registration from the Azure Portal.  I called this file `config.json`.  I'll be using it to configure the rest of the application as well, so I don't want it to be dedicated to MSAL.
+
+Let's look at the `auth-service.js` which defines my authentication service:
+
+{% highlight javascript %}
+import { 
+  ClientAuthError, InteractionRequiredAuthError, UserAgentApplication
+} from 'msal';
+import { faMicrosoft } from '@fortawesome/free-brands-svg-icons';
+import { Identity } from '../models';
+import { InteractiveSignInRequired } from '../utils';
+import config from '../assets/config.json';
+
+class AuthService {
+  constructor(configuration) {
+    this.signInOptions = {
+      scopes: configuration.msal.scopes
+    };
+
+    this.msalConfig = {
+      auth: {
+        authority: configuration.msal.authority,
+        clientId: configuration.msal.clientId,
+        redirectUri: window.location.href
+      },
+      cache: {
+        cacheLocation: 'sessionStorage',
+        storeAuthStateInCookie: true
+      }
+    };
+
+    this.msalClient = new UserAgentApplication(this.msalConfig);
+    console.log('AuthService:: initialized: ', this.msalConfig);
+  }
+
+  get serviceName() { return 'Microsoft'; }
+
+  get icon() { return faMicrosoft; }
+
+  async login() {
+    const response = await this.msalClient.loginPopup(this.signInOptions);
+    return new Identity(response);
+  }
+
+  logout() {
+    this.msalClient.signOut();
+  }
+
+  async getIdentity() {
+    const account = this.msalClient.getAccount();
+    if (account) {
+      try {
+        const response = await this.msalClient.acquireTokenSilent(this.signInOptions);
+        return new Identity(response);
+      } catch (error) {
+        if (error instanceof InteractionRequiredAuthError) {
+          throw new InteractiveSignInRequired();
+        }
+        if (error instanceof ClientAuthError) {
+          // On mobile devices, ClientAuthError is sometimes thrown when we
+          // can't do silent auth - this isn't generally an issue here.
+          if (error.errorCode === 'block_token_requests') {
+            throw new InteractiveSignInRequired();
+          }
+          console.warn('ClientAuthError: error code = ', error.errorCode);
+        }
+        throw error;
+      }
+    }
+    throw new InteractiveSignInRequired();
+  }
+}
+
+const authService = new AuthService(config);
+
+export default authService;
+{% endhighlight %}
+
+Most of this is straight-forward, and dictated by the [MSAL.js](https://www.npmjs.com/package/msal) library.  The one that took a little time was the `getIdentity()` method.  This returns an `Identity` object or throws an error.  We want to isolate the rest of the application from the errors that are generated by MSAL, so I have created a new error called `InteractiveSignInRequired()` that I can throw.
+
+There are two situations where this is needed:
+
+1. MSAL doesn't have enough information to get a new token.
+2. MSAL doesn't have the right permissions to get a new token.
+
+This latter one takes some explaining.  There are situations (especially in mobile web) where you can't create an iframe to do the transport to get the token from the remote service silently.  In this case, you'll need to re-authenticate using an interactive sign-in process.  The code in the `getIdentity()` method handles both situations, but throws the original error if anything else happens.
+
+## Wrap up
+
+This is a fair amount of code, and there is still more to do.  I've only just managed to get an identity token, so I know about the user, but I haven't provided any permissions to my API as yet.  However, my app can now progress to the next stage.
