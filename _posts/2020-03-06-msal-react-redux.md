@@ -302,7 +302,7 @@ class AuthService {
   }
 
   signOut() {
-    this.msalClient.signOut();
+    this.msalClient.logout();
   }
 
   async getIdentity() {
