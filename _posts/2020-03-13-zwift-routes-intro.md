@@ -29,20 +29,18 @@ I have several feature requests, including a "desktop" version and native Androi
 
 The application is written in React, with the following libraries:
 
-* [React Router] for page routing.
-* [Redux] for state management, using React Hooks.
-* [Redux-persist] for persisting the settings.
-* [Dexie] for persisting the "route state" (i.e. completed)
-* [Material-UI] for the UI components
-* [Github Pages] for hosting.
+* [React Router](https://reacttraining.com/react-router/) for page routing.
+* [Redux](https://redux.js.org/) for state management, using React Hooks.
+* [Redux-persist](https://github.com/rt2zz/redux-persist) for persisting the settings.
+* [Dexie](https://dexie.org/) for persisting the "route state" (i.e. completed)
+* [Material-UI](https://material-ui.com/) for the UI components
+* [Github Pages](https://pages.github.com/) for hosting.
 
 Underneath, it's a fairly reasonable app, started with `create-react-app`.  Here are some of the problems I needed to solve along the way.
 
 ### Use pure components
 
-One of the things I wanted to sort out in my mind first was the structure of the app.  I felt that having the lower level components be "pure" was a good idea.  Pure components don't hook into the state store, nor do they understand
-anything about the routing mechanism.  They just display the data and bubble the interactive events up to the top level.  Thus, for instance, I have a `RouteListItem` component that just displays the list components.  When a user
-clicks on the list item, it triggers an event that the parent component passes down to it as props.  All the routing and state management is done at the 
+One of the things I wanted to sort out in my mind first was the structure of the app.  I felt that having the lower level components be "pure" was a good idea.  Pure components don't hook into the state store, nor do they understand anything about the routing mechanism.  They just display the data and bubble the interactive events up to the top level.  Thus, for instance, I have a `RouteListItem` component that just displays the list components.  When a user clicks on the list item, it triggers an event that the parent component passes down to it as props.  All the routing and state management is done at the 
 top level:
 
 ```javascript
@@ -93,7 +91,7 @@ To get around this, I provided a simple wrapper around the main application.  If
 
 ### Persisting state
 
-The [redux-persist] library is great for settings.  In fact, it's pretty good any time you want to load and save a complete section of the redux store.  However, if you want to store only partials, then you need something else.  My way feels really hacky.  First off, I created a `route-state-client`:
+The [redux-persist](https://www.npmjs.com/package/redux-persist) library is great for settings.  In fact, it's pretty good any time you want to load and save a complete section of the redux store.  However, if you want to store only partials, then you need something else.  My way feels really hacky.  First off, I created a `route-state-client`:
 
 ```javascript
 import Dexie from 'dexie';
