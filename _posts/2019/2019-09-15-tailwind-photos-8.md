@@ -178,9 +178,9 @@ We are just one article away from having a complete social identity provider bas
 Until then, you can take a look at [my latest code](https://github.com/adrianhall/tailwind-photos-for-android/tree/blog-8) on my GitHub repository.
 
 <!-- Links -->
-[1]: {% post_url 2019-08-17-tailwind-photos-2 %}
-[2]: {% post_url 2019-08-19-tailwinds-photos-3 %}
-[3]: {% post_url 2019-08-21-tailwind-photos-4 %}
-[4]: {% post_url 2019-08-23-tailwind-photos-5 %}
-[5]: {% post_url 2019-09-03-tailwind-photos-6 %}
-[6]: {% post_url 2019-09-10-tailwind-photos-7 %}
+[1]: {% post_url 2019/2019-08-17-tailwind-photos-2 %}
+[2]: {% post_url 2019/2019-08-19-tailwinds-photos-3 %}
+[3]: {% post_url 2019/2019-08-21-tailwind-photos-4 %}
+[4]: {% post_url 2019/2019-08-23-tailwind-photos-5 %}
+[5]: {% post_url 2019/2019-09-03-tailwind-photos-6 %}
+[6]: {% post_url 2019/2019-09-10-tailwind-photos-7 %}

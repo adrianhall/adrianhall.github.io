@@ -8,18 +8,18 @@ tags:
 
 This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
 
-* [The basics - a username/password system]({% post_url 2018-09-18-auth-with-aws-amplify-1 %}).
-* [Customizing the UI]({% post_url 2018-09-23-auth-with-aws-amplify-2 %}).
-* [Authenticating with Facebook]({% post_url 2018-10-01-auth-with-aws-amplify-3 %}).
-* [Authenticating with Google]({% post_url 2018-10-08-auth-with-aws-amplify-4 %}).
-* [Using third-party authentication providers]({% post_url 2018-10-15-auth-with-aws-amplify-5 %}).
-* [Using Time-based One-time passwords (TOTP)]({% post_url 2018-10-22-auth-with-aws-amplify-6 %}).
-* [Using Biometric authentication]({% post_url 2018-10-29-auth-with-aws-amplify-7 %}).
-* [Doing fraud protection and analytics]({% post_url 2018-11-05-auth-with-aws-amplify-8 %}).
+* [The basics - a username/password system]({% post_url 2018/2018-09-18-auth-with-aws-amplify-1 %}).
+* [Customizing the UI]({% post_url 2018/2018-09-23-auth-with-aws-amplify-2 %}).
+* [Authenticating with Facebook]({% post_url 2018/2018-10-01-auth-with-aws-amplify-3 %}).
+* [Authenticating with Google]({% post_url 2018/2018-10-08-auth-with-aws-amplify-4 %}).
+* [Using third-party authentication providers]({% post_url 2018/2018-10-15-auth-with-aws-amplify-5 %}).
+* [Using Time-based One-time passwords (TOTP)]({% post_url 2018/2018-10-22-auth-with-aws-amplify-6 %}).
+* [Using Biometric authentication]({% post_url 2018/2018-10-29-auth-with-aws-amplify-7 %}).
+* [Doing fraud protection and analytics]({% post_url 2018/2018-11-05-auth-with-aws-amplify-8 %}).
 
 This is part 2 - customizing the UI. It was originally published as a standalone article in April 2018, and has been updated to use [Android Architecture Components](https://developer.android.com/topic/libraries/architecture), a part of [Android Jetpack](https://developer.android.com/jetpack/).
 
-In [the previous article]({% post_url 2018-09-18-auth-with-aws-amplify-1 %}), I introduced you to the basics of setting up an authentication UI with username and password by integrating a simple (provided) UI with a component called `IdentityManager` from the AWS Mobile SDK to provide the authentication screens. It's nice and simple. 
+In [the previous article]({% post_url 2018/2018-09-18-auth-with-aws-amplify-1 %}), I introduced you to the basics of setting up an authentication UI with username and password by integrating a simple (provided) UI with a component called `IdentityManager` from the AWS Mobile SDK to provide the authentication screens. It's nice and simple. 
 
 It's also a very generic UI. Sure, you can change the colors, fonts, and logo. However, you will want to change out the UI for your own pretty quickly. In addition, it doesn't play well with dependency injection. That means you can't swap out the Amazon Cognito version for a mock version very easily for development and testing.
 

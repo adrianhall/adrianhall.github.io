@@ -7,7 +7,7 @@ tags:
   - "Azure Functions"
 ---
 
-In the [last article]({% post_url 2019-09-03-tailwind-photos-6 %}), I introduced the resources necessary for my mobile backend, driven mostly by the serverless capabilities of Azure Functions.  I also provided a mechanism for deploying the resources automatically using Azure Resource Manager (or ARM).  Today, I want to look at the next step - authentication.
+In the [last article]({% post_url 2019/2019-09-03-tailwind-photos-6 %}), I introduced the resources necessary for my mobile backend, driven mostly by the serverless capabilities of Azure Functions.  I also provided a mechanism for deploying the resources automatically using Azure Resource Manager (or ARM).  Today, I want to look at the next step - authentication.
 
 In my Android app, I've already integrated the various identity providers (or IdP) for Facebook, Google, and Microsoft accounts.  Having the IdP access token is great if you want to access the graph for the social media provider.  However, we want to access another API.  In order to do that, we're going to have to swap the access token we have for a token provided by our backend.  Fortunately, all the IdPs provide mechanisms for authorizing the token you have, and that mechanism is integrated into the Azure Functions runtime under a set of configuration parameters called `siteAuth`, which is exposed in the Azure portal as **Authentication / Authorization**.
 

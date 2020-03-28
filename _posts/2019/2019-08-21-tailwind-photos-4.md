@@ -10,9 +10,9 @@ tags:
 Today, I am continuing with the authentication story for my app - Tailwind Photos - and tackling [Microsoft authentication](https://docs.microsoft.com/en-us/azure/active-directory/develop/). 
 The story so far:
 
-* [The Splash Screen]({% post_url 2019-08-15-tailwind-photos-1 %})
-* [Facebook Login]({% post_url 2019-08-17-tailwind-photos-2 %})
-* [Google Login]({% post_url 2019-08-19-tailwinds-photos-3 %})
+* [The Splash Screen]({% post_url 2019/2019-08-15-tailwind-photos-1 %})
+* [Facebook Login]({% post_url 2019/2019-08-17-tailwind-photos-2 %})
+* [Google Login]({% post_url 2019/2019-08-19-tailwinds-photos-3 %})
 
  You will see a lot of the same techniques as previous methods - just updated for todays topic.  Let's get started!
 

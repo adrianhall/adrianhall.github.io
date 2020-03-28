@@ -6,11 +6,11 @@ tags:
   - Kotlin
 ---
 
-I'm writing a network library for Android at the moment, and specifically looking at unit tests.  In [my last article]({% post_url 2019-12-24-unit-testing-android-libraries %}), I looking at mocking the Android context and other Android specific libraries.  Since I am writing a network client library, I need to go a step further and deal with the network connection itself.  
+I'm writing a network library for Android at the moment, and specifically looking at unit tests.  In [my last article]({% post_url 2019/2019-12-24-unit-testing-android-libraries %}), I looking at mocking the Android context and other Android specific libraries.  Since I am writing a network client library, I need to go a step further and deal with the network connection itself.  
 
 How can I test the asynchronous network calls in a repeatable manner?
 
-Fortunately, there's a library for that.  Square, the same people that brought you [OkHttp](), also produce a mock web server that you can use to mock the network connection.  Since I've already got the relevant JSON (which I use to test the model decoding), I can use that to produce a fake service.
+Fortunately, there's a library for that.  Square, the same people that brought you [OkHttp](https://square.github.io/okhttp/), also produce a mock web server that you can use to mock the network connection.  Since I've already got the relevant JSON (which I use to test the model decoding), I can use that to produce a fake service.
 
 Doing this requires an understanding of three steps:
 

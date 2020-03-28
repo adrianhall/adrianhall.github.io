@@ -6,7 +6,7 @@ tags:
   - TypeScript
 ---
 
-In my last article, I psted about [getting TypeScript working with React Native]({% post_url 2017-08-09-debugging-react-native-with-typescript-and-vscode %}). I’m building a flexible, best-practices, Notes App in React Native. This means I need a backing store, and it has to be local for offline capabilities. React has a definite way of building data into the UI and the manipulation of that data is an architecture known as [Flux](http://facebook.github.io/flux/). Flux isn’t a concrete implementation, however. Normally, I would use [Redux](http://redux.js.org/) as the concrete implementation. However, I have recently started working with [MobX](https://mobx.js.org/) and I prefer it. This article is about integrating MobX into my application for the storage of the Notes data.
+In my last article, I psted about [getting TypeScript working with React Native]({% post_url 2017/2017-08-09-debugging-react-native-with-typescript-and-vscode %}). I’m building a flexible, best-practices, Notes App in React Native. This means I need a backing store, and it has to be local for offline capabilities. React has a definite way of building data into the UI and the manipulation of that data is an architecture known as [Flux](http://facebook.github.io/flux/). Flux isn’t a concrete implementation, however. Normally, I would use [Redux](http://redux.js.org/) as the concrete implementation. However, I have recently started working with [MobX](https://mobx.js.org/) and I prefer it. This article is about integrating MobX into my application for the storage of the Notes data.
 
 ## Step 1: Install Packages
 
@@ -115,7 +115,7 @@ export default observableNoteStore;
 
 ## Step 5: Write some container components
 
-Since this is going to be a master-detail template, I want to write some common pages. For example, I’m going to write a NoteList component that takes a set of items and displays them, and I’m going to create a NoteListPage that wraps the Note List appropriately for a one-pane view of the NoteList. I’ve previously posted about [the NoteList component]({% post_url 2017-08-07-implementing-swipe-right-on-a-react-native-flatlist %}). The `NoteListPage` looks like the following:
+Since this is going to be a master-detail template, I want to write some common pages. For example, I’m going to write a NoteList component that takes a set of items and displays them, and I’m going to create a NoteListPage that wraps the Note List appropriately for a one-pane view of the NoteList. I’ve previously posted about [the NoteList component]({% post_url 2017/2017-08-07-implementing-swipe-right-on-a-react-native-flatlist %}). The `NoteListPage` looks like the following:
 
 ```jsx
 import React from 'react';

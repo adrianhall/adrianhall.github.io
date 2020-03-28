@@ -6,7 +6,7 @@ tags:
   - Kotlin
 ---
 
-In [my last article]({% post_url 2018-09-04-integrate-analytics-with-aws-amplify %}), I showed the current best way of integrating analytics into your Android app using Kotlin. The events are only half the story for engagement. You need to be able to segment your users so that you can send them appropriate signals to draw them back to your app. That means understanding your users — where they are, whether they have authenticated (and how), and what they are interested in.
+In [my last article]({% post_url 2018/2018-09-04-integrate-analytics-with-aws-amplify %}), I showed the current best way of integrating analytics into your Android app using Kotlin. The events are only half the story for engagement. You need to be able to segment your users so that you can send them appropriate signals to draw them back to your app. That means understanding your users — where they are, whether they have authenticated (and how), and what they are interested in.
 
 [Amazon Pinpoint] and the AWS Mobile SDK for Android provides some demographic information about the device the user is using out of the box. You can target all iOS users separately from all Android users, target a specific phone manufacturer or Android version, or a particular app version. Everything else needs to be provided by changing the endpoint profile. The endpoint profile is a blob of information about the user. It is session specific and can be easily adjusted.
 

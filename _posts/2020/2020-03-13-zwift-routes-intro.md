@@ -45,9 +45,10 @@ top level:
 
 ```javascript
 const RouteListItem = ({ displayUnits, onClick, route }) => {
+  const colors = route.isCompleted ? { color: green[500] } : color: grey[500];
   const icon = route.isCompleted
-    ? <CompletedIcon fontSize="large" style={{ color: green[500] }} />
-    : <NotCompletedIcon fontSize="large" style={{ color: grey[500] }} />;
+    ? <CompletedIcon fontSize="large" style={colors} />
+    : <NotCompletedIcon fontSize="large" style={colors} />;
 
   const distance = fmt.formatDistance(route.routeDistance, displayUnits);
   const elevation = fmt.formatElevationGain(route.routeElevationGain, displayUnits);

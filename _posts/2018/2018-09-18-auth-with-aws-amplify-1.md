@@ -8,14 +8,14 @@ tags:
 
 This will be an in-depth series on authentication with [AWS Amplify]. Here are the topics I am going to cover, and I will update each blog with the links as I complete the articles.
 
-* [The basics - a username/password system]({% post_url 2018-09-18-auth-with-aws-amplify-1 %}).
-* [Customizing the UI]({% post_url 2018-09-23-auth-with-aws-amplify-2 %}).
-* [Authenticating with Facebook]({% post_url 2018-10-01-auth-with-aws-amplify-3 %}).
-* [Authenticating with Google]({% post_url 2018-10-08-auth-with-aws-amplify-4 %}).
-* [Using third-party authentication providers]({% post_url 2018-10-15-auth-with-aws-amplify-5 %}).
-* [Using Time-based One-time passwords (TOTP)]({% post_url 2018-10-22-auth-with-aws-amplify-6 %}).
-* [Using Biometric authentication]({% post_url 2018-10-29-auth-with-aws-amplify-7 %}).
-* [Doing fraud protection and analytics]({% post_url 2018-11-05-auth-with-aws-amplify-8 %}).
+* [The basics - a username/password system]({% post_url 2018/2018-09-18-auth-with-aws-amplify-1 %}).
+* [Customizing the UI]({% post_url 2018/2018-09-23-auth-with-aws-amplify-2 %}).
+* [Authenticating with Facebook]({% post_url 2018/2018-10-01-auth-with-aws-amplify-3 %}).
+* [Authenticating with Google]({% post_url 2018/2018-10-08-auth-with-aws-amplify-4 %}).
+* [Using third-party authentication providers]({% post_url 2018/2018-10-15-auth-with-aws-amplify-5 %}).
+* [Using Time-based One-time passwords (TOTP)]({% post_url 2018/2018-10-22-auth-with-aws-amplify-6 %}).
+* [Using Biometric authentication]({% post_url 2018/2018-10-29-auth-with-aws-amplify-7 %}).
+* [Doing fraud protection and analytics]({% post_url 2018/2018-11-05-auth-with-aws-amplify-8 %}).
 
 I’m not going to cover integrating with Active Directory in this series as there is an excellent walk through of the process on the [AWS Mobile Blog](https://aws.amazon.com/blogs/mobile/building-adfs-federation-for-your-web-app-using-amazon-cognito-user-pools/). If you want to see a topic covered that I haven’t suggested, [send me a message][Twitter] on Twitter.
 

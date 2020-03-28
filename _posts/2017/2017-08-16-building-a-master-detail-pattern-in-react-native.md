@@ -8,11 +8,11 @@ tags:
 
 I’m in the middle of writing a simple Notes app in React Native. Thus far, I’ve:
 
-* [Worked out how to handle orientation changes]({% post_url 2017-07-26-handling-orientation-changes-in-react-native %}).
-* [Worked out how to implement swipe-to-delete]({% post_url 2017-08-07-implementing-swipe-right-on-a-react-native-flatlist %}).
-* [Figured out the best way to use TypeScript]({% post_url 2017-08-09-debugging-react-native-with-typescript-and-vscode %}).
-* [Integrated MobX for the Flux pattern]({% post_url 2017-08-11-integrating-react-native-typescript-mobx %}).
-* [Fixed up the project for universal iOS apps]({% post_url 2017-08-14-universal-ios-apps-with-react-native %}).
+* [Worked out how to handle orientation changes]({% post_url 2017/2017-07-26-handling-orientation-changes-in-react-native %}).
+* [Worked out how to implement swipe-to-delete]({% post_url 2017/2017-08-07-implementing-swipe-right-on-a-react-native-flatlist %}).
+* [Figured out the best way to use TypeScript]({% post_url 2017/2017-08-09-debugging-react-native-with-typescript-and-vscode %}).
+* [Integrated MobX for the Flux pattern]({% post_url 2017/2017-08-11-integrating-react-native-typescript-mobx %}).
+* [Fixed up the project for universal iOS apps]({% post_url 2017/2017-08-14-universal-ios-apps-with-react-native %}).
 
 Now it’s time to get to the master-detail pattern itself. Master-Detail is a basic pattern that incorporates a list (the master) and a detail page. On phones (and tablets in portrait mode), this is normally rendered as two separate screens. On tablets in landscape mode, it is rendered as a side-by-side arrangement.
 
@@ -77,7 +77,7 @@ useTwoPane(): boolean {
 }
 ```
 
-The next set of methods determine if the interface should be in two-pane mode or not. These are taken directly from my work on [detecting orientation changes]({% post_url 2017-07-26-handling-orientation-changes-in-react-native %}).
+The next set of methods determine if the interface should be in two-pane mode or not. These are taken directly from my work on [detecting orientation changes]({% post_url 2017/2017-07-26-handling-orientation-changes-in-react-native %}).
 
 ```typescript
 onSelectItem(item: Note) {

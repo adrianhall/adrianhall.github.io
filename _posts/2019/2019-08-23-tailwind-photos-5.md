@@ -7,7 +7,7 @@ tags:
   - Kotlin
 ---
 
-Thus far in our story, we've covered [Facebook]({% post_url 2019-08-17-tailwind-photos-2 %}), [Google]({% post_url 2019-08-19-tailwinds-photos-3 %}), and [Microsoft]({% post_url 2019-08-21-tailwind-photos-4 %}) authentication.  There is one more to do - Twitter.  Unfortunately, Twitter doesn't have a nice vendor-provided SDK to do the work.  In fact, Twitter is fairly hostile to app developers, so I decided to forego the Twitter login (sorry!).  Instead, I'm going to cover the changes I made to support silent login.
+Thus far in our story, we've covered [Facebook]({% post_url 2019/2019-08-17-tailwind-photos-2 %}), [Google]({% post_url 2019/2019-08-19-tailwinds-photos-3 %}), and [Microsoft]({% post_url 2019/2019-08-21-tailwind-photos-4 %}) authentication.  There is one more to do - Twitter.  Unfortunately, Twitter doesn't have a nice vendor-provided SDK to do the work.  In fact, Twitter is fairly hostile to app developers, so I decided to forego the Twitter login (sorry!).  Instead, I'm going to cover the changes I made to support silent login.
 
 Up until now, everything has been in "managers" - one for each authentication provider.  This has done all the work for each provider.  However, to support silent login, I need to provide two paths to the same information - one silently (during the time when the spinner is active) and one interactively (when the user clicks on a button).  The easiest way to do this is to use an observer pattern.  In an observer pattern, you establish a variable that can send events to observers when its value changes.  In our case, each path will post the sign in information to the observable, and then the UI can react to it by observing the changes.
 

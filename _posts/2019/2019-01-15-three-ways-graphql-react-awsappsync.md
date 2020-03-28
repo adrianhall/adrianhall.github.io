@@ -200,9 +200,9 @@ Here is the basic version that covers the advice I would give as of this writing
 * Use `API.graphql()` only if you want to do a query outside of a React component.
 * Keep an eye on the AWS Amplify library as they are always extending the functionality of the client.
 
-[#1]: {% post_url 2018-11-15-restaurant-reviews %}
-[#2]: {% post_url 2018-11-30-restaurant-reviews-part-2 %}
-[#3]: {% post_url 2018-12-06-restaurant-reviews-part-3 %}
-[#4]: {% post_url 2018-12-10-restaurant-reviews-part-4 %}
+[#1]: {% post_url 2018/2018-11-15-restaurant-reviews %}
+[#2]: {% post_url 2018/2018-11-30-restaurant-reviews-part-2 %}
+[#3]: {% post_url 2018/2018-12-06-restaurant-reviews-part-3 %}
+[#4]: {% post_url 2018/2018-12-10-restaurant-reviews-part-4 %}
 
 {% include links.md %}

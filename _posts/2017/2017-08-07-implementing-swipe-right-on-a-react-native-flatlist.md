@@ -4,7 +4,7 @@ categories:
   - "React Native"
 ---
 
-I’m progressing on my “master-detail” pattern for a react-native app. The actual implementation of master-detail is shockingly simple (more on that later). However, I bumped into some specific issues when I was implementing it. The first of these was covered last time – [how to detect orientation changes in React Native]({% post_url 2017-07-26-handling-orientation-changes-in-react-native %}). The next is this. How do I implement swipe-right so that I can add a swipe-to-delete function to a FlatList.
+I’m progressing on my “master-detail” pattern for a react-native app. The actual implementation of master-detail is shockingly simple (more on that later). However, I bumped into some specific issues when I was implementing it. The first of these was covered last time – [how to detect orientation changes in React Native]({% post_url 2017/2017-07-26-handling-orientation-changes-in-react-native %}). The next is this. How do I implement swipe-right so that I can add a swipe-to-delete function to a FlatList.
 
 Let me explain a little further. The latest edition of React Native has updated the list handling. ListView is (or will be) deprecated. A bunch of new list handling methods come in, among them the [FlatList](https://facebook.github.io/react-native/docs/flatlist.html), [SectionList](https://facebook.github.io/react-native/docs/sectionlist.html) and [VirtualizedList](https://facebook.github.io/react-native/docs/virtualizedlist.html). This is great. I no longer have to implement a data source. All I have to do is pass the data I want to render to the FlatList and a rendering function and I am done.
 

@@ -9,12 +9,12 @@ tags:
 
 In the last few posts, I’ve been working on a Notes app in a master-detail pattern for React Native using TypeScript. This is the last post about that project. So far, I’ve:
 
-* [Worked out how to handle orientation changes]({% post_url 2017-07-26-handling-orientation-changes-in-react-native %}).
-* [Worked out how to implement swipe-to-delete]({% post_url 2017-08-07-implementing-swipe-right-on-a-react-native-flatlist %}).
-* [Figured out the best way to use TypeScript]({% post_url 2017-08-09-debugging-react-native-with-typescript-and-vscode %}).
-* [Integrated MobX for the Flux pattern]({% post_url 2017-08-11-integrating-react-native-typescript-mobx %}).
-* [Fixed up the project for universal iOS apps]({% post_url 2017-08-14-universal-ios-apps-with-react-native %}).
-* [Finally written the Master-Detail pattern]({% post_url 2017-08-16-building-a-master-detail-pattern-in-react-native %}).
+* [Worked out how to handle orientation changes]({% post_url 2017/2017-07-26-handling-orientation-changes-in-react-native %}).
+* [Worked out how to implement swipe-to-delete]({% post_url 2017/2017-08-07-implementing-swipe-right-on-a-react-native-flatlist %}).
+* [Figured out the best way to use TypeScript]({% post_url 2017/2017-08-09-debugging-react-native-with-typescript-and-vscode %}).
+* [Integrated MobX for the Flux pattern]({% post_url 2017/2017-08-11-integrating-react-native-typescript-mobx %}).
+* [Fixed up the project for universal iOS apps]({% post_url 2017/2017-08-14-universal-ios-apps-with-react-native %}).
+* [Finally written the Master-Detail pattern]({% post_url 2017/2017-08-16-building-a-master-detail-pattern-in-react-native %}).
 
 That’s a lot of stuff. This last post is about storage. React Native provides a method of storing data on the device called [AsyncStorage](https://facebook.github.io/react-native/docs/asyncstorage.html). It follows the [Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage) API that is fairly well known in the JavaScript world. It’s promise driven and generally backed by SQLite, which is a nice performant on-device storage that is common on both iOS (as Core Data) and Android.
 

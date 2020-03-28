@@ -6,7 +6,7 @@ tags:
   - Kotlin
 ---
 
-I’ve become a big fan of [Kotlin development](https://kotlinlang.org/) for my Android apps. I also think that analytics should be integrated into every single app I write. I’ve covered integrating Amazon Pinpoint before via AWS Mobile Hub. Recently, [AWS Amplify] announced an updated CLI that provides support for native applications and bypasses the need to use the AWS web console for creating resources. Naturally, [I wanted to try it out]({% post_url 2018-08-27-native-development-with-aws-amplify %}). Integrating analytics is now really easy. Here is how I do it:
+I’ve become a big fan of [Kotlin development](https://kotlinlang.org/) for my Android apps. I also think that analytics should be integrated into every single app I write. I’ve covered integrating Amazon Pinpoint before via AWS Mobile Hub. Recently, [AWS Amplify] announced an updated CLI that provides support for native applications and bypasses the need to use the AWS web console for creating resources. Naturally, [I wanted to try it out]({% post_url 2018/2018-08-27-native-development-with-aws-amplify %}). Integrating analytics is now really easy. Here is how I do it:
 
 ## Start Local
 
@@ -177,7 +177,7 @@ There are specific events that you can record for authentication events:
 * `_userauth.sign_up`
 * `_userauth.authfail`
 
-This allows you to record some information about authentication events for both Amazon Cognito and 3rd party authentication libraries using just the `recordEvent()` method I presented here. I’ll be doing [a series of in-depth authentication articles with AWS Amplify]({% post_url 2018-09-18-auth-with-aws-amplify-1 %}) later on, so stay tuned for that.
+This allows you to record some information about authentication events for both Amazon Cognito and 3rd party authentication libraries using just the `recordEvent()` method I presented here. I’ll be doing [a series of in-depth authentication articles with AWS Amplify]({% post_url 2018/2018-09-18-auth-with-aws-amplify-1 %}) later on, so stay tuned for that.
 
 My next article will show off how to record user-specific information (for example, tagging with a username or location) and user-provided information (for example, topics of interest) so that we can produce segments of users, all with the aim of doing marketing campaigns and communicating with the user base. Until that point, start getting into cloud backends with [AWS Amplify].
 
