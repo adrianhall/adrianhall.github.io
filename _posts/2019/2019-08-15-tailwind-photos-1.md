@@ -35,7 +35,7 @@ If you wanted to provide a unique background image for the `xhdpi` pixel density
 
 Now that I've got the images for the background, I can create a `SplashActivity`.  Use **New** > **Activity** > **Empty Activity**, but uncheck the **Generate Layout File** checkbox and check the **Launcher Activity** file.
 
-![]({{ site.baseurl }}/assets/images/2019-08-15-image1.png)
+![]({{ site.baseurl }}/assets/images/2019/2019-08-15-image1.png)
 
 The code for this SplashActivity is fairly simple:
 

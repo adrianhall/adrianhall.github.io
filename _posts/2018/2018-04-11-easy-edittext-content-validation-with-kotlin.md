@@ -92,7 +92,7 @@ user_field.validate("Valid email address required") { s -> s.isValidEmail() }
 
 This is must more readable than the original 10–12 lines of code (depending on how much compression you do to avoid multiple lines). When you run an app with this code, you may see the following:
 
-![]({{ site.baseurl }}/assets/images/2018-04-11-image1.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-04-11-image1.png)
 
 When the user types in a valid email address, the icon and message go away.
 

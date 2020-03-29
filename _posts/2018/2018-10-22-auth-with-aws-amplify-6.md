@@ -52,7 +52,7 @@ $ amplify push
 
 Setting up TOTP is easily accomplished when using `amplify add auth` with the following answers:
 
-![]({{ site.baseurl }}/assets/images/2018-10-22-image1.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-10-22-image1.png)
 
 The important question here is "_For user login, select the MFA types_". You can select SMS and TOTP. You can express a preference for the type on a per-user basis.
 

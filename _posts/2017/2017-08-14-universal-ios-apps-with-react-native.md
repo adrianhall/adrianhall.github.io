@@ -11,7 +11,7 @@ I was developing a nice React Native app and blogging about it. However, I bumpe
 
 The fix for this is buried inside XCode. Open XCode and then open the .xcodeproj file, which is inside the ios folder of your project. Then click on the project name. You will see a section like this:
 
-![]({{ site.baseurl }}/assets/images/2017-08-14-image1.png)
+![]({{ site.baseurl }}/assets/images/2017/2017-08-14-image1.png)
 
 Note the **Devices** section. It’s set to iPhone. It doesn’t matter what you do in the JavaScript code. This code will always run as if it is on an iPhone. Change the **Devices** to **Universal**, then close Xcode and re-build your React Native app for iOS.
 

@@ -27,7 +27,7 @@ It's also a very generic UI. Sure, you can change the colors, fonts, and logo. H
 
 Authentication is a series of flows. Each stage in the flow requires some information that is submitted to the backend. The backend will then return a request for more information or a success/failure indicator. When you are dealing with a username/password set of flows (such as provided by Amazon Cognito user pools), the list is extensive:
 
-![]({{ site.baseurl }}/assets/images/2018-09-23-image1.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-09-23-image1.png)
 
 In general, each flow is made up of one or more activities. You initiate the flow by calling a method within Amazon Cognito with a callback. The callback is called when more information is needed to fulfill the request. Eventually you are deposited into a success/failure callback, depending on the result of the authentication.
 
@@ -37,7 +37,7 @@ The default screens provided by `IdentityManager` and the suite of associated cl
 
 Of course, you can't go haring off to write some custom layouts these days. Android has settled on MVVM as an architecture, and Android Architecture Components as the method for implementing that. That means I need to set up a stack of services, repositories and view models before I can work on the activities.
 
-![]({{ site.baseurl }}/assets/images/2018-09-23-image2.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-09-23-image2.png)
 
 I already have the `AWSService` and the analytics side of things. However, I need to cover the `IdentityRepository` and the AWS implementation of that before I can begin on the activities and view models.
 
@@ -229,7 +229,7 @@ I'm going to implement the forced new password prompt and the multi-factor authe
 * A method of initiating the forgot password and sign-up flows
 * A username and password
 
-![]({{ site.baseurl }}/assets/images/2018-09-23-image3.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-09-23-image3.png)
 
 Let's take a look at the pieces for the actual Authenticator. The important piece is the event handler for the submit button (which is called when you click on _Sign In_):
 

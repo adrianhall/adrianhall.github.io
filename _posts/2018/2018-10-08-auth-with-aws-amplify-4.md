@@ -46,7 +46,7 @@ The first step in this process is always to set up the third party authenticatio
 * On the next page, click the **Create Credentials** button.
 * You want to create a Client ID for the identity pool next. This is a choice in the menu:
 
-![]({{ site.baseurl }}/assets/images/2018-10-08-image1.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-10-08-image1.png)
 
 * Click the **Configure Consent Screen** button.
 * Enter the name of your app in the **Product name to be shown to users** box, then click **Save**.
@@ -68,7 +68,7 @@ keytool -exportcert -keystore ~/.android/debug.keystore -list -v
 
 The output will be similar to the following:
 
-![]({{ site.baseurl }}/assets/images/2018-10-08-image2.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-10-08-image2.png)
 
 Note the highlighted area. You should copy this as you will soon need it.
 

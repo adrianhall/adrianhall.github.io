@@ -33,7 +33,7 @@ So, what can you do?
 
 Enabling advanced security is easy enough. Go to the [Amazon Cognito console](https://console.aws.amazon.com/cognito/home), select Manage **User Pools**, then select the user pool you want to configure. Finally, select **Advanced security** from the left hand menu.
 
-![]({{ site.baseurl }}/assets/images/2018-11-05-image1.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-11-05-image1.png)
 
 You have three options - Yes, Audit only, and No. Select **Yes**, followed by **Save changes**. You can set up advanced security features globally (which is what I would always recommend) or on a per-app client basis.
 
@@ -41,7 +41,7 @@ You have three options - Yes, Audit only, and No. Select **Yes**, followed b
 
 The first section you can fill in is about compromised credentials:
 
-![]({{ site.baseurl }}/assets/images/2018-11-05-image2.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-11-05-image2.png)
 
 If the user who is logging in is listed in a breach report, then the access can be blocked or allowed. If you choose **Block**, the user will be prompted for a new password. If you choose **Allow**, the access will be granted but the access will be logged within CloudWatch. You can also configure when to check for compromised credentials - on sign in, sign up and/or password changes. (Hint: You want to leave the default there, which enables all three).
 
@@ -51,7 +51,7 @@ Let's say you normally want your users to log in with username and password (or 
 
 For instance, I am normally located within the United States of America. If I suddenly begin logging in from western Europe, that should trigger alarm bells.
 
-![]({{ site.baseurl }}/assets/images/2018-11-05-image3.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-11-05-image3.png)
 
 Adaptive authentication uses these triggers to classify the login attempt as low, medium or high-risk. You can decide what to do with each risk level. For example, if the login is from your "normal location" and is on a device that is recognized, then it can be assigned low-risk, and in this case the user can use just their username and password. If the user has a new device (that is, a device that hasn't been seen before), it may be assigned medium-risk. If the user is on a new device located in a different location, it may be assigned high-risk. In these cases, you may want to require a multi-factor authentication technique such as a TOTP token or SMS code.
 

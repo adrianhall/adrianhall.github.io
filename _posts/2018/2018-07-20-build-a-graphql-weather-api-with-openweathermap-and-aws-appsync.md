@@ -155,7 +155,7 @@ Select the **Query Variables** section below the query editor and enter the foll
 
 Click the Play button.  You should see the following results:
 
-![AWS AppSync Query Results]({{ site.baseurl }}/assets/images/2018-07-20-image1.png){: .center-image}
+![AWS AppSync Query Results]({{ site.baseurl }}/assets/images/2018/2018-07-20-image1.png){: .center-image}
 
 Congratulations! You’ve created a GraphQL weather API.
 

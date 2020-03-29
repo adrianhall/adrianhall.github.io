@@ -8,7 +8,7 @@ tags:
 
 I'm continuing to explore SwiftUI, trying to recreate user interfaces that I see on design labs.  The latest one is a task list app, found on [Uplabs](https://www.uplabs.com/posts/to-do-list-app-freebie-kit), and created by [Rudi Hartano](https://dribbble.com/iamruha).  I liked the design so I decided to replicate it from the Adobe XD file that he provided.  One of the pieces he uses is a bubble background:
 
-![Bubble background header]({{ site.baseurl }}/assets/images/2019-11-02-image1.png){: .center-image}
+![Bubble background header]({{ site.baseurl }}/assets/images/2019/2019-11-02-image1.png){: .center-image}
 
 The Adobe XD file shows me that I can use a linear gradient between two colors.  However, there are also two slightly translucent circles on the top of it.  If I were in Android land, I'd just create a PNG from the Adobe XD file.  However, iOS has a number of different aspect ratios.  That means that the circles might become elongated on one device while looking fine on another.  So, I really wanted to find another way.
 
@@ -136,6 +136,6 @@ The important piece here is `geometry.size.width` and `geometry.size.height` pro
 
 The resulting code for this one looks like this in the preview:
 
-![The result]({{ site.baseurl }}/assets/images/2019-11-02-image2.png){: .center-image}
+![The result]({{ site.baseurl }}/assets/images/2019/2019-11-02-image2.png){: .center-image}
 
 As you can see, it's pretty close!  To get an exact match, all I have to do is mess with the x/y positioning and size of each circle.

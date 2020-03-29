@@ -155,7 +155,7 @@ In addition, I can see the need to do full-text search at some time in the futur
 
 However, we are going towards two different stores which we need to synchronize via a Lambda function. This isn't hard to do, but does increase the complexity. In addition, ElasticSearch Service is not "serverless", so we have to deal with scaling the search service using configuration:
 
-![]({{ site.baseurl }}/assets/images/2018-11-30-picture1.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-11-30-picture1.png)
 
 ## Aurora Serverless
 
@@ -355,7 +355,7 @@ Now, let's test the data transfer.
 
 After a couple of seconds, the data should have appeared in the ES domain. Go back to your Kibana tab and run the query again. This time, you should get data:
 
-![]({{ site.baseurl }}/assets/images/2018-11-30-picture2.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-11-30-picture2.png)
 
 If you delete or update the record within the DynamoDB console, the changes should be reflected in the Kibana query.
 

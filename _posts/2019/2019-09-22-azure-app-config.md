@@ -30,7 +30,7 @@ Now, let's put some data within the parameter store.  To do this:
 
 I've created a couple of settings here:
 
-![]({{ site.baseurl }}/assets/images/2019-09-22-image1.png)
+![]({{ site.baseurl }}/assets/images/2019/2019-09-22-image1.png)
 
 ## Configure the Android project
 

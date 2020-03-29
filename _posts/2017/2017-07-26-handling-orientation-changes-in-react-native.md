@@ -104,7 +104,7 @@ render() {
 
 And this produces output like this:
 
-![]({{ site.baseurl }}/assets/images/2017-07-26-image1.png)
+![]({{ site.baseurl }}/assets/images/2017/2017-07-26-image1.png)
 
 Hold on though. Try to rotate that device – it does not re-render the react tree, which means I don’t have orientation detection. To handle that case, I need to add state to the top level react component that detects the orientation. I use the following:
 

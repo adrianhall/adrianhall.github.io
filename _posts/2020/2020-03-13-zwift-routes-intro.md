@@ -11,7 +11,7 @@ I wrote an app for figuring out which routes I need to ride on Zwift so that I c
 
 You can find it at [Zwift Routes](https://adrianhall.github.io/zwift-routes) or [http://bit.ly/zwiftroutes](http://bit.ly/zwiftroutes).  Point your mobile phone browser to the site, then pin the site to your home screen.
 
-![]({{ site.baseurl }}/assets/images/2020-03-13-image1.png){: .center-image}
+![]({{ site.baseurl }}/assets/images/2020/2020-03-13-image1.png){: .center-image}
 
 ## How to use it
 

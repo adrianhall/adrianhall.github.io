@@ -115,7 +115,7 @@ At this point, you've completed the task of authenticating with Auth0. It's impo
 
 Run the app and authenticate with the new provider. I've deliberately printed out the `idToken` so we can take a look. Copy it into the form field at [jwt.io](https://jwt.io) to take a look at the decoded token:
 
-![Decoded Token]({{ site.baseurl }}/assets/images/2018-10-15-image1.png){: .center-image}
+![Decoded Token]({{ site.baseurl }}/assets/images/2018/2018-10-15-image1.png){: .center-image}
 
 Note the `iss` field. This is the issuer and is required in order to configure Amazon Cognito identity pools, so we will be using this later on. Also note that the algorithm is RS256. This is also important, but it's the default so there is no need to worry about it.
 
@@ -138,7 +138,7 @@ Admittedly, if you like the simplicity of the AWS Amplify CLI, this may not be y
 
 So, what do we do to effect this change? All the CloudFormation templates are stored in `amplify/backend`, with each category that AWS Amplify supports getting it's own directory:
 
-![The file structure]({{ site.baseurl }}/assets/images/2018-10-15-image2.png){: .center-image}
+![The file structure]({{ site.baseurl }}/assets/images/2018/2018-10-15-image2.png){: .center-image}
 
 You want to edit the CloudFormation template. This can be done within Android Studio - just switch to the **Project** view, then expand the amplify directory until you find the file.
 

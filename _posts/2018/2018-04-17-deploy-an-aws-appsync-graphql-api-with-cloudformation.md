@@ -27,7 +27,7 @@ Ultimately, I want to build an AWS AppSync API for my notes app. However, that c
 
 A CloudFormation stack is practically never a single resource. Let’s look at the dependency tree for my notes app:
 
-![]({{ site.baseurl }}/assets/images/2018-04-17-image1.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-04-17-image1.png)
 
 Note that almost everything has a _Ref_ link. A ref link means that the configuration (and hence the CloudFormation template) is going to include a reference to the thing it depends on. This results in a natural order to creating things:
 
@@ -540,7 +540,7 @@ arn:aws:cloudformation:us-west-2:1234567890:stack/appsync-notes-api/7d4fc430-aaa
 
 This stack was completed successfully. I can see all the outputs that I’ve defined. I can also see this same information on the AWS CloudFormation console:
 
-![]({{ site.baseurl }}/assets/images/2018-04-17-image2.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-04-17-image2.png)
 
 When developing the CloudFormation stack, I can click on the stack name and get more information. This is especially useful when there are errors in the template. I can see exactly what property of what resource is causing the problem. My general workflow is
 
@@ -559,7 +559,7 @@ One you have a good stack created, you can use `aws cloudformation update-stack`
 
 CloudFormation has [a designer](https://console.aws.amazon.com/cloudformation/designer/home) integrated into it. The designer is visual and includes access to all the properties as you are editing the underlying YAML or JSON format. It’s a good visual representation of your stack.
 
-![]({{ site.baseurl }}/assets/images/2018-04-17-image3.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-04-17-image3.png)
 
 I found the creation process much slower using the designer. However, it’s good to visualize an existing CloudFormation template that has been deployed as it is built in. There are also a bunch of DSLs for handling CloudFormation:
 

@@ -210,6 +210,6 @@ The location manager doesn't work inside the preview window.  For this reason, I
 
 When you run it in the simulator, you will be prompted for the permission to use location, then see the following:
 
-![]({{ site.baseutl }}/assets/images/2019-11-05-image1.png)
+![]({{ site.baseutl }}/assets/images/2019/2019-11-05-image1.png)
 
 This is my first peek into the application state (and outside the UI), and it turned out to be really easy.

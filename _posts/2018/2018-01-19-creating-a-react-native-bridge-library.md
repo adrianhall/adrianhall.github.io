@@ -28,7 +28,7 @@ react-native-create-library --package-identifier com.shellmonger.reactnative --p
 
 This is not quite right, but it’s close. Here is the tree structure that is created:
 
-![]({{ site.baseurl }}/assets/images/2018-01-19-image1.png)
+![]({{ site.baseurl }}/assets/images/2018/2018-01-19-image1.png)
 
 There are a couple of points here.
 

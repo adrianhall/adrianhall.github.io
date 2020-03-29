@@ -36,7 +36,7 @@ There are reasons why you should not use social authentication. Banks and shoppi
 
 So, how does authentication work within AWS? This is the diagram from [the AWS documentation](https://docs.aws.amazon.com/cognito/latest/developerguide/what-is-amazon-cognito.html):
 
-![The Authentication Flow]({{ site.baseurl }}/assets/images/2018-09-18-image1.png){: .center-image}
+![The Authentication Flow]({{ site.baseurl }}/assets/images/2018/2018-09-18-image1.png){: .center-image}
 
 Let’s replace “User pool” with “Authentication provider”. The process is fairly simple. You get [a token](https://en.wikipedia.org/wiki/JSON_Web_Token) from an [OpenID Connect (OIDC)](https://openid.net/connect/) authentication provider. With a couple of AWS services, this is enough — just start passing that token to AWS AppSync or Amazon API Gateway to get access to the resources. Amazon Cognito user pools is an OIDC compatible service that you can use for username and password authentication.
 
@@ -85,7 +85,7 @@ If you have added other services, this would be `amplify update auth` instead. T
 
 The first question is whether you want to use the default settings or not. The default settings are authentication via Amazon Cognito user pools with username and password. Sign-ups will be protected by a multi-factor authentication token sent via phone or email. If this describes you scenario, then use the default settings. However, let’s take a look at our own configuration:
 
-![Answers to the CLI Questions]({{ site.baseurl }}/assets/images/2018-09-18-image2.png){: .center-image}
+![Answers to the CLI Questions]({{ site.baseurl }}/assets/images/2018/2018-09-18-image2.png){: .center-image}
 
 That is a lot of settings, and they are intimidating. However, most of them are straight forward and they allow you to configure your authentication service very specifically. If you want to change anything, you can run `amplify update auth` at any time in the future.
 
