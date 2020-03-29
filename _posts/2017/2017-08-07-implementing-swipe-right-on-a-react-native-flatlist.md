@@ -300,7 +300,7 @@ If you implement this code, you will note the following:
 * Swiping right on another row will cause the original swipe-right drawer to close.
 * Pressing the delete button calls `onDeleteItem()`.
 
-![]({{ site.baseurl }}/assets/images/2017/2017-08-07-image1.png)
+![]({{ site.baseurl }}/assets/images/2017/2017-08-07-image1.gif)
 
 Hopefully, the next blog post will be about the master-detail pattern in React Native. Until then, I hope this helps implementing awesome lists.
 
