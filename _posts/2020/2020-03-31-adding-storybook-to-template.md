@@ -5,7 +5,7 @@ categories:
   - React
 ---
 
-In my [last article]({% post_url 2020\2020-03-29-parcel-typescript-react %}), I started a React app from scratch, then integrated [Parcel](https://parceljs.org) as the bundler, [TypeScript](https://typescriptlang.org) for language support, [SASS](https://sass-lang.com), [ESLint](https://eslint.org) for linting the code, and [Stylelint](https://stylelint.io) for linting the style sheets.  I didn't include any testing capabilities, so that is next on my agenda.
+In my [last article]({% post_url 2020/2020-03-29-parcel-typescript-react %}), I started a React app from scratch, then integrated [Parcel](https://parceljs.org) as the bundler, [TypeScript](https://typescriptlang.org) for language support, [SASS](https://sass-lang.com), [ESLint](https://eslint.org) for linting the code, and [Stylelint](https://stylelint.io) for linting the style sheets.  I didn't include any testing capabilities, so that is next on my agenda.
 
 Let's write a simple component to get started with testing.  The component takes an "isBusy" flag.  If it is true, then one icon is displayed.  If false, a different icon is displayed.  I'll use text nodes in this version.
 
