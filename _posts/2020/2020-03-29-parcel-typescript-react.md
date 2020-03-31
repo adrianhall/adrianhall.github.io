@@ -43,7 +43,7 @@ $> npm i -s react react-dom
 
 The first line installs the `devDependencies`: Parcel and Typescript, plus the type definitions for React.  Technically, Parcel will install Typescript for me, but I like to be explicit - it saves time later on.  The second line installs the dependencies that will be included in the final bundles.
 
-Next, create a basic `index.html` file in a new `public` directory:
+Next, create a basic `index.html` file in a new `src` directory:
 
 ```html
 <!DOCTYPE html>
@@ -63,7 +63,7 @@ Next, create a basic `index.html` file in a new `public` directory:
 </html>
 ```
 
-Note that I'm not including a bundle.  I'm including my Typescript file (that I have yet to write) right in the script tag.  Parcel will take care of bundling this for me.  Let's create the `src` directory and add the following `index.tsx` file:
+Note that I'm not including a bundle.  I'm including my Typescript file (that I have yet to write) right in the script tag.  Parcel will take care of bundling this for me.  Aadd the following `src/index.tsx` file:
 
 ```typescript
 import React from 'react';
@@ -104,7 +104,7 @@ The final piece you absolutely must do is to configure Typescript.  You can crea
     "baseUrl": "./src",
     /* Maps imports to locations - e.g. ~models will go to ./src/models */
     "paths": {
-      "~*": [ "./*" ]
+      "~/*": [ "./*" ]
     },
     /* List of folders to include type definitions from */
     "typeRoots": [
@@ -125,7 +125,7 @@ Now that I have all the code written, I want to run the application.  Add the fo
 
 ```json
 "scripts": {
-  "start": "parcel public/index.html --open"
+  "start": "parcel src/index.html --open"
 },
 ```
 
@@ -152,9 +152,9 @@ The `rimraf` module allows me to remove a whole directory easily.  The `npm-run-
 ```json
 "scripts": {
   "prebuild": "run-s clean",
-  "build": "parcel build public/index.html --no-source-maps",
+  "build": "parcel build src/index.html --no-source-maps",
   "clean": "rimraf ./dist",
-  "start": "parcel public/index.html --open"
+  "start": "parcel src/index.html --open"
 }
 ```
 
@@ -280,11 +280,11 @@ Now, add some more scripts to the `package.json` to run the linter:
 ```json
 "scripts": {
   "prebuild": "run-s clean lint",
-  "build": "parcel build public/index.html --no-source-maps",
+  "build": "parcel build src/index.html --no-source-maps",
   "clean": "rimraf ./dist",
   "lint": "run-s lint:code",
   "lint:code": "eslint --ext ts,tsx src",
-  "start": "parcel public/index.html --open"
+  "start": "parcel src/index.html --open"
 },
 ```
 

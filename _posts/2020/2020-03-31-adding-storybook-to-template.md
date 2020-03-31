@@ -70,6 +70,7 @@ To start with, you can't write Typescript stories out of the box.  We're also us
 
 ```bash
 $> npm i -D @storybook/preset-typescript @storybook/preset-scss
+$> npm i -D css-loader sass-loader style-loader
 ```
 
 Then update the `.storybook/main.js` to include the plugins and to alter where Storybook looks for the stories:
