@@ -5,7 +5,7 @@ categories:
   - React
 ---
 
-Thus far, in my journey to produce a customized toolchain for my React development, I've covered a lot of ground.  See [part 1]({% post_url 2020\2020-03-29-parcel-typescript-react %}) and [part 2](% post_url 2020\2020-03-31-adding-storybook-to-template %}) for that coverage.  I've come to the point where I need to discuss testing, which is a complex area.
+Thus far, in my journey to produce a customized toolchain for my React development, I've covered a lot of ground.  See [part 1]({% post_url 2020/2020-03-29-parcel-typescript-react %}) and [part 2](% post_url 2020/2020-03-31-adding-storybook-to-template %}) for that coverage.  I've come to the point where I need to discuss testing, which is a complex area.
 
 First, there are at least four types of testing you need to do:
 
@@ -14,7 +14,7 @@ First, there are at least four types of testing you need to do:
 * _Visual testing_, a newer concept, really, is a visual inspection of the output to ensure they look good.  I use Storybook for this.
 * _End to end testing_ checks your web application on a browser to ensure it operates correctly.
 
-You can do unit testing and integration testing with the same toolchain, and this is the topic for today.  (I covered visual testing during [part 2](% post_url 2020\2020-03-31-adding-storybook-to-template %}, and will cover end-to-end testing another time).
+You can do unit testing and integration testing with the same toolchain, and this is the topic for today.  (I covered visual testing during [part 2](% post_url 2020/2020-03-31-adding-storybook-to-template %}, and will cover end-to-end testing another time).
 
 ## What to consider
 
