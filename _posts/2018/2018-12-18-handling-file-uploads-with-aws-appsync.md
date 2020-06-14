@@ -315,8 +315,8 @@ Now, when we run the test, we get the following:
     "me": {
       "id": "AIDAI6XOAOVZFVXXXXXX",
       "profilePicture": {
-        "url": "http://restaurantreviews-dev-filestorage-1sylbkx8vt3ij.s3-website-us-east-1.amazonaws.com/profilePictures/AIDAI6XOAOVZFVXXXXXX.png",
-        "uploadUrl": "https://restaurantreviews-dev-filestorage-1sylbkx8vt3ij.s3.amazonaws.com/profilePictures/AIDAI6XOAOVZFVXXXXXX.png?AWSAccessKeyId=ASIA6BKF3YD3OMXXXX&Expires=1544657619&Signature=JfHgE2yx90pj0a5tG8tk46GYyCc%3D&x-amz-security-token=FQoGZXIvYXdzEJ%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDA7gVJSrhcFBjUlAJiKEAhtD2lV1GBU9sVeL%2F4x9UL2XrSe6GuGNdXDcO841uKn5h50UaInl73sCpzMV%2Fr7h8igUr5pdyqAqsDyI94XFqszfeEsBVsT25G0bjwQEKgUPYaB%2BDiYNULoco%2FL9f6EMXd%2F2y7EXEoywdJ5A%2FEtXfWe1H1XdAdnnThyoXBlcSK86yc19EJ%2FQhreSmQ%2BdMiLPaKW5lA0FoQoXBKI7jDlGWeekTcm6viPou7tzAFxnYpOqcwYLhlu6vgLe4%2BsuUjAZdDE6c%2FR2VGvbX1250YsPBdEojDRYsPcxxXhbtV24GwvDjO5pKYhhPb%2B%2BFvbMz3sHJ%2FsMFIayqABjWCRa6qkhVGIIKmkgKOv%2FxeAF"
+        "url": "http://reviews-dev-filestorage-1sylbkx8vt3ij.s3-website-us-east-1.amazonaws.com/profilePictures/AIDAI6XOAOVZFVXXXXXX.png",
+        "uploadUrl": "https://reviews-dev-filestorage-1sylbkx8vt3ij.s3.amazonaws.com/profilePictures/AIDAI6XOAOVZFVXXXXXX.png?AWSAccessKeyId=ASIA6BKF3YD3OMXXXX&Expires=1544657619&Signature=JfHgE2yx90pj0a5tG8tk46GYyCc%3D&x-amz-security-token=FQoGZXIvYXdzEJ%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDA7gVJSrhcFBjUlAJiKEAhtD2lV1GBU9sVeL%2F4x9UL2XrSe6GuGNdXDcO841uKn5h50UaInl73sCpzMV%2Fr7h8igUr5pdyqAqsDyI94XFqszfeEsBVsT25G0bjwQEKgUPYaB%2BDiYNULoco%2FL9f6EMXd%2F2y7EXEoywdJ5A%2FEtXfWe1H1XdAdnnThyoXBlcSK86yc19EJ%2FQhreSmQ%2BdMiLPaKW5lA0FoQoXBKI7jDlGWeekTcm6viPou7tzAFxnYpOqcwYLhlu6vgLe4%2BsuUjAZdDE6c%2FR2VGvbX1250YsPBdEojDRYsPcxxXhbtV24GwvDjO5pKYhhPb%2B%2BFvbMz3sHJ%2FsMFIayqABjWCRa6qkhVGIIKmkgKOv%2FxeAF"
       }
     }
   }
@@ -349,7 +349,5 @@ In our scenario, we would define two functions:
 * `GetProfilePictureForId` would follow on from that and construct the pre-signed URLs, adding the `profilePicture` object to the previous results.
 
 In a `me` query, the mapping template would populate the id with the `$context.identity.username` and within the `getUser(id)` or the `Review.user` query, it would populate the `id` field with the argument (or `owner` source field). This way, I can use the same functions (and the same Lambda source code) for both the `me` query and the `getUser` query.
-
-You can find this solution as an example in [my GitHub repository](https://github.com/adrianhall/restaurant-reviews).
 
 {% include links.md %}

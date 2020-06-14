@@ -6,7 +6,7 @@ tags:
   - GraphQL
 ---
 
-I am currently developing a "restaurant reviews" app, written in React Native and using a suite of services surrounding [AWS AppSync] for the data backend. Yesterday, I ran into a problem. This is how I solved that problem.
+I am currently developing a "reviews" app, written in React Native and using a suite of services surrounding [AWS AppSync] for the data backend. Yesterday, I ran into a problem. This is how I solved that problem.
 
 First, let's take a look at the problem. I have a query that is submitted like this:
 

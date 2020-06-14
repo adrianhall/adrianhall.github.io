@@ -1,4 +1,4 @@
----
+e--
 title: "The three ways to execute a GraphQL query from React with AWS AppSync (and how to choose)"
 categories:
   - Cloud
@@ -6,7 +6,7 @@ tags:
   - GraphQL
 ---
 
-[AWS AppSync] is a managed [GraphQL] service that can (and probably should) act as the data layer for your app. I'm not going to go into the details of how to configure it since I've gone through that in excruciating detail recently (see blog [#1], [#2], [#3], and [#4]). Rather, I want to take a look at how you can send a query to AWS AppSync from your React (or React Native) app.
+[AWS AppSync] is a managed [GraphQL] service that can (and probably should) act as the data layer for your app. I want to take a look at how you can send a query to AWS AppSync from your React (or React Native) app.
 
 You have three basic choices:
 * Include a query within a component using [AWS Amplify].
@@ -199,10 +199,5 @@ Here is the basic version that covers the advice I would give as of this writing
 * Wrap your component in the AWS Amplify Connect component for the majority of online-only cases, then use `API.graphql()` for the mutations to send data to the server.
 * Use `API.graphql()` only if you want to do a query outside of a React component.
 * Keep an eye on the AWS Amplify library as they are always extending the functionality of the client.
-
-[#1]: {% post_url 2018/2018-11-15-restaurant-reviews %}
-[#2]: {% post_url 2018/2018-11-30-restaurant-reviews-part-2 %}
-[#3]: {% post_url 2018/2018-12-06-restaurant-reviews-part-3 %}
-[#4]: {% post_url 2018/2018-12-10-restaurant-reviews-part-4 %}
 
 {% include links.md %}
