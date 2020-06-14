@@ -382,5 +382,3 @@ Take a look at the preview:
 ![The final preview]({{ site.baseurl }}/assets/images/2019/2019-10-31-image5.png){: .center-image}
 
 It looks pretty close to what I am expecting.  I can probably get this even closer by working on replicating the fonts (including sizes and weights) and exact color matching, but this is good enough to get me going on the dynamic data side of things.  That's a topic for next time.
-
-Until then, enjoy the actual code from [my GitHub repository](https://github.com/adrianhall/weather/tree/blog-10-31).
