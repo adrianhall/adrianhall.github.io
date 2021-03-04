@@ -142,7 +142,7 @@ You can put this in your test class so it doesn't pollute the namespace of your 
 
 ```kotlin
 suspend fun doNetworkRequestSync(client: NetworkClient, options: OptionsBag): ClientResponse
-    = syspendCoroutine { cont ->
+    = suspendCoroutine { cont ->
         val observable = client.doNetworkRequest(options)
         observable.observeForever { cont.resume(it) }
     }
