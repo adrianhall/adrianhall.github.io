@@ -1,5 +1,5 @@
 ---
-title: "Adding a Glyph Font to your Xamarin Forms apps"
+title: "Adding an icon font to your Xamarin Forms apps"
 categories:
   - Xamarin
 tags:
