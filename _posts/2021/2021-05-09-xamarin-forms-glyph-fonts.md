@@ -1,7 +1,9 @@
 ---
 title: "Adding a Glyph Font to your Xamarin Forms apps"
 categories:
-  - Xamarin Forms
+  - Xamarin
+tags:
+  - "Xamarin Forms"
 ---
 
 I've started building a new app using Xamarin Forms from scratch.  The idea is that I have a list of contacts stored in the cloud.  There isn't anything revolutionary about that, but I'm going to allow sharing of specific lists with others.  You could, for example, create a tag called "Cycling Buddies", and then tag your friends with that.  Everyone who subscribes to the same list gets the same information.  Even better, you can "broadcast" your information to certain groups, allowing other people to pick up changes to your profile as needed.  It's a "more complicated than a Todo List" application that I'm going to be using for a bunch of cloud backend tutorials in the future.
