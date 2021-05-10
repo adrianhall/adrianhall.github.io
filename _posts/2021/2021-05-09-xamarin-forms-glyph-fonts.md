@@ -34,7 +34,7 @@ Ensure you have set the **Build Action** appropriately.  Right-click on the font
 
 You will also need to know the name of the font.  On Windows, this can be found by double-clicking on the TTF file:
 
-![How to find the name of the font](../../assets/images/2021/2021-05-09-image1.png)
+![How to find the name of the font]({{ site.baseurl }}/assets/images/2021/2021-05-09-image1.png)
 
 In this case, the name is _Material Design Icons_.  Now, let's define the font in the shared project `App.xaml` file:
 
