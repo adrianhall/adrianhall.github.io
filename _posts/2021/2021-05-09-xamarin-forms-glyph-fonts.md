@@ -38,7 +38,7 @@ You will also need to know the name of the font.  On Windows, this can be found 
 
 In this case, the name is _Material Design Icons_.  Now, let's define the font in the shared project `App.xaml` file:
 
-``` xml hl_lines="7-12"
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -68,7 +68,7 @@ When defining an icon, you need to know it's ID.  All icon fonts are based on th
 
 Your first step is to find the icon you want.  Once you have the icon, look it up within the CSS or the cheatsheet.  You are looking for a four or five hex-digit number.  For example, from CSS:
 
-``` css
+```css
 .mdi-access-point-check::before {
   content: "\F1538";
 }
@@ -76,7 +76,7 @@ Your first step is to find the icon you want.  Once you have the icon, look it u
 
 The digits you are looking for are `F1538` here.  The cheatsheets have the same number.  I define the icons I am going to use as resources in `App.xaml`:
 
-``` xml
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -108,7 +108,7 @@ The number you got for the icon ID is just a hexadecimal character entity and is
 
 Using the icons is as easy as using a [FontImageSource](https://docs.microsoft.com/dotnet/api/xamarin.forms.fontimagesource?view=xamarin-forms) with the color, size, font family, and glyph defined.  Let's take a look at some examples:
 
-``` xml hl_lines="7-9,22-27"
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
