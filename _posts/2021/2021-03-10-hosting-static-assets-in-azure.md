@@ -32,7 +32,7 @@ It's serverless, so you don't have to worry about scaling.  It will scale out au
 
 **Cost Structure**
 
-Right now, Static Web Apps is free to use, since it's in preview.  However, you should keep an eye out for the GA announcement and check [the pricing page](https://azure.microsoft.com/pricing/details/app-service/static/) once it goes GA.
+**Update 5/12/2021** Static Web Sites has gone GA, and has a free tier.  Check [the pricing page](https://azure.microsoft.com/pricing/details/app-service/static/) for more information.
 
 **Awesome features**
 
