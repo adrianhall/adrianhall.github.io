@@ -24,7 +24,7 @@ There are three steps to adding an Icon Font.
 
 1. Add the TrueType font to each platform.
 1. Include a font style within the application resources.
-1. Create glyph resources to identify each icon you want to use.
+1. Create glyph resources to identify each icon ysou want to use.
 
 Let's take an example.  I am going to be using the MaterialDesignIcons font in this app.  The font is available [on GitHub](https://github.com/Templarian/MaterialDesign-Webfont/tree/master/fonts) - just download the .ttf font.  It needs to be stored in each platform project:
 
@@ -32,9 +32,16 @@ Let's take an example.  I am going to be using the MaterialDesignIcons font in t
 * In iOS projects, it is stored in the `Resources` folder.
 * In UWP projects, it is stored in the `Assets/Fonts` folder.
 
-Ensure you have set the **Build Action** appropriately.  Right-click on the font, then select **Properties**.  Android requires the build action to be _AndroidAsset_, and iOS requires it to be _BundleResource_.
+Ensure you have set the **Build Action** appropriately.  Right-click on the font, then select **Properties**.  Android requires the build action to be _AndroidAsset_, and iOS requires it to be _BundleResource_.  Finally, you will also need to add the font to the `Info.plist` file in the iOS project.  The `Info.plist` file is in XML.  You need to add the following entry:
 
-You will also need to know the name of the font.  On Windows, this can be found by double-clicking on the TTF file:
+``` xml
+    <key>UIAppFonts</key>
+    <array>
+            <string>materialdesignicons-webfont.ttf</string>
+    </array>
+```
+
+Add this to the bottom, just above the final `</dict>`.  You will also need to know the name of the font.  On Windows, this can be found by double-clicking on the TTF file:
 
 ![How to find the name of the font]({{ site.baseurl }}/assets/images/2021/2021-05-09-image1.png)
 
