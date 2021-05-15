@@ -161,6 +161,6 @@ Just replace the default `MainPage` with `AppShell`.  Yes - it really is that si
 
 Here is my final product:
 
-![The tab bar from a shell]({{ site.baseurl }}/assets/images/2021/2021-05-16-image1.png)
+![The tab bar from a shell]({{ site.baseurl }}/assets/images/2021/2021-05-15-image1.png)
 
 As you can see, it looks pretty professional.  The use of a web font for the icons and a suave dark set of colors makes for an awesome look.
