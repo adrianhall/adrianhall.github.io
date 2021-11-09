@@ -7,7 +7,7 @@ tags:
   - Azure Mobile Apps
 ---
 
-In [my last article]({% post_url 2021/2021-11-08-azure-mobile-apps-intro.md %}), I introduced the new ASP.NET Core edition of Azure Mobile Apps, including how to set up Entity Framework Core and in-memory stores.  Today, we are going to introduce simple authentication.  What do you need to do to secure your entire API?  We'll cover more complex authentication schemes (such as protecting a single API, or doing DTO transforms based on the identity of the user) next time.
+In [my last article]({% post_url 2021/2021-11-08-azure-mobile-apps-intro %}), I introduced the new ASP.NET Core edition of Azure Mobile Apps, including how to set up Entity Framework Core and in-memory stores.  Today, we are going to introduce simple authentication.  What do you need to do to secure your entire API?  We'll cover more complex authentication schemes (such as protecting a single API, or doing DTO transforms based on the identity of the user) next time.
 
 ## Azure App Service Authentication
 
@@ -22,7 +22,7 @@ The new Azure Mobile Apps service components support Azure App Service directly.
 
 I'll assume you have already created a new ASP.NET Core service using the datasync-server template.  Edit the `Program.cs` file as follows:
 
-``` csharp linenums,hl_lines="1,10,11,24,25"
+``` csharp linenos,hl_lines="1,10,11,24,25"
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Datasync;
 using Microsoft.EntityFrameworkCore;
@@ -58,7 +58,7 @@ The first two lines (10-11) configure the Azure App Service Authentication servi
 
 The controller now becomes:
 
-``` csharp linenums,hl_lines="1,9"
+``` csharp linenos,hl_lines="1,9"
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Datasync;
 using Microsoft.AspNetCore.Datasync.EFCore;
