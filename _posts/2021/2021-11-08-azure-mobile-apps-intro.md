@@ -12,6 +12,7 @@ It's release day for .NET 6, and I couldn't be happier to introduce Azure Mobile
 * Backwards compatibility with the older clients.
 * Develop for ASP.NET 6 so I can develop anywhere - Windows, Mac, or Linux.
 * Actually run anywhere - containers, App Service, or even a VM.
+* Bring your own authentication provider and database provider.
 
 That meant some radical changes in the way that code is presented.  Over the next few blog posts, I'll introduce you to a lot of the new concepts and code that you will want to write.  I've also written a handy [HOW TO guide](https://azure.github.io/azure-mobile-apps/howto/server/aspnetcore/).  There are also [discussion boards](https://github.com/Azure/azure-mobile-apps/discussions) for more in depth conversations.
 
@@ -221,7 +222,7 @@ There is another mechanism other than Entity Framework Core.  I've also provided
     app.Run();
     ```
 
-Entity Framework Core likes to have a context object per controller, and handles the singleton datastore for us.  However, the in-memory repository doesn't have that luxery, so we have to create a singleton and then inject it into the controller.
+Entity Framework Core likes to have a context object per controller, and handles the singleton datastore for us.  However, the in-memory repository doesn't have that luxury, so we have to create a singleton and then inject it into the controller.
 
 ## Run the app
 
@@ -241,8 +242,18 @@ info: Microsoft.Hosting.Lifetime[0]
       Content root path: /home/adrian/GitHub/myproject/
 ```
 
-You will be able to get some output by visiting `https://localhost:5001/tables/todoitem?ZUMO-API-VERSION=3.0.0`.  However, if you really want to exercise the service, you are going to have to use [Insomnia](https://insomnia.rest/) or [Postman REST client](https://www.postman.com/product/rest-client/) to send some REST commands!
+You will be able to get some output by visiting `https://localhost:5001/tables/todoitem?ZUMO-API-VERSION=3.0.0`.  However, if you really want to exercise the service, you are going to have to use [Insomnia](https://insomnia.rest/) or [Postman REST client](https://www.postman.com/product/rest-client/) to send some REST commands!  Supported commands (where `{endpoint}` is the `/tables/todoitem` right now)
 
+* `GET {endpoint}` to get a list of all entities (paged, plus you can use OData v4 syntax)
+* `GET {endpoint}/{id}` to get a single entity
+* `POST {endpoint}` (payload is an object with the properties in your DTO) to create an entity
+* `PUT {endpoint}/{id}` (payload is the complete object with updated fields) to replace an entity
+* `PATCH {endpoint}/{id}` (payload is either the replaced fields as an object or a JSON Patch object) to alter an entity
+* `DELETE {endpoint}/{id}` to delete the entity.
+
+Make sure you also send `ZUMO-API-VERSION: 3.0.0` as a header (or `ZUMO-API-VERSION=3.0.0` as a query param) to select the Azure Mobile Apps protocol level.
+
+Experiment!
 ## Deploy to Azure
 
 Now, let's deploy the service to Azure.  This will create a new (free) Azure App Service with the same service running:
@@ -256,6 +267,10 @@ That's a deceptively simple command that does all the work of creating and deplo
 ## Some things to try out
 
 Note that we are not tied to SQL Azure any more.  You can try anything - SQLite needs a little more work than most (since it has a deficient DateTime implementation that doesn't have millisecond resolution), but [Cosmos](https://docs.microsoft.com/ef/core/providers/cosmos/?tabs=dotnet-core-cli), [MySQL](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), or [PostgreSQL](https://www.npgsql.org/efcore/) are all possibilities, along with others.
+
+## Backwards compatible - almost
+
+One of the goals of the project was to be backwards compatible with the older clients.  And we got there - almost.  If you send `ZUMO-API-VERSION: 2.0.0` as a header, you'll get the older functionality.  It's "mostly" compatible because there are some differences between OData v3 and OData v4 we couldn't work around.  Most notably, the ability to do substring searches (either as part of a sync query or as a LINQ query on the table) is gone.  If you rely on this functionality, you will have to stay on the .NET Framework version for now.  You won't be able to do substring searches until the new clients are released.
 
 ## Next steps
 
