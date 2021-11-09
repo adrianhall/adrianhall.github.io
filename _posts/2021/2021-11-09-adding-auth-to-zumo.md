@@ -7,7 +7,7 @@ tags:
   - Azure Mobile Apps
 ---
 
-In [my last article]({% post_url 2021/2021-11-08-azure-mobile-apps-intro.md }), I introduced the new ASP.NET Core edition of Azure Mobile Apps, including how to set up Entity Framework Core and in-memory stores.  Today, we are going to introduce simple authentication.  What do you need to do to secure your entire API?  We'll cover more complex authentication schemes (such as protecting a single API, or doing DTO transforms based on the identity of the user) next time.
+In [my last article]({% post_url 2021/2021-11-08-azure-mobile-apps-intro.md %}), I introduced the new ASP.NET Core edition of Azure Mobile Apps, including how to set up Entity Framework Core and in-memory stores.  Today, we are going to introduce simple authentication.  What do you need to do to secure your entire API?  We'll cover more complex authentication schemes (such as protecting a single API, or doing DTO transforms based on the identity of the user) next time.
 
 ## Azure App Service Authentication
 
