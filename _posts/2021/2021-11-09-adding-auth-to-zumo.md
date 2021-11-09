@@ -22,7 +22,7 @@ The new Azure Mobile Apps service components support Azure App Service directly.
 
 I'll assume you have already created a new ASP.NET Core service using the datasync-server template.  Edit the `Program.cs` file as follows:
 
-``` csharp linenos,hl_lines="1,10,11,24,25"
+{% highlight csharp linenos %}
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Datasync;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +50,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
-```
+{% endhighlight %}
 
 The first two lines (10-11) configure the Azure App Service Authentication service to be primary.  The second two lines add the standard ASP.NET Core identity services to the application.  Your controllers will now see the users identity in the `HttpContext`.
 
@@ -58,7 +58,7 @@ The first two lines (10-11) configure the Azure App Service Authentication servi
 
 The controller now becomes:
 
-``` csharp linenos,hl_lines="1,9"
+{% highlight csharp linenos %}
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Datasync;
 using Microsoft.AspNetCore.Datasync.EFCore;
@@ -77,7 +77,7 @@ namespace t.Controllers
         }
     }
 }
-```
+{% endhighlight %}
 
 Line 9 is the bit that does the work.  Your API is now protected.
 
@@ -89,21 +89,21 @@ We don't do anything special within the new service library. That means you can 
 
 There are now two sets of libraries - the older (existing) Azure Mobile Apps libraries support Azure App Service Authentication out of the box.  However, you can write a `DelegatingHandler` that provides any other type of authentication. Thus, for example, you can [use MSAL](https://thewissen.io/implementing-msal-authentication-in-xamarin-forms/) to get an access token, then inject that access token as an Authorization header into every single request. Create the client with:
 
-``` csharp
+{% highlight csharp %}
 var client = new MobileServiceClient(serviceUri, new MyDelegatingHandler());
-```
+{% endhighlight %}
 
 There is also the newer client.  This provides an `AuthenticationProvider` that will inject the token for you.  For example:
 
-``` csharp
+{% highlight csharp %}
 var authProvider = new GenericAuthenticationProvider(() => GetAccessToken());
 var client = new DatasyncClient(serviceUri, authProvider);
-```
+{% endhighlight %}
 
 The authentication provider is similarly a delegating handler at its heart, but contains additional code to handle refreshing the access token and caching the access token in memory while it is valid.
 
-> [!Important]
-> I don't recommend using the `DatasyncClient` just yet, as it is still in development and doesn't have offline capabilities.
+I don't recommend using the `DatasyncClient` just yet, as it is still in development and doesn't have offline capabilities.
+{: .notice--warning}
 
 ## Next steps
 
