@@ -11,7 +11,7 @@ In [my last article]({% post_url 2021/2021-11-08-azure-mobile-apps-intro %}), I 
 
 ## Azure App Service Authentication
 
-Azure App Service includes a feature that most people call "EasyAuth".  It allows you to configure a Google, Microsoft, Facebook, or Twitter authentication service within Azure App Service.  You can read about the configuration process in [their documentation]().  If you used Azure App Service to host an Azure Mobile Apps service previously, this will be familiar to you.
+Azure App Service includes a feature that most people call "EasyAuth".  It allows you to configure a Google, Microsoft, Facebook, or Twitter authentication service within Azure App Service.  You can read about the configuration process in [their documentation](https://docs.microsoft.com/azure/app-service/overview-authentication-authorization).  If you used Azure App Service to host an Azure Mobile Apps service previously, this will be familiar to you.
 
 The new Azure Mobile Apps service components support Azure App Service directly.  Aside from setting up the Azure App Service (which hasn't changed), here is what you need to do:
 

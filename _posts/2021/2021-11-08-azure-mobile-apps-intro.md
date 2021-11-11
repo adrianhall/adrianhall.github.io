@@ -254,6 +254,7 @@ You will be able to get some output by visiting `https://localhost:5001/tables/t
 Make sure you also send `ZUMO-API-VERSION: 3.0.0` as a header (or `ZUMO-API-VERSION=3.0.0` as a query param) to select the Azure Mobile Apps protocol level.
 
 Experiment!
+
 ## Deploy to Azure
 
 Now, let's deploy the service to Azure.  This will create a new (free) Azure App Service with the same service running:
