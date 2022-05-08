@@ -35,18 +35,9 @@ bing_site_verification   :
 yandex_site_verification :
 naver_site_verification  :
 
-# Social Sharing
 twitter:
   username               : &twitter FizzyInTheHall
 
-# Analytics
-analytics:
-  provider               : "google-gtag"
-  google:
-    tracking_id          : "UA-93366112-4"
-
-
-# Site Author
 author:
   name             : *name
   avatar           : "/assets/images/adrian-hall.jpg"
@@ -64,7 +55,6 @@ author:
       icon: "fab fa-fw fa-github"
       url: "https://github.com/adrianhall"
 
-# Site Footer
 footer:
   links:
     - label: "Email"
@@ -80,8 +70,6 @@ footer:
       icon: "fab fa-fw fa-github"
       url: "https://github.com/adrianhall"
 
-
-# Reading Files
 include:
   - .htaccess
   - _pages
@@ -112,18 +100,15 @@ exclude:
 keep_files:
   - .git
   - .svn
-encoding: "utf-8"
+encoding: "UTF-8"
 markdown_ext: "md"
 
-
-# Conversion
 markdown: kramdown
 highlighter: rouge
 lsi: false
 excerpt_separator: "\n\n"
 incremental: false
 
-# Markdown Processing
 kramdown:
   input: GFM
   hard_wrap: false
@@ -132,23 +117,16 @@ kramdown:
   entity_output: as_char
   toc_levels: 1..6
   smart_quotes: lsquo,rsquo,ldquo,rdquo
-  enable_coderay: false
 
-
-# Sass/SCSS
 sass:
   sass_dir: _sass
   style: compressed
 
-
-# Outputting
 permalink: pretty
 paginate: 5 # amount of posts to show
 paginate_path: /page:num/
 timezone: "US/Pacific"
 
-
-# Plugins (previously gems:)
 plugins:
   - jekyll-paginate
   - jekyll-sitemap
@@ -156,7 +134,6 @@ plugins:
   - jekyll-feed
   - jemoji
 
-# mimic GitHub Pages with --safe
 whitelist:
   - jekyll-paginate
   - jekyll-sitemap
@@ -164,34 +141,12 @@ whitelist:
   - jekyll-feed
   - jemoji
 
-
-# Archives
-#  Type
-#  - GitHub Pages compatible archive pages built with Liquid ~> type: liquid (default)
-#  - Jekyll Archives plugin archive pages ~> type: jekyll-archives
-#  Path (examples)
-#  - Archive page should exist at path when using Liquid method or you can
-#    expect broken links (especially with breadcrumbs enabled)
-#  - <base_path>/tags/my-awesome-tag/index.html ~> path: /tags/
-#  - <base_path/categories/my-awesome-category/index.html ~> path: /categories/
-#  - <base_path/my-awesome-category/index.html ~> path: /
 category_archive:
   type: liquid
   path: /categories/
 tag_archive:
   type: liquid
   path: /tags/
-# https://github.com/jekyll/jekyll-archives
-# jekyll-archives:
-#   enabled:
-#     - categories
-#     - tags
-#   layouts:
-#     category: archive-taxonomy
-#     tag: archive-taxonomy
-#   permalinks:
-#     category: /categories/:name/
-#     tag: /tags/:name/
 
 compress_html:
   clippings: all
