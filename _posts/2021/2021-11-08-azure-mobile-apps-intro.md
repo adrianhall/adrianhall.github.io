@@ -14,7 +14,7 @@ It's release day for .NET 6, and I couldn't be happier to introduce Azure Mobile
 * Actually run anywhere - containers, App Service, or even a VM.
 * Bring your own authentication provider and database provider.
 
-That meant some radical changes in the way that code is presented.  Over the next few blog posts, I'll introduce you to a lot of the new concepts and code that you will want to write.  I've also written a handy [HOW TO guide](https://azure.github.io/azure-mobile-apps/howto/server/aspnetcore/).  There are also [discussion boards](https://github.com/Azure/azure-mobile-apps/discussions) for more in depth conversations.
+That meant some radical changes in the way that code is presented.  Over the next few blog posts, I'll introduce you to a lot of the new concepts and code that you will want to write.  I've also written a handy [HOW TO guide](https://docs.microsoft.com/en-us/azure/developer/mobile-apps/azure-mobile-apps/howto/server/dotnet-cor).  There are also [discussion boards](https://github.com/Azure/azure-mobile-apps/discussions) for more in depth conversations.
 
 ## Getting your environment set up
 
@@ -40,7 +40,9 @@ Microsoft.NETCore.App         6.0.0        Up to date.
 The latest versions of .NET can be installed from https://aka.ms/dotnet-core-download. For more information about .NET lifecycles, see https://aka.ms/dotnet-core-support.
 ```
 
-Secondly, if you want to follow along, [install the latest Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli).  Yes, I know you can deploy anywhere, but Azure makes this easy.  If you want to deploy to AWS, Google Cloud, or any other provider, then make sure you can run ASP.NET 6 application.  Once you've install the Azure CLI, make sure you run `az login` and any commands to select a subscription.  The instructions are in the installation guides.  You can check to see if it's working using `az account show`:
+Secondly, if you want to follow along, [install the latest Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli).  Yes, I know you can deploy anywhere, but Azure makes this easy.  If you want to deploy to AWS, Google Cloud, or any other provider, then make sure you can run the ASP.NET 6 application.  The broad steps are the same between clouds, but the way of achieving them is not.  
+
+Once you've install the Azure CLI, make sure you run `az login` and any commands to select a subscription.  The instructions are in the installation guides.  You can check to see if it's working using `az account show`:
 
 ``` bash
 $ az account show
@@ -97,7 +99,7 @@ Let's take a look at the project.  Open it with Visual Studio Code or your favor
 * There is a `Program.cs` that contains the startup code.
 * There is an `Models\AppDbContext.cs` that contains the Entity Framework Core context object.
 * There is a `Models\TodoItem.cs` that contains the **Data Transfer Object** (DTO) that I want to project to clients.
-* There is a `Controllers`TodoitemController.cs` that contains the code for the endpoints.
+* There is a `Controllers\TodoitemController.cs` that contains the code for the endpoints.
 
 Let's look at `Models\TodoItem.cs` first - our DTO:
 
@@ -265,9 +267,11 @@ $ az webapp up --name myawesomeproject --location westus --sku FREE --runtime "D
 
 That's a deceptively simple command that does all the work of creating and deploying a web application for you.  It won't connect a database (but we don't need one because we've switched over to an in-memory database), so there is still work to be done if you want to provision a full web app connected to a database.
 
+> The original Azure Mobile Apps only ran on App Service.  The new Azure Mobile Apps is "just an ASP.NET Core application", so you can run it wherever ASP.NET Core applications run - including container based systems like Azure Kubernetes Service or Azure Container Apps.
+
 ## Some things to try out
 
-Note that we are not tied to SQL Azure any more.  You can try anything - SQLite needs a little more work than most (since it has a deficient DateTime implementation that doesn't have millisecond resolution), but [Cosmos](https://docs.microsoft.com/ef/core/providers/cosmos/?tabs=dotnet-core-cli), [MySQL](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), or [PostgreSQL](https://www.npgsql.org/efcore/) are all possibilities, along with others.
+Note that we are not tied to SQL Azure any more.  You can try anything - SQLite needs a little more work than most (since it has a deficient DateTime implementation that doesn't have millisecond resolution), but [Cosmos DB](https://docs.microsoft.com/ef/core/providers/cosmos/?tabs=dotnet-core-cli), [MySQL](https://github.com/PomeloFoundation/Pomelo.EntityFrameworkCore.MySql), or [PostgreSQL](https://www.npgsql.org/efcore/) are all possibilities, along with others.  Check out [the database notes in the HOW TO guide](https://docs.microsoft.com/azure/developer/mobile-apps/azure-mobile-apps/howto/server/dotnet-core) for important support notes.
 
 ## Backwards compatible - almost
 

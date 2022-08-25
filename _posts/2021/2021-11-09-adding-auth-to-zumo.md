@@ -100,10 +100,9 @@ var authProvider = new GenericAuthenticationProvider(() => GetAccessToken());
 var client = new DatasyncClient(serviceUri, authProvider);
 {% endhighlight %}
 
-The authentication provider is similarly a delegating handler at its heart, but contains additional code to handle refreshing the access token and caching the access token in memory while it is valid.
+The authentication provider is similarly a delegating handler at its heart, but contains additional code to handle refreshing the access token and caching the access token in memory while it is valid.  
 
-I don't recommend using the `DatasyncClient` just yet, as it is still in development and doesn't have offline capabilities.
-{: .notice--warning}
+If you are starting a new project, use the newer libraries.
 
 ## Next steps
 

@@ -18,7 +18,7 @@ Whenever I wrote a web API for a database service in the past, it inevitably sta
 * `ITableData` provides additional properties that you must implement in your DTO.
 * `IRepository<T>` provides the basic functionality for a repository for a specific DTO.
 
-You don't need to make your repository generic (even though both of the standard repositories are generics - they are general purpose, so they need to work with any DTO).
+You don't need to make your repository generic (even though all of the standard repositories are generics - they are general purpose, so they need to work with any DTO).
 
 When you are writing a new repository, you may have to write a new abstract class to implement `ITableData` as well.  You will always have to write a class that implements `IRepository<T>`.  Let's take a look at `IRepository<T>` (stripped of the comments in the code):
 
@@ -109,7 +109,7 @@ The `DocumentTableRepository` doesn't exist yet.
 
 ## Implementing the DocumentTableRepository
 
-Since both of my tables are in EF Core, I'm using the regular `EntityTableData` as the basis for my DTO as well.  Let's look at the basics:dto
+Since both of my tables are in EF Core, I'm using the regular `EntityTableData` as the basis for my DTO as well.  Let's look at the basics:
 
 {% highlight csharp %}
 public class DocumentTableRepository : IRepository<DocumentDTO>
@@ -231,6 +231,6 @@ You should definitely take a look at the two implementations of the table reposi
 
 You will see that, for all that they do, they are actually quite simple to follow.  My own experience is that table repositories should be straight forward.  We aren't doing a lot of work in there - just storing and reading data.
 
-If you find you can't do what you need without significant complexity in your table repository, perhaps Azure Mobile Apps is the wrong library.  Azure Mobile Apps is an awesome and simple way to spin up an offline-aware REST endpoint for your data.
+If you find you can't do what you need without significant complexity in your table repository, perhaps Azure Mobile Apps is the wrong library.  Azure Mobile Apps is an awesome and simple way to spin up an offline-aware REST endpoint for your data, but doesn't solve every problem with data synchronization.
 
 Let me know how you use Azure Mobile Apps on [the discussion boards](https://github.com/Azure/azure-mobile-apps/discussions).  I'd love to hear what you are doing!
