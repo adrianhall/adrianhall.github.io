@@ -18,7 +18,7 @@ There are a bunch of things I like about Swift.  The biggest one is proper suppo
 
 {% highlight swift %}
 let π = 3.14159
-let 2 = 2.0
+let r = 2.0
 let area = π * r * r
 {% endhighlight %}
 
