@@ -8,7 +8,7 @@ tags:
 
 Continuing my foray into Blazor WASM, I decided to tackle authentication.  The Microsoft documentation has [an excellent article](https://docs.microsoft.com/aspnet/core/blazor/security/webassembly/hosted-with-azure-active-directory?view=aspnetcore-6.0) on how to do this using the built-in tooling to create an AAD-enabled Blazor WASM application.  However, I'm beyond the tooling at this point.  My Blazor app is created.  I need to augment the solution with the right code to enable authentication.  I also want to make sure that I am not leaking secrets and the same code will work from development, through staging, to production.  There is a little more to the story than the basic details provided by the documentation.
 
-This article will be in three parts.  This part will cover the the server code.  The next part will cover the client code.  Finally, I'll take a look at what it takes to convert the basic code for flexible use across development to staging and production.
+This article will be in three parts.  This part will cover the the server code.  The [next part]({% post_url 2022/2022-09-02-blazor-wasm-aad-auth-part-2 %}) will cover the client code.  Finally, I'll take a look at what it takes to convert the basic code for flexible use across development to staging and production.
 
 ## Jobs to be done
 
@@ -133,12 +133,14 @@ builder.Services
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 ```
 
-This loads the `AzureAd` configuration (which is combined from the `appsettings.json` and the secrets manager) and then adds authentication services to the backend service.  To actually use this, I need to add authentication and authorization support in the web request pipeline.  Still in `Program.cs`, add the following right above the `app.UseRouting()` line:
+This loads the `AzureAd` configuration (which is combined from the `appsettings.json` and the secrets manager) and then adds authentication services to the backend service.  To actually use this, I need to add authentication and authorization support in the web request pipeline.  Still in `Program.cs`, add the following right below the `app.UseRouting()` line:
 
 ``` csharp
 app.UseAuthentication();
 app.UseAuthorization();
 ```
+
+> Note that you must put the `UseAuthorization()` line BELOW `UseRouting()`.
 
 ## Step 5: Add the IHttpContextAccessor service
 
@@ -177,6 +179,6 @@ public class WeatherForecastController : ControllerBase
 
 ## Next steps
 
-Actually, there isn't a lot to do right now.  I can't test this out until I've completed the client side of things, which will allow me to sign in to the Blazor WASM app and pull authenticated information.  That will be covered in the next blog post.
+Actually, there isn't a lot to do right now.  I can't test this out completely until I've completed the client side of things, which will allow me to sign in to the Blazor WASM app and pull authenticated information.  However, I can run a Postman check to pull `/WeatherForecast` to ensure it returns a 401 Unauthorized error code.
 
-Until then, happy coding!
+The client piece is covered in the [next blog post]({% post_url 2022/2022-09-02-blazor-wasm-aad-auth-part-2 %}). Until then, happy coding!
