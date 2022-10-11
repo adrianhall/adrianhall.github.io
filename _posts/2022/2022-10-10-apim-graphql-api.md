@@ -183,7 +183,7 @@ You can find the specifics of each properties section in the [REST API documenta
 
 You now have a Bicep file that **just** deploys the API.  Deploying a single API is much quicker than deploying the whole collection.  In fact, this is the premise of the [APIOps](https://github.com/azure/apiops) deployment methodology.  You can store the policies separately or together with your service definition.  
 
-Deployin the API is simple:
+Deploying the API is simple:
 
 ``` bash
 az deployment group create --resource-group dev-myservice-ahall --template-file ./graphql-api.bicep
