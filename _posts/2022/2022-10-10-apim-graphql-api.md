@@ -179,7 +179,7 @@ Once I have the service, I can create the GraphQL API.  There is only one real "
 
 Now we come to the policy and schema.  These are each a resource that has the GraphQL API as the parent.  However, there are a couple of "magic strings" that you just have to know.  The first is the content type in the schema resource, and the second is the format in the policy resource.  Again, exporting the ARM template helps to understand what these are.
 
-You can find the specifics of each properties section in the [REST API documentation](https://learn.microsoft.com/rest/api/apimanagement/current-ga/apis/create-or-update). 
+You can find the specifics of each properties section in the [REST API documentation](https://learn.microsoft.com/rest/api/apimanagement/current-ga/apis/create-or-update).
 
 You now have a Bicep file that **just** deploys the API.  Deploying a single API is much quicker than deploying the whole collection.  In fact, this is the premise of the [APIOps](https://github.com/azure/apiops) deployment methodology.  You can store the policies separately or together with your service definition.  
 
