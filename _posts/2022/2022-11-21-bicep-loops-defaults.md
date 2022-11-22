@@ -43,7 +43,21 @@ resource namedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-prev
 }]
 ```
 
-Well, that doesn't work.  The non-existence of a property in an object is an error, and will throw validation errors when you try to deploy the bicep template.  To get around this, you can construct a new array based on the parameter:
+Well, that doesn't work.  The non-existence of a property in an object is an error, and will throw validation errors when you try to deploy the bicep template. Fortunately, there are two ways to get around this.  Firstly, the simple case:
+
+``` terraform
+resource namedValue 'Microsoft.ApiManagement/service/namedValues@2022-04-01-preview' = [for nv in namedValues: {
+  name: nv.key
+  parent: apimService
+  properties: {
+    displayName: nv.key
+    secret: contains(nv, 'secret') ? nv.secret : false
+    value: nv.value
+  }
+}]
+```
+
+The ternary operator together with the `contains()` function allows you to ensure you never accidentally access an optional property.  However, this becomes untenable when you have lots of properties.  In this case, you will want to construct a new array based on the parameter:
 
 ``` terraform
 // Construct the named values with the default secret value.
@@ -87,7 +101,7 @@ resource policyFragment 'Microsoft.ApiManagement/service/policyFragments@2022-04
 }]
 ```
 
-However, again - what happens if `pf.description` is not set?  An undefined property is not just ignored - it is a validation error.  In this case, we could set a default value, but what value do we set if we want the description to match the fragmentId?  We can use `null` or a blank string (either should work) in this case:
+However, again - what happens if `pf.description` is not set?  An undefined property is not just ignored - it is a validation error.  We could do what we did initially - use `contains()` inside a ternary operator.  However, we can also set a default value to a known value, but what value do we set if we want the description to match the fragmentId?  We can use `null` or a blank string (either should work) in this case:
 
 ``` terraform
 // Construct the policy fragments with the default value for description.
