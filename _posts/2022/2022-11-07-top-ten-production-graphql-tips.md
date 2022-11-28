@@ -6,7 +6,7 @@ tags:
     - GraphQL
 ---
 
-It's a somewhat well-known facet of development that we don't consider production problems until it is too late in the development cycle.  When we look at taking a Web API into production, we use API management solutions to provide protection, control, and visibility into our APIs so that we ensure we don't get woken up by a production outage.  The things we need to consider are well understood in APIs in general, but what about GraphQL?  
+It's a somewhat well-known facet of development that we don't consider production problems until it is too late in the development cycle.  When we look at taking a Web API into production, we use API management solutions to provide protection, control, and visibility into our APIs so that we ensure we don't get woken up by a production outage. The things we need to consider are well understood in APIs in general, but what about GraphQL?  
 
 GraphQL is a developers dream when it comes to tooling.  A lot of that tooling is driven by the underlying features of the protocol, like introspection.  As you move to production, you want to give up the flexibility that comes from the tooling and lock down the service so that you understand what operations are running, who is running them, and identify bad actors early.  So, what are some of the things you can do?  
 
