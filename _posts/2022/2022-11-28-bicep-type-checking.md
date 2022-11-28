@@ -92,7 +92,7 @@ Instead of the keyword `array`, you use the monikor `Type[]` to specify an array
 param alternatePaths string[]
 ```
 
-## Putting it tegether
+## Putting it together
 
 Let's look at the completed work:
 
