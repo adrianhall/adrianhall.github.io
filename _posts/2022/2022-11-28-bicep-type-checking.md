@@ -6,7 +6,7 @@ tags:
   - Bicep
 ---
 
-As you may have guessed by now, I'm delving heavily into the world of [Bicep]() right now, mostly in order to describe the infrastructure for my personal projects in a readable way.  JSON and YAML (used by ARM) is most definitely not readable for the average consumer.  Part of that work was learning about [bicep modules](), which I love for modularizing my code.  However, there is one distinctive problem with this.
+As you may have guessed by now, I'm delving heavily into the world of [Bicep](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview) right now, mostly in order to describe the infrastructure for my personal projects in a readable way.  JSON and YAML (used by ARM) is most definitely not readable for the average consumer.  Part of that work was learning about [bicep modules](https://learn.microsoft.com/azure/azure-resource-manager/bicep/modules), which I love for modularizing my code.  However, there is one distinctive problem with this.
 
 Let's take an example to show off the problem.  I have a bicep fragment that looks like this:
 
@@ -45,7 +45,7 @@ $ az bicep version
 Bicep CLI version 0.12.40 (41892bd0fb)
 ```
 
-Now, let's enable the preview feature.  You need to create a `bicepconfig.json` file in the root of the project.  My main bicep file is always called `main.bicep` and I put the `bicepconfig.json` file alongside that file.  Here are the contents:
+Now, let's enable the preview feature.  You need to [create a `bicepconfig.json` file](https://learn.microsoft.com/azure/azure-resource-manager/bicep/bicep-config) in the root of the project.  My main bicep file is always called `main.bicep` and I put the `bicepconfig.json` file alongside that file.  Here are the contents:
 
 ```json
 {
