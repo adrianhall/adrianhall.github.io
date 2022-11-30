@@ -37,10 +37,30 @@
   (warning, $warning-color),
   (danger, $danger-color),
   (info, $info-color),
+  (behance, $behance-color),
+  (bitbucket, $bitbucket-color),
+  (dribbble, $dribbble-color),
   (facebook, $facebook-color),
-  (twitter, $twitter-color),
+  (flickr, $flickr-color),
+  (foresquare, $foursquare-color),
+  (github, $github-color),
+  (gitlab, $gitlab-color),
+  (google-plus, $google-plus-color),
+  (instagram, $instagram-color),
+  (lastfm, $lastfm-color),
+  (linkedin, $linkedin-color),
+  (mastodon, $mastodon-color),
+  (pinterest, $pinterest-color),
   (reddit, $reddit-color),
-  (linkedin, $linkedin-color);
+  (rss, $rss-color),
+  (soundcloud, $soundcloud-color),
+  (stackoverflow, $stackoverflow-color),
+  (tumblr, $tumblr-color),
+  (twitter, $twitter-color),
+  (vimeo, $vimeo-color),
+  (vine, $vine-color),
+  (youtube, $youtube-color),
+  (xing, $xing-color);
 
   @each $buttoncolor, $color in $buttoncolors {
     &--#{$buttoncolor} {
