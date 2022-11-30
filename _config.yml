@@ -12,6 +12,10 @@ repository               : "adrianhall/adrianhall.github.io"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
 breadcrumbs              : true
 words_per_minute         : 200
+analytics:
+  provider               : "clarity"
+  clarity:
+    project_id           : "er6rxn3sjb"
 comments:
   provider               : "disqus"
   disqus:
