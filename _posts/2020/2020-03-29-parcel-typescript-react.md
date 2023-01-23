@@ -32,7 +32,7 @@ Why do I put my web application one directory down?  Well, I normally create con
 
 > I call this a `template` because I use this as a template for other projects.  Set up the repository on Github as a template and this functionality becomes really easy!  When you create a new repository in GitHub, you can use this one as the template for the new repo.
 
-Add a `LICENSE.md` and `README.md` to this project at the top level.  Finally, add a `.gitignore` file to each directory.  I use [gitignore.io](https://gitignore.io) for this initial part.  The top level gets the [Visual Studio Code + MacOS](https://gitignore.io/api/macos,visualstudiocode), and the webapp gets [react + Node](https://gitignore.io/api/node,react).
+Add a `LICENSE.md` and `README.md` to this project at the top level.  Finally, add a `.gitignore` file to each directory.  I use [gitignore.io](https://www.toptal.com/developers/gitignore) for this initial part (now owned by [Toptal](https://www.toptal.com)).  The top level gets the [Visual Studio Code + MacOS](https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode), and the webapp gets [react + Node](https://www.toptal.com/developers/gitignore/api/node,react).
 
 Next, let's create a basic React app using [Parcel](https://parceljs.org/) as the bundler and [Typescript](https://www.typescriptlang.org/) for the language.  Everything happens in the `webapp` folder. First, add some libraries:
 

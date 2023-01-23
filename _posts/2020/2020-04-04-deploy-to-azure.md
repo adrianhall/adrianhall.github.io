@@ -20,7 +20,7 @@ Although I use Terraform for deployment, I run it via `npm`.  This allows me to 
 
 * Create an `infrastructure` directory.
 * In the `infrastructure` directory, run `npm init -y`.
-* Create a `.gitignore` file (I use [gitignore.io](https://gitignore.io/api/terraform))
+* Create a `.gitignore` file (I use [gitignore.io](https://www.toptal.com/developers/gitignore/api/terraform))
 * Add `configuration.json` to the `.gitignore` file (we'll why in a moment)
 
 Take a look at the script section of my `package.json` file:

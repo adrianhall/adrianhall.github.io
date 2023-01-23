@@ -228,7 +228,7 @@ Note that my scripts have pretty much all changed.  I run a lot on Windows.  Whe
 * `npm run build` will build the ZIP file.
 * `npm run deploy` will build the ZIP file and deploy it to Azure.
 
-I need to explicitly configure `.gitignore` by adding the `build` directory and [the Terraform gitignore.io profile](http://gitignore.io/api/terraform) to the file.  Finally, I need a configuration file for the `jszip-cli` command (called `.jsziprc.json`):
+I need to explicitly configure `.gitignore` by adding the `build` directory and [the Terraform gitignore.io profile](https://www.toptal.com/developers/gitignore/api/terraform) to the file.  Finally, I need a configuration file for the `jszip-cli` command (called `.jsziprc.json`):
 
 {% highlight json %}
 {
