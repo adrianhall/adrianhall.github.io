@@ -57,11 +57,11 @@ It's a good idea to explore the code before you start.  You'll see it is the tut
 1. I changed the model to support the same properties I use in the Azure Mobile Apps testing.  This was done because I wanted to seed the database and had a corpus of data for that model.
 2. I updated the `DbContext` to seed data into the database the first time it is used.
 
-What I've got at this point is a fully functional web application with a database backend.
+What I've got at this point is a fully functional web application with a database backend.  Go play with it!
 
-## What are we going to do?
+## What am I going to do?
 
-Eventually, we'll want a database model that supports both the web and the mobile access methods and two view models - one that supports the web and one that supports the mobile side of things.  In addition, we'll have to update the database appropriately to ensure that the mobile specific properties are updated automatically when the web side of things updates the database.  Once that is done, we can easily implement the mobile side of things.  My order of operation is:
+Eventually, I'll want a database model that supports both the web and the mobile access methods and two view models - one that supports the web and one that supports the mobile side of things.  In addition, I'll have to update the database appropriately to ensure that the mobile specific properties are updated automatically when the web side of things updates the database.  Once that is done, I can easily implement the mobile side of things.  My order of operation is:
 
 * Stage 1: Modify the web side to use view models.
 * Stage 2: Update the database model to support mobile entities.
@@ -69,7 +69,9 @@ Eventually, we'll want a database model that supports both the web and the mobil
 
 ## Stage 1 : Modifying the web application
 
-Part of the plan here is to have two views into the same database model.  In the `before` tag, the database model is used in the views.  This isn't a really good way of doing things anyhow and I recommend using view models whenever you set up one of these projects.  Firstly, I created an `IMovie` interface that has all the data fields in the `Movie` database model.  I adjusted the `Movie` database model so that it implements `IMovie`, and I removed all the data annotations that weren't database specific.  Then I created a `MovieViewModel`:
+Part of the plan here is to have two views into the same database model.  In the `before` tag, the database model is used in the views.  This isn't a really good way of doing things anyhow and I recommend using view models whenever you set up one of these projects.  FI created an `IMovie` interface that has all the data fields in the `Movie` database model.  As part of this process, I also added an extension method to copy the data fields between two `IMovie` implementations.  This will make converting between the database model and view model easier.  I adjusted the `Movie` database model so that it implements `IMovie`, and I removed all the data annotations that weren't database specific.  
+
+Next, I created a `MovieViewModel`:
 
 ```csharp
 public class MovieViewModel : IMovie
@@ -147,22 +149,20 @@ public class MovieViewModel : IMovie
 }
 ```
 
-One of the main things I'm going to point out here is that I've deliberately created a constructor that takes a `Movie` database model and a `.ToMovie()` method that converts the data back to a database model.  With this in hand, I updated all the views to use the `MovieViewModel` and then updated the `MoviesController` to convert to/from the view model when retrieving or storing data in the database.
+I'm not a big fan of Automapper, so I'm using explicit conversions in this project.  For my purposes, this means adding a constructor that takes a `Movie` database model, and adding a `.ToMovie()` method to convert the view model back into the database model.  I then updated all the views to use the `MovieViewModel`.  Finally, I updated the `MoviesController` to convert to/from the view model when retrieving or storing data in the database.
 
-You can see all the changes I made by [looking at the `stage1` tag](https://github.com/adrianhall/zumo-intid-server/releases/tag/stage1), or by looking at [the difference between the `before` and `stage1` tags](https://github.com/adrianhall/zumo-intid-server/commit/41838503a82c9e4a92acc128f1fabaf9708dc4cf).
+Since this has nothing to do with the aim of this blog post, I'm not going to show much code.  You can see all the changes I made by [looking at the `stage1` tag](https://github.com/adrianhall/zumo-intid-server/releases/tag/stage1), or by looking at [the difference between the `before` and `stage1` tags](https://github.com/adrianhall/zumo-intid-server/commit/41838503a82c9e4a92acc128f1fabaf9708dc4cf).
 
 ## Stage 2 : Update the database model
 
 The mobile requirements for a model are codified in the [`ITableData`](https://github.com/Azure/azure-mobile-apps/blob/6.0.7/sdk/dotnet/src/Microsoft.AspNetCore.Datasync.Abstractions/Interfaces/ITableData.cs) interface.  It comes down to:
 
-* The `Id` field that is exposed should be a string.
-* The `Version` field is a byte array that changes on every write.
-* The `UpdatedAt` field is the last date/time that the record was updated.
+* The `Id` field that is exposed should be a string that is globally unique.  Enforce this in the database with a unique index.
+* The `Version` field is a byte array that changes on every write.  Use the database row version.
+* The `UpdatedAt` field is the last date/time that the record was updated. Use a database trigger to automatically update this value.
 * The `Deleted` field is a boolean that indicates if the record has been deleted.
 
-The `Id` field is set by the client so that we don't have collisions between clients.  The `Version` field is used in concurrency checks to ensure two disconnected clients have not updated the record at the same time.  The `UpdatedAt` field is used in incremental synchronization, allowing the client to pull only the updated records.  Finally, the `Deleted` field is used to "soft-delete" records, allowing other clients to be notified that a record has been deleted.
-
-Since we have the web side (and, potentially, other clients) updating the database and they have no understanding of these requirements, we need the database itself to set these when they are not set appropriately.  The first thing I did was to add these fields to the database model:
+Since I have the web side (and, potentially, other clients) updating the database and they have no understanding of the mobile requirements, I need the database itself to manage these values.  The first thing I did was to add these fields to the database model:
 
 ```csharp
 public string MobileId { get; set; } = Guid.NewGuid().ToString("N");
@@ -175,7 +175,7 @@ public DateTimeOffset? UpdatedAt { get; set; }
 public bool Deleted { get; set; }
 ```
 
-I also need to add indices on the MobileId, Deleted, and UpdatedAt properties, which I do in the `OnModelCreating()` method of the database context.  
+I also need to add indices on the MobileId, Deleted, and UpdatedAt properties. This is done in the `OnModelCreating()` method of the database context.  
 
 ```csharp
   modelBuilder.Entity<Movie>().Property(m => m.MobileId)
@@ -190,9 +190,7 @@ I also need to add indices on the MobileId, Deleted, and UpdatedAt properties, w
       .HasIndex(m => m.Deleted);
 ```
 
-This is still not enough, however.  That's because I've got a lot of records without this information.  So, first I use `Add-Migration Stage2` to create a migration, but don't apply it yet.  I'm going to make some adjustments.  
-
-The first change is to ensure that the `UpdatedAt` field is correctly updated irrespective of how the change to the row is made.  I do this with a trigger:
+Next I use `Add-Migration Stage2` to create a migration, but don't apply it yet.  I'm going to make some adjustments.  The first thing I have to do is to remove the calls to `.UpdateData()` that update the records that I seeded.  I'm going to bulk update the records with a single bit of SQL later on.  However, the first change I need to make is to ensure that the `UpdatedAt` field is correctly updated irrespective of how the change to the row is made.  I do this with a trigger:
 
 ```csharp
   migrationBuilder.Sql(@"
@@ -204,7 +202,7 @@ The first change is to ensure that the `UpdatedAt` field is correctly updated ir
   ");
 ```
 
-The initial value of the property is already set to `GETUTCDATE()` when inserted, so I only need to adjust the value if the row has been updated. The second change (and it must follow the trigger) is to update any row that does not have a the mobile fields set.  Since `UpdatedAt` is nullable, I can assume that any field that has a null `UpdatedAt` has not been adjusted, and the adjustment can be made.  Note that I only have to update the `MobileId` and the `UpdatedAt` fields - the `Version` and `Deleted` fields are already handled by the database.
+The default value of the `UpdatedAt` property is already set to `GETUTCDATE()` when a record is inserted, so I only need to adjust the value if the row has been updated. The second change (and it must follow the trigger) is to update all the rows to ensure that the mobile properties are set.  Since `UpdatedAt` is nullable, I can assume that any field that has a null `UpdatedAt` has not been adjusted.
 
 ```csharp
   migrationBuilder.Sql(@"
@@ -216,17 +214,17 @@ The initial value of the property is already set to `GETUTCDATE()` when inserted
   ");
 ```
 
-Finally, I remove all those calls to `migrationBuilder.UpdateData()` as those are not needed since I am bulk-updating all records.  This makes the migration much smaller (and much faster as well).
+This makes the migration much smaller (and much faster as well).
 
 > **Tip**
 > Don't forget to update the `Down()` method in your migration to drop the trigger as well!
 
 At this point, you can run `Update-Database` to udpate the database.  Then peek at the data to make sure everything is set up properly.  I'm not a solid SQL person, so getting the specific calls took me a few attempts to get right.  I basically used the SQL Server console to run SQL commands inside a transaction until I got it right.  The transaction allowed me to roll back my changes if I screwed up (which I did - a few times!)
 
-You can see the code thus far [in the `stage2` tag](https://github.com/adrianhall/zumo-intid-server/releases/tag/stage2) on the GitHub repository.  You should definitely run the application and make sure you can still make edits tot he dataset.  Also use the SQL Server Object Explorer to make sure that "the right thing" happens when you edit a record.  The `UpdatedAt` field and `Version` fields should be updated, and the `MobileId` field should not be updated.
+You can see the code thus far [in the `stage2` tag](https://github.com/adrianhall/zumo-intid-server/releases/tag/stage2) on the GitHub repository.  You should definitely run the application and make sure you can still make edits to the dataset.  Also use the SQL Server Object Explorer to make sure that "the right thing" happens when you edit a record.  The `UpdatedAt` field and `Version` fields should be updated, and the `MobileId` field should not be updated.
 
 > **Bonus**
-> Now that you have "soft-delete", you should do the following to your web application:
+> Now that you have "soft-delete" on the dataset, you should update the web application:
 >
 > * Update the `Index` page to filter for `.Where(m => !m.Deleted)`.
 > * Update the `Delete` post action to set the `Deleted` property to true instead.
@@ -236,7 +234,7 @@ You can see the code thus far [in the `stage2` tag](https://github.com/adrianhal
 
 ## Stage 3: Mobile Table Controllers
 
-Now that I have a database with a mobile-compatible table, I can work on creating the table controller.  For this project, that means going through all four steps:
+Now that I have a database with a mobile-compatible table, I can work on creating the table controller.  For this project, that means going through all four steps for a mobile datasync service:
 
 * Update the web project to bring in the Azure Mobile Apps libraries.
 * Create a model entity based on `ITableData`.
@@ -339,12 +337,12 @@ This model has all the data properties from the original database model plus the
 > **Can't I use Automapper?**
 > Yes, of course you can use Automapper.  I tend to skip using Automapper in favor of coding explicit conversions.  If you use Automapper, then you will need to do adjustments to do the conversions for you in the right places.
 
-Next, I need to write a repository.  The repository pattern is [relatively easy](https://github.com/Azure/azure-mobile-apps/blob/6.0.7/sdk/dotnet/src/Microsoft.AspNetCore.Datasync.Abstractions/Interfaces/IRepository.cs).  There are also several versions already created, but those don't work directly for this project because they all take something that implements `ITableData` and the database model does not follow that.  We can, however, use [the `EntityTableRepository{T}` class](https://github.com/Azure/azure-mobile-apps/blob/6.0.7/sdk/dotnet/src/Microsoft.AspNetCore.Datasync.EFCore/EntityTableRepository.cs) as a model and just adjust it for our needs.
+Next, I need to write a repository.  The repository pattern is [relatively easy](https://github.com/Azure/azure-mobile-apps/blob/6.0.7/sdk/dotnet/src/Microsoft.AspNetCore.Datasync.Abstractions/Interfaces/IRepository.cs).  There are also several versions already created, but those don't work directly for this project because they all take something that implements `ITableData` and the database model does not follow that.  I can, however, use [the `EntityTableRepository{T}` class](https://github.com/Azure/azure-mobile-apps/blob/6.0.7/sdk/dotnet/src/Microsoft.AspNetCore.Datasync.EFCore/EntityTableRepository.cs) as an example and just adjust it for my needs.
 
 In this case:
 
-* We'll make a repository that is explicitly dependent on the mobile model.
-* Each method will convert to/from the database model before returning data.
+* I'll make a repository that is explicitly dependent on the mobile model.
+* Each method in the IRepository interface will convert to/from the database model before storing or returning data.
 
 First off, let's take a look at the head of the new repository:
 
@@ -395,7 +393,7 @@ Reading is relatively simple:
   }
 ```
 
-One of the notes about writing repositories is that entities must be "disconnected from the store."  This means that if I change the return type after returning from a repository method, it should not change the underlying store.  I accomplish this as part of creating the `MobileMovie`.  The data is automatically disconnected since I copy it into a new object.
+One of the notes about writing repositories is that entities must be "disconnected from the store."  This means that if I change the object that is returned after returning from a repository method, it should not change the underlying store.  I accomplish this as part of creating the `MobileMovie`.  The data is automatically disconnected since I copy it into a new object.
 
 I'm not going to show off all three of the write operations (Create, Delete, Replace).  Instead, I'm going to focus on one of them.  You can go check out [the source code](https://github.com/adrianhall/zumo-intid-server/releases/tag/stage3) to see the changes I made to the other two.  Let's focus on the create operation:
 
