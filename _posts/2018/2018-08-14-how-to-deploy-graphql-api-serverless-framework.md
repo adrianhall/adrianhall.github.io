@@ -5,7 +5,7 @@ categories:
 tags:
   - GraphQL
   - "Serverless Framework"
-  - Deloyment
+  - Deployment
 ---
 
 In previous posts, we’ve explored how to deploy a GraphQL service based on [AWS AppSync] and Amazon DynamoDB using [AWS CloudFormation]. The articles reinforce how automatic and repeatable deployments are central to moving towards a DevOps mindset.
