@@ -1,8 +1,3 @@
-@use "sass:list";
-@use "sass:map";
-@use "sass:math";
-@use "sass:meta";
-
 /// Syntax Normalization
 /// ====================
 /// Susy is divided into two layers:
@@ -61,42 +56,42 @@
 ) {
   // Spread
   @each $setting in ('spread', 'container-spread') {
-    $value: map.get($config, $setting);
+    $value: map-get($config, $setting);
 
     @if $value {
       $value: susy-normalize-spread($value);
-      $config: map.merge($config, ($setting: $value));
+      $config: map-merge($config, ($setting: $value));
     }
   }
 
   // Columns
-  $columns: map.get($config, 'columns');
+  $columns: map-get($config, 'columns');
 
   @if $columns {
     $columns: susy-normalize-columns($columns, $context);
-    $config: map.merge($config, ('columns': $columns));
+    $config: map-merge($config, ('columns': $columns));
   }
 
   @if not $columns {
-    $map: meta.type-of($context) == 'map';
-    $columns: if($map, map.get($context, 'columns'), null);
+    $map: type-of($context) == 'map';
+    $columns: if($map, map-get($context, 'columns'), null);
     $columns: $columns or susy-get('columns');
   }
 
   // Span
-  $span: map.get($config, 'span');
+  $span: map-get($config, 'span');
 
   @if $span {
     $span: susy-normalize-span($span, $columns);
-    $config: map.merge($config, ('span': $span));
+    $config: map-merge($config, ('span': $span));
   }
 
   // Location
-  $location: map.get($config, 'location');
+  $location: map-get($config, 'location');
 
   @if $location {
     $location: susy-normalize-location($span, $location, $columns);
-    $config: map.merge($config, ('location': $location));
+    $config: map-merge($config, ('location': $location));
   }
 
   @return $config;
@@ -108,7 +103,7 @@
 // --------------
 /// Normalize `span` shorthand for Su.
 /// Su span syntax allows an explicit length (e.g. `3em`),
-/// math.is-unitless column-span number (e.g. `3` columns),
+/// unitless column-span number (e.g. `3` columns),
 /// or an explicit list of columns (e.g. `(3 5 8)`).
 ///
 /// Susy span syntax also allows the `all` keyword,
@@ -129,7 +124,7 @@
   $columns: susy-get('columns')
 ) {
   @if ($span == 'all') {
-    @return list.length($columns);
+    @return length($columns);
   }
 
   @return $span;
@@ -142,7 +137,7 @@
 /// Normalize `column` shorthand for Su.
 /// Su column syntax only allows column lists (e.g. `120px 1 1 1 120px`).
 ///
-/// Susy span syntax also allows a math.is-unitless `slice` number (e.g `of 5`),
+/// Susy span syntax also allows a unitless `slice` number (e.g `of 5`),
 /// which will be converted to a slice of the context
 /// in normalization.
 ///
@@ -150,7 +145,7 @@
 ///
 /// @param {list | integer} $columns -
 ///   List of available columns,
-///   or math.is-unitless integer representing a slice of
+///   or unitless integer representing a slice of
 ///   the available context.
 /// @param {map | null} $context [null] -
 ///   Map of Susy configuration settings to use as global reference,
@@ -167,17 +162,17 @@
 ) {
   $context: $context or susy-settings();
 
-  @if meta.type-of($columns) == 'list' {
+  @if type-of($columns) == 'list' {
     @return _susy-flatten($columns);
   }
 
-  @if (meta.type-of($columns) == 'number') and (math.is-unitless($columns)) {
+  @if (type-of($columns) == 'number') and (unitless($columns)) {
     $span: $columns;
-    $context: map.get($context, 'columns');
-    $symmetrical: susy-repeat(list.length($context), list.nth($context, 1));
+    $context: map-get($context, 'columns');
+    $symmetrical: susy-repeat(length($context), nth($context, 1));
 
     @if ($context == $symmetrical) {
-      @return susy-repeat($span, list.nth($context, 1));
+      @return susy-repeat($span, nth($context, 1));
     } @else {
       $actual: 'of `#{$span}`';
       $columns: 'grid-columns `#{$context}`';
@@ -221,7 +216,7 @@
     'wider': 1,
   );
 
-  @return map.get($normal-spread, $spread) or $spread;
+  @return map-get($normal-spread, $spread) or $spread;
 }
 
 
@@ -254,7 +249,7 @@
   $location,
   $columns
 ) {
-  $count: list.length($columns);
+  $count: length($columns);
   $normal-locations: (
     'first': 1,
     'alpha': 1,
@@ -262,5 +257,5 @@
     'omega': $count - $span + 1,
   );
 
-  @return map.get($normal-locations, $location) or $location;
+  @return map-get($normal-locations, $location) or $location;
 }

@@ -1,6 +1,3 @@
-@use "sass:map";
-@use "sass:meta";
-
 //////////////////////////////
 // Default Variables
 //////////////////////////////
@@ -31,7 +28,9 @@ $breakpoint: () !default;
 @import "helpers";
 @import "parsers";
 @import "no-query";
+
 @import "respond-to";
+
 @import "legacy-settings";
 
 //////////////////////////////
@@ -46,11 +45,11 @@ $breakpoint: () !default;
 
   $breakpoint: breakpoint($query, false);
 
-  $query-string: map.get($breakpoint, 'query');
-  $query-fallback: map.get($breakpoint, 'fallback');
+  $query-string: map-get($breakpoint, 'query');
+  $query-fallback: map-get($breakpoint, 'fallback');
 
-  $private-breakpoint-context-holder: map.get($breakpoint, 'context holder') !global;
-  $private-breakpoint-query-count: map.get($breakpoint, 'query count') !global;
+  $private-breakpoint-context-holder: map-get($breakpoint, 'context holder') !global;
+  $private-breakpoint-query-count: map-get($breakpoint, 'query count') !global;
 
   // Allow for an as-needed override or usage of no query fallback.
   @if $no-query != false {
@@ -70,7 +69,7 @@ $breakpoint: () !default;
 
   @if breakpoint-get('no query fallbacks') != false or breakpoint-get('no queries') == true {
 
-    $type: meta.type-of(breakpoint-get('no query fallbacks'));
+    $type: type-of(breakpoint-get('no query fallbacks'));
     $print: false;
 
     @if ($type == 'bool') {
@@ -91,7 +90,7 @@ $breakpoint: () !default;
 
     // Write Fallback
     @if ($query-fallback != false) and ($print == true) {
-      $type-fallback: meta.type-of($query-fallback);
+      $type-fallback: type-of($query-fallback);
 
       @if ($type-fallback != 'bool') {
         #{$query-fallback} & {

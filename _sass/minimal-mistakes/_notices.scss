@@ -1,5 +1,3 @@
-@use "sass:color";
-
 /* ==========================================================================
    NOTICE TEXT BLOCKS
    ========================================================================== */
@@ -19,7 +17,7 @@
   font-family: $global-font-family;
   font-size: $type-size-6 !important;
   text-indent: initial; /* override*/
-  background-color: color.mix(#fff, $notice-color, 90%);
+  background-color: mix(#fff, $notice-color, 90%);
   border-radius: $border-radius;
   box-shadow: 0 1px 1px rgba($notice-color, 0.25);
 
@@ -50,12 +48,12 @@
     color: $notice-color;
 
     &:hover {
-      color: color.mix(#000, $notice-color, 40%);
+      color: mix(#000, $notice-color, 40%);
     }
   }
 
   code {
-    background-color: color.mix(#fff, $notice-color, 95%)
+    background-color: mix(#fff, $notice-color, 95%)
   }
 
   ul {

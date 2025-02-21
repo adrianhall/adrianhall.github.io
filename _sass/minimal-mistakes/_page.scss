@@ -1,5 +1,3 @@
-@use "sass:color";
-
 /* ==========================================================================
    SINGLE PAGE/POST
    ========================================================================== */
@@ -288,7 +286,7 @@
   margin-bottom: 8px;
   padding: 5px 10px;
   text-decoration: none;
-  border: 1px solid color.mix(#000, $border-color, 25%);
+  border: 1px solid mix(#000, $border-color, 25%);
   border-radius: $border-radius;
 
   &:hover {
@@ -321,11 +319,11 @@
 
 .taxonomy__title {
   margin-bottom: 0.5em;
-  color: color.adjust($text-color, $lightness: 60%);
+  color: lighten($text-color, 60%);
 }
 
 .taxonomy__count {
-  color: color.adjust($text-color, $lightness: 50%);
+  color: lighten($text-color, 50%);
 }
 
 .taxonomy__index {
@@ -358,7 +356,7 @@
 .back-to-top {
   display: block;
   clear: both;
-  color: color.adjust($text-color, $lightness: 50%);
+  color: lighten($text-color, 50%);
   font-size: 0.6em;
   text-transform: uppercase;
   text-align: right;

@@ -1,8 +1,3 @@
-@use "sass:list";
-@use "sass:map";
-@use "sass:math";
-@use "sass:meta";
-
 // Sass Utilities
 // ==============
 // - Susy Error Output Override [variable]
@@ -66,25 +61,25 @@ $_susy-error-output-override: false !default;
 @function _su-is-comparable(
   $lengths...
 ) {
-  $first: list.nth($lengths, 1);
+  $first: nth($lengths, 1);
 
-  @if (list.length($lengths) == 1) {
-    @return if(math.is-unitless($first), 'fluid', 'static');
+  @if (length($lengths) == 1) {
+    @return if(unitless($first), 'fluid', 'static');
   }
 
-  @for $i from 2 through list.length($lengths) {
-    $comp: list.nth($lengths, $i);
+  @for $i from 2 through length($lengths) {
+    $comp: nth($lengths, $i);
 
-    $fail: not math.compatible($first, $comp);
-    $fail: $fail or (math.is-unitless($first) and not math.is-unitless($comp));
-    $fail: $fail or (math.is-unitless($comp) and not math.is-unitless($first));
+    $fail: not comparable($first, $comp);
+    $fail: $fail or (unitless($first) and not unitless($comp));
+    $fail: $fail or (unitless($comp) and not unitless($first));
 
     @if $fail {
       @return false;
     }
   }
 
-  @return if(math.is-unitless($first), 'fluid', 'static');
+  @return if(unitless($first), 'fluid', 'static');
 }
 
 
@@ -118,17 +113,17 @@ $_susy-error-output-override: false !default;
   $value
 ) {
   $unit: $value * 0;
-  $has: map.get($map, $unit) or 0;
+  $has: map-get($map, $unit) or 0;
 
   @if ($has == 0) {
     @each $try, $could in $map {
-      $match: math.compatible($try, $value);
+      $match: comparable($try, $value);
       $unit: if($match, $try, $unit);
       $has: if($match, $could, $has);
     }
   }
 
-  @return map.merge($map, ($unit: $has + $value));
+  @return map-merge($map, ($unit: $has + $value));
 }
 
 
@@ -153,17 +148,17 @@ $_susy-error-output-override: false !default;
   $flat: ();
 
   // Don't iterate over maps
-  @if (meta.type-of($list) == 'map') {
+  @if (type-of($list) == 'map') {
     @return $list;
   }
 
   // Iterate over lists (or single items)
   @each $item in $list {
-    @if (meta.type-of($item) == 'list') {
+    @if (type-of($item) == 'list') {
       $item: _susy-flatten($item);
-      $flat: list.join($flat, $item);
+      $flat: join($flat, $item);
     } @else {
-      $flat: list.append($flat, $item);
+      $flat: append($flat, $item);
     }
   }
 

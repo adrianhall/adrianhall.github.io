@@ -1,7 +1,3 @@
-@use "sass:list";
-@use "sass:map";
-@use "sass:meta";
-
 //////////////////////////////
 // Import Parser Pieces
 //////////////////////////////
@@ -11,7 +7,7 @@
 @import "parsers/triple";
 @import "parsers/resolution";
 
-$Memo-Exists: meta.function-exists("memo-get") and meta.function-exists("memo-set");
+$Memo-Exists: function-exists(memo-get) and function-exists(memo-set);
 
 //////////////////////////////
 // Breakpoint Function
@@ -45,16 +41,16 @@ $Memo-Exists: meta.function-exists("memo-get") and meta.function-exists("memo-se
 
 
     // Test to see if it's a comma-separated list
-    $or-list: if(list.separator($query) == 'comma', true, false);
+    $or-list: if(list-separator($query) == 'comma', true, false);
 
 
     @if ($or-list == false and breakpoint-get('legacy syntax') == false) {
       $query-string: breakpoint-parse($query);
     }
     @else {
-      $length: list.length($query);
+      $length: length($query);
 
-      $last: list.nth($query, $length);
+      $last: nth($query, $length);
       $query-fallback: breakpoint-no-query($last);
 
       @if ($query-fallback != false) {
@@ -65,7 +61,7 @@ $Memo-Exists: meta.function-exists("memo-get") and meta.function-exists("memo-se
         $mq: ();
 
         @for $i from 1 through $length {
-          $mq: list.append($mq, list.nth($query, $i), comma);
+          $mq: append($mq, nth($query, $i), comma);
         }
 
         $query-string: breakpoint-parse($mq);
@@ -73,7 +69,7 @@ $Memo-Exists: meta.function-exists("memo-get") and meta.function-exists("memo-se
       @else {
         $query-string: '';
         @for $i from 1 through $length {
-          $query-string: $query-string + if($i == 1, '', ', ') + breakpoint-parse(list.nth($query, $i));
+          $query-string: $query-string + if($i == 1, '', ', ') + breakpoint-parse(nth($query, $i));
         }
       }
     }
@@ -83,15 +79,15 @@ $Memo-Exists: meta.function-exists("memo-get") and meta.function-exists("memo-se
         'context holder': $private-breakpoint-context-holder,
         'query count': $private-breakpoint-query-count
     );
-    @if list.length($contexts) > 0 and list.nth($contexts, 1) != false {
+    @if length($contexts) > 0 and nth($contexts, 1) != false {
       @if $query-fallback != false {
         $context-setter: private-breakpoint-set-context('no-query', $query-fallback);
       }
       $context-map: ();
       @each $context in $contexts {
-        $context-map: map.merge($context-map, ($context: breakpoint-get-context($context)));
+        $context-map: map-merge($context-map, ($context: breakpoint-get-context($context)));
       }
-      $return: map.merge($return, (context: $context-map));
+      $return: map-merge($return, (context: $context-map));
     }
 
     // Reset Global Private Breakpoint Context
@@ -135,12 +131,12 @@ $Memo-Exists: meta.function-exists("memo-get") and meta.function-exists("memo-se
   $first: true;
 
   @each $feature in $query-holder {
-    $length: list.length($feature);
+    $length: length($feature);
 
     // Parse a single feature
     @if ($length == 1) {
       // Feature is currently a list, grab the actual value
-      $feature: list.nth($feature, 1);
+      $feature: nth($feature, 1);
 
       // Media Type must by convention be the first item, so it's safe to flat override $query-print, which right now should only be the default media type
       @if (breakpoint-is-media($feature)) {
@@ -169,8 +165,8 @@ $Memo-Exists: meta.function-exists("memo-get") and meta.function-exists("memo-se
         // If it's a string/number pair,
         // we check to see if one is a single-string value,
         // then we parse it as a normal double
-        $alpha: list.nth($feature, 1);
-        $beta: list.nth($feature, 2);
+        $alpha: nth($feature, 1);
+        $beta: nth($feature, 2);
         @if breakpoint-single-string($alpha) or breakpoint-single-string($beta) {
           $parsed: breakpoint-parse-single($alpha, $empty-media, $first);
           $query-print: '#{$query-print} #{$parsed}';
@@ -201,18 +197,18 @@ $Memo-Exists: meta.function-exists("memo-get") and meta.function-exists("memo-se
   // Loop through each feature that's been detected so far and append 'false' to the the value list to increment their counters
   @each $f, $v in $private-breakpoint-context-holder {
     $v-holder: $v;
-    $length: list.length($v-holder);
-    @if list.length($v-holder) < $private-breakpoint-query-count {
+    $length: length($v-holder);
+    @if length($v-holder) < $private-breakpoint-query-count {
       @for $i from $length to $private-breakpoint-query-count {
         @if $f == 'media' {
-          $v-holder: list.append($v-holder, breakpoint-get('default media'));
+          $v-holder: append($v-holder, breakpoint-get('default media'));
         }
         @else {
-          $v-holder: list.append($v-holder, false);
+          $v-holder: append($v-holder, false);
         }
       }
     }
-    $private-breakpoint-context-holder: map.merge($private-breakpoint-context-holder, ($f: $v-holder)) !global;
+    $private-breakpoint-context-holder: map-merge($private-breakpoint-context-holder, ($f: $v-holder)) !global;
   }
 
   @return $query-print;
