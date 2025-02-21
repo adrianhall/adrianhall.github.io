@@ -1,3 +1,9 @@
+@use "sass:list";
+@use "sass:map";
+@use "sass:math";
+@use "sass:meta";
+@use "sass:string";
+
 /// Grid Math Engine
 /// ================
 /// The `su` functions give you direct access to the math layer,
@@ -23,8 +29,6 @@
 /// @ignore _su-calc-sum
 /// @ignore _su-needs-calc-output
 
-
-
 // Su Span
 // -------
 /// Calculates and returns a CSS-ready span width,
@@ -32,7 +36,7 @@
 /// a low-level version of `susy-span`,
 /// with all of the logic and none of the syntax sugar.
 ///
-/// - Grids defined with unitless numbers will return `%` values.
+/// - Grids defined with math.is-unitless numbers will return `%` values.
 /// - Grids defined with comparable units
 ///   will return a value in the units provided.
 /// - Grids defined with a mix of units,
@@ -72,8 +76,8 @@
   $gutters: su-valid-gutters($gutters);
   $spread: su-valid-spread($spread);
 
-  @if (type-of($span) == 'number') {
-    @if (not unitless($span)) {
+  @if (meta.type-of($span) == 'number') {
+    @if (not math.is-unitless($span)) {
       @return $span;
     }
 
@@ -87,10 +91,10 @@
 
   $span-width: _su-sum($span, $gutters, $spread, $validate: false);
 
-  @if unitless($span-width) {
+  @if math.is-unitless($span-width) {
     $container-spread: su-valid-spread($container-spread);
     $container: _su-sum($columns, $gutters, $container-spread, $validate: false);
-    @return percentage($span-width / $container);
+    @return math.percentage(math.div($span-width, $container));
   }
 
   @return $span-width;
@@ -105,7 +109,7 @@
 /// a low-level version of `susy-gutter`,
 /// with all of the logic and none of the syntax sugar.
 ///
-/// - Grids defined with unitless numbers will return `%` values.
+/// - Grids defined with math.is-unitless numbers will return `%` values.
 /// - Grids defined with comparable units
 ///   will return a value in the units provided.
 /// - Grids defined with a mix of units,
@@ -130,8 +134,8 @@
   $gutters,
   $container-spread
 ) {
-  @if (type-of($gutters) == 'number') {
-    @if ($gutters == 0) or (not unitless($gutters)) {
+  @if (meta.type-of($gutters) == 'number') {
+    @if ($gutters == 0) or (not math.is-unitless($gutters)) {
       @return $gutters;
     }
   }
@@ -141,7 +145,7 @@
   }
 
   $container: _su-sum($columns, $gutters, $container-spread);
-  @return percentage($gutters / $container);
+  @return math.percentage(math.div($gutters, $container));
 }
 
 
@@ -178,17 +182,17 @@
     $location: su-valid-location($span, $location, $columns);
   }
 
-  $floor: floor($span);
+  $floor: math.floor($span);
   $sub-columns: ();
 
   @for $i from $location to ($location + $floor) {
-    $sub-columns: append($sub-columns, nth($columns, $i));
+    $sub-columns: list.append($sub-columns, list.nth($columns, $i));
   }
 
   @if $floor != $span {
     $remainder: $span - $floor;
     $column: $location + $floor;
-    $sub-columns: append($sub-columns, nth($columns, $column) * $remainder);
+    $sub-columns: list.append($sub-columns, list.nth($columns, $column) * $remainder);
   }
 
   @return $sub-columns;
@@ -233,7 +237,7 @@
     $column-sum: $column-sum + $column;
   }
 
-  $gutter-sum: (ceil(length($columns)) + $spread) * $gutters;
+  $gutter-sum: (math.ceil(list.length($columns)) + $spread) * $gutters;
   $total: if(($gutter-sum > 0), $column-sum + $gutter-sum, $column-sum);
 
   @return $total;
@@ -287,10 +291,10 @@
   $context: _su-calc-sum($columns, $gutters, $container-spread, not 'validate');
 
   // Fixed and fluid
-  $fixed-span: map-get($span, 'fixed');
-  $fluid-span: map-get($span, 'fluid');
-  $fixed-context: map-get($context, 'fixed');
-  $fluid-context: map-get($context, 'fluid');
+  $fixed-span: map.get($span, 'fixed');
+  $fluid-span: map.get($span, 'fluid');
+  $fixed-context: map.get($context, 'fixed');
+  $fluid-context: map.get($context, 'fluid');
 
   $calc: '#{$fixed-span}';
   $fluid-calc: '(100% - #{$fixed-context})';
@@ -309,7 +313,7 @@
     $calc: '#{$calc + $fluid-calc}';
   }
 
-  @return calc(#{unquote($calc)});
+  @return calc(#{string.unquote($calc)});
 }
 
 
@@ -352,11 +356,11 @@
   $calc: null;
 
   // Gutters
-  $gutters:  $gutters * (length($columns) + $spread);
+  $gutters:  $gutters * (list.length($columns) + $spread);
 
   // Columns
-  @each $col in append($columns, $gutters) {
-    @if unitless($col) {
+  @each $col in list.append($columns, $gutters) {
+    @if math.is-unitless($col) {
       $fluid: $fluid + $col;
     } @else {
       $fixed: _su-map-add-units($fixed, $col);
@@ -425,8 +429,8 @@
     $gutters: su-valid-gutters($gutters);
   }
 
-  $has-gutter: if((length($span) > 1) or ($spread >= 0), true, false);
-  $check: if($has-gutter, append($span, $gutters), $span);
+  $has-gutter: if((list.length($span) > 1) or ($spread >= 0), true, false);
+  $check: if($has-gutter, list.append($span, $gutters), $span);
   $safe-span: _su-is-comparable($check...);
 
   @if ($safe-span == 'static') {

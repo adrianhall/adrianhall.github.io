@@ -1,3 +1,5 @@
+@use "sass:color";
+
 /* ==========================================================================
    UTILITY CLASSES
    ========================================================================== */
@@ -456,12 +458,12 @@ body:hover .visually-hidden button {
    ========================================================================== */
 
 .footnote {
-  color: mix(#fff, $gray, 25%);
+  color: color.mix(#fff, $gray, 25%);
   text-decoration: none;
 }
 
 .footnotes {
-  color: mix(#fff, $gray, 25%);
+  color: color.mix(#fff, $gray, 25%);
 
   ol,
   li,
