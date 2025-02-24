@@ -5,7 +5,7 @@ locale                   : "en-US"
 title                    : "Because Developers are Awesome"
 title_separator          : "-"
 name                     : &name "Adrian Hall"
-description              : &description "Musings about cloud and mobile development."
+description              : &description "Musings about cloud development."
 url                      : &url "https://adrianhall.github.io"
 baseurl                  : ""
 repository               : "adrianhall/adrianhall.github.io"
@@ -45,7 +45,7 @@ twitter:
 author:
   name             : *name
   avatar           : "/assets/images/adrian-hall.jpg"
-  bio              : "Microsoft Program Manager by day; Mobile Developer by night"
+  bio              : "Product Architect by day; Open-source developer by night"
   location         : "Kirkland, WA"
   email            : "photoadrian@outlook.com"
   links:
