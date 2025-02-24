@@ -46,7 +46,7 @@ author:
   name             : *name
   avatar           : "/assets/images/adrian-hall.jpg"
   bio              : "Product Architect by day; Open-source developer by night"
-  location         : "Kirkland, WA"
+  location         : "Redmond, WA"
   email            : "photoadrian@outlook.com"
   links:
     - label: "Website"

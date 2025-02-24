@@ -1,7 +1,7 @@
 ---
 title:  "TypeScript, ES Modules, and root-relative imports"
 date:   2024-07-10
-categories: TypeScript
+categories: Devtools
 tags:
     - TypeScript
     - Tips

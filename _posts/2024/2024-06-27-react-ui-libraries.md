@@ -7,14 +7,14 @@ tags:
   - Comparison
 ---
 
-As I mentioned in my [last post]({% post_url 2024/2024-06-25-react-state-mgmt %}), I've been away from React development for a while, and I'm intending on writing a web application.  Thus far, my tech stack is:
+As I mentioned in my [last post]({% post_url 2024/2024-06-25-react-state-mgmt %}), I've been away from React development for a while, and I'm intending on writing a web application. I'm comparing the various libraries that I can use for my application.  In this post, I'm going to be comparing UI component libraries.
+
+Thus far, my tech stack is:
 
 * Base web framework: [React](https://react.dev)
 * Frontend tooling: [Vite](https://vitejs.dev)
 * Hosting: [Azure Static Web Apps](https://aka.ms/swa)
 * State management: [Redux Toolkit](https://redux-toolkit.js.org)
-
-Next up, I want to take a look at UI component libraries.  
 
 React UI component libraries are collections of ready-to-use UI elements that help accelerate your application development. There is always the possibility of using primitive web UI design sysems like [Bootstrap](https://getbootstrap.com/) or [Tailwind](https://tailwindcss.com/).  However, I'm then left with writing a whole bunch of HTML and CSS myself, turning them into React components, and then using those to construct my UI.  I much prefer to cut out the basic stuff and jump straight to React components (knowing that I can always revert down to HTML/CSS and my own components if necessary).
 
