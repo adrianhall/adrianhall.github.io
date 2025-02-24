@@ -82,9 +82,9 @@ amplify update auth
 
 The answers to the questions are the same, except for this one:
 
-```
+{% highlight text %}
 ? Do you want to enable 3rd party authentication providers in your identity pool (Use arrow keys)
-```
+{% endhighlight %}
 
 Answer **Yes** here. Then select **Facebook**. Cut and paste the App ID into the appropriate slot.
 

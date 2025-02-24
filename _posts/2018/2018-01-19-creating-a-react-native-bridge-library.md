@@ -12,9 +12,9 @@ But what if you want to create a bridge library of your own? That’s a whole ot
 
 Scaffolding a bridge library is different from scaffolding an app. Fortunately, there is an easy tool to do the scaffolding. Unfortunately, you have to install it:
 
-```bash
+{% highlight bash %}
 [sudo] npm install -g react-native-create-library
-```
+{% endhighlight %}
 
 You can use something like Visual Studio Code for all the code, but make sure you have the appropriate plugins so you get syntax highlighting and error detection. You will also want the latest versions of Android Studio and Xcode on your system. If you are doing a Windows library version, you will also want the .NET Core compiler on your system. Using a Mac is the only way to go here. Don’t even attempt building a bridge library on a PC.
 
@@ -22,9 +22,9 @@ You can use something like Visual Studio Code for all the code, but make sure yo
 
 My particular library is going to be called `react-native-secure-keystore`. I want Android and iOS versions (sorry Windows) and the idea is to have a key-value store that is secured by your fingerprint. I use the following command line to create the library:
 
-```bash
+{% highlight bash %}
 react-native-create-library --package-identifier com.shellmonger.reactnative --platforms android,ios secure-keystore
-```
+{% endhighlight %}
 
 This is not quite right, but it’s close. Here is the tree structure that is created:
 
@@ -37,13 +37,13 @@ There are a couple of points here.
 
 These problems are easily fixed:
 
-```bash
+{% highlight bash %}
 $ mv secure-keystore react-native-secure-keystore
 $ cd react-native-secure-keystore
 $ git init
 $ git add -A
 $ git commit -m "Initial Commit"
-```
+{% endhighlight %}
 
 It would also be a good idea at this point to create a GitHub repository and add the GitHub repository as a remote. Also, do the other things you would normally do when created an npm package:
 
@@ -59,7 +59,7 @@ In this example, there is an iOS version and an Android version. Each of these h
 
 Let’s add a simple method that returns a boolean – true if the device is ready to handle fingerprint authentication, false otherwise. Doing the Android version first, here is the code:
 
-```java
+{% highlight java %}
 package com.shellmonger.reactnative;
 
 import android.hardware.fingerprint.FingerprintManager;
@@ -113,7 +113,7 @@ public class RNSecureKeystoreModule extends ReactContextBaseJavaModule {
     }
   }
 }
-```
+{% endhighlight %}
 
 I generally produce two library files – the one ending in `Module.java` contains just the API being exposed to React. There is another one that contains the actual code. This allows me to test the library separately from the bridge a lot easier.
 
@@ -121,17 +121,17 @@ The `ReactMethod` attribute indicates that the method is exposed to React. It al
 
 Android code may require permissions – there is an `AndroidManifest.xml` file to do that for you. In this case, add the `USE_FINGERPRINT` permission.
 
-```xml
+{% highlight xml %}
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.shellmonger.reactnative">
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
 </manifest>
-```
+{% endhighlight %}
 
 It’s a good idea to open the `android` directory in Android Studio so that all the nice IDE features for Android are at your disposal – things like import auto-complete. If you do this, Android Studio will prompt you for upgrading the project. Don’t do it! This will implement a gradle version that is incompatible with React Native and cause all sorts of problems.
 
 Switching over to the iOS side, I don’t like Objective-C. However, it is a necessary evil when working with bridging libraries, mostly because you cannot compile a static library with Swift. Even if you really want to write your library in Swift, you have to do that and then bridge it into Objective-C. So you might as well go the whole way and write the whole thing in Objective-C. (And yes, I do hope that this changes drastically soon so you can use the more modern languages). Let’s look at our iOS files. Firstly, the `RNSecureKeystore.m` file:
 
-```objc
+{% highlight objc %}
 #import "RNSecureKeystore.h"
 #import <LocalAuthentication/LocalAuthentication.h>
 
@@ -150,7 +150,7 @@ RCT_EXPORT_METHOD(isAvailable:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromi
 }
 
 @end
-```
+{% endhighlight %}
 
 This is (to me, at least) ugly code. However, I’m just copying something I got from [Stack Overflow](https://stackoverflow.com/questions/24158062/how-to-use-touch-id-sensor-in-ios-8) in this instance (much like the Android code from earlier). I don’t need to change anything else.
 
@@ -158,19 +158,19 @@ This is (to me, at least) ugly code. However, I’m just copying something I got
 
 To test a React Native bridge library, it’s generally useful to write a test application. Here is how I do it:
 
-```bash
+{% highlight bash %}
 $ yarn link
 $ react-native init example
 $ cd example
 $ yarn link react-native-secure-keystore
 $ react-native link react-native-secure-keystore
-```
+{% endhighlight %}
 
 The first `yarn link` command registers the local copy of my library with yarn. Then I create a normal React Native app. I’m using `react-native init` instead of `create-react-native-app` because I’m going to link a library. The second `yarn link` links the local copy I registered earlier into the current project. Then I do the `react-native link` command to link all the native code bridges (not just mine).
 
 The next step is to adjust my example app to exercise the new code. The essence of the new code is this:
 
-```typescript
+{% highlight typescript %}
 import SecureKeystore from 'react-native-secure-keystore';
 
 class App extends React.Component {
@@ -192,7 +192,7 @@ class App extends React.Component {
     // Do something with this.state here
   }
 }
-```
+{% endhighlight %}
 
 The `isAvailable` constant should be a boolean. Since all bridge methods are async, I set it in state using an async lifecycle event handler.
 

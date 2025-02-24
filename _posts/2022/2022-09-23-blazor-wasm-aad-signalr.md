@@ -15,23 +15,23 @@ Let's take a look at the unauthenticated version first.  I need to integrate Sig
 1. Adding the SignalR NuGet packages to the server project.
 2. Adding services to the `Program.cs`:
 
-    ``` csharp
+    {% highlight csharp %}
     builder.Services.AddSignalR();
     builder.Services.AddResponseCompression(options => {
       options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" });
     });
-    ```
+    {% endhighlight %}
 
 3. Mapping a "hub" in the application builder:
 
-    ```csharp
+    {% highlight csharp %}
     app.UseResponseCompression();
     app.MapHub<GameHub>("/hub");
-    ```
+    {% endhighlight %}
 
 4. Adding a basic hub:
 
-    ```csharp
+    {% highlight csharp %}
     using Microsoft.AspNetCore.SignalR;
 
     namespace cloudmud.Server.Hubs
@@ -49,7 +49,7 @@ Let's take a look at the unauthenticated version first.  I need to integrate Sig
             }
         }
     }
-    ```
+    {% endhighlight %}
 
 I'm expecting that the authentication will provide the username, so it's just a dummy value for now.
 
@@ -57,7 +57,7 @@ I'm expecting that the authentication will provide the username, so it's just a 
 
 After adding the SignalR NuGet packages to the project, all the code is in the `Pages\Index.razor` file:
 
-```csharp
+{% highlight csharp %}
 @page "/"
 @using Microsoft.AspNetCore.SignalR.Client;
 @attribute [AllowAnonymous]
@@ -122,7 +122,7 @@ After adding the SignalR NuGet packages to the project, all the code is in the `
         }
     }
 }
-```
+{% endhighlight %}
 
 You can actually run this - it will work, but without authentication.  Now, let's add some authentication to this!
 
@@ -130,13 +130,13 @@ You can actually run this - it will work, but without authentication.  Now, let'
 
 When you send authorization with a HTTP call, you place it in a header (called `Authorization`).  I can get the authorization token from MSAL via an `IAccessTokenProvider`, which can be injected into the page.  Add the following to the top of the `Index.razor` file:
 
-```csharp
+{% highlight csharp %}
 @inject IAccessTokenProvider TokenProvider
-```
+{% endhighlight %}
 
 I can now write a method that gets the access token.  It's a recipe:
 
-```csharp
+{% highlight csharp %}
 private async Task<string?> GetAccessTokenAsync()
 {
   var tokenResult = await TokenProvider.RequestAccessToken();
@@ -152,11 +152,11 @@ private async Task<string?> GetAccessTokenAsync()
   }
   return null;
 }
-```
+{% endhighlight %}
 
 The only thing that remains is to send the access token with each request.  This is done by adjusting the `HubConnection` to use an access token provider:
 
-```csharp
+{% highlight csharp %}
 protected override async Task OnInitializedAsync()
 {
   hub = new HubConnectionBuilder()
@@ -175,7 +175,7 @@ protected override async Task OnInitializedAsync()
 
   await hub.StartAsync();
 }
-```
+{% endhighlight %}
 
 If you run the app, you will see the authorization header being added to the request:
 
@@ -199,12 +199,12 @@ I want to call your attention to a couple of things:
 
 In my game, I'm going to do a database lookup on the `Context.UserIdentity` to get the "name" of the character being played. In this example, though, I'm going to use the "Name" claim for the username:
 
-```csharp
+{% highlight csharp %}
 private string? Username
 {
   get => Context.User?.Claims?.FirstOrDefault(c => c.Type.Equals("name", StringComparison.OrdinalIgnoreCase))?.Value ?? "-";
 }
-```
+{% endhighlight %}
 
 If you try out the app now, you will see that your messages are echoed back to you with your name.  If another user logs in (to a different web browser), you will see their messages appear with their name as well.  Real-time pub/sub with authentication achieved!
 

@@ -12,15 +12,15 @@ In my last article, I psted about [getting TypeScript working with React Native]
 
 MobX splits its functionality for React and React Native across two packages – the mobx package contains all the non-specific stuff and the mobx-react package contains the bindings for React and React Native:
 
-```bash
+{% highlight bash %}
 yarn add mobx mobx-react
-```
+{% endhighlight %}
 
 ## Step 2: Enable Decorators
 
 MobX uses [JavaScript decorators](https://github.com/wycats/javascript-decorators) to specify how the store is linked up to the components in your React tree. TypeScript supports decorators, which is a good thing. However, you have to enable it. Edit the tsconfig.json file and add the appropriate line:
 
-```json
+{% highlight json %}
 {
     "compilerOptions": {
         "target": "es2015",
@@ -32,7 +32,7 @@ MobX uses [JavaScript decorators](https://github.com/wycats/javascript-decorator
         "noImplicitAny": true
     }
 }
-```
+{% endhighlight %}
 
 Once this is done, you may want to restart Visual Studio Code if you are using it. Visual Studio Code does not generally pick up changes in the `tsconfig.json` file so you may notice some red squiggly lines for decorators until you restart.
 
@@ -40,7 +40,7 @@ Once this is done, you may want to restart Visual Studio Code if you are using i
 
 I’m using a small model file to define the shape of my data. Create a file called `src/models/Note.ts` with the following content:
 
-```typescript
+{% highlight typescript %}
 /**
  * Model for the Note
  */
@@ -51,13 +51,13 @@ export default interface Note {
     createdAt: number,
     updatedAt: number
 }
-```
+{% endhighlight %}
 
 ## Step 4: Write a Store
 
 The observable store is the MobX version of the Flux state store. We can use TypeScript to add type annotations and use the MobX decorators to make the store observable. This is my `src/stores/noteStore.ts` file:
 
-```typescript
+{% highlight typescript %}
 import { observable } from 'mobx';
 import Note from '../models/Note';
 
@@ -111,13 +111,13 @@ newNote('3rd Note', 'some content');
 newNote('4th Note', 'some content');
 
 export default observableNoteStore;
-```
+{% endhighlight %}
 
 ## Step 5: Write some container components
 
 Since this is going to be a master-detail template, I want to write some common pages. For example, I’m going to write a NoteList component that takes a set of items and displays them, and I’m going to create a NoteListPage that wraps the Note List appropriately for a one-pane view of the NoteList. I’ve previously posted about [the NoteList component]({% post_url 2017/2017-08-07-implementing-swipe-right-on-a-react-native-flatlist %}). The `NoteListPage` looks like the following:
 
-```jsx
+{% highlight jsx %}
 import React from 'react';
 import { Platform, StyleSheet, View, ViewStyle } from 'react-native';
 import { observer, inject } from 'mobx-react/native';
@@ -161,7 +161,7 @@ export default class NoteListPage extends React.Component<NoteListPageProperties
         );
     }
 }
-```
+{% endhighlight %}
 
 Line 26 injects the `noteStore` provided by the Provider object (more on that in a minute) into the props for this component. It will be available as `this.props.noteStore`. Line 27 adds code to re-render the component when the observed store changes. The code inside the container component creates a list and links the `onDeleteItem` (which is the swipe-to-delete) to the stores `deleteNote()` method. If I swipe to delete, it will effect a change in the store that will then cause the container to re-render because the observed element (the notes) drive the list. I could also add an `onSelectItem()` to this, but I haven’t added routing to this application yet, and this would be more of a state change than a store change, so it isn’t germane to the MobX functionality.
 
@@ -169,7 +169,7 @@ Line 26 injects the `noteStore` provided by the Provider object (more on that in
 
 In my `index.tsx` file, I need to link the `noteStore` to the stack of React components. This is done with the `Provider` component:
 
-```jsx
+{% highlight jsx %}
 import React from 'react';
 import { StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
 import { Provider } from 'mobx-react/native';
@@ -199,7 +199,7 @@ export default class App extends React.Component<undefined, undefined> {
     );
   }
 }
-```
+{% endhighlight %}
 
 Note that the Provider has an argument (called noteStore) that is assigned the value noteStore. It is important that the argument name is the same as the string value used in the inject statement from Step 5. Your app will replace the NoteListPage in this example. I use this format to design my page container components. I can replace the NoteListPage with NoteListDetail, for example, to ensure that the display is appropriate for what I am trying to do.
 

@@ -28,25 +28,25 @@ These tools work in conjunction with each other so that the code in your code re
 
 Let's take a common issue with JavaScript programs:
 
-```javascript
+{% highlight js %}
 function myFunction(x) {
   if (x == false) {
     doSomething();
   }
 }
-```
+{% endhighlight %}
 
 You might think that this is completely valid JavaScript, so where is the problem?  Well, that `==` has some pretty esoteric matching criteria.  You are expecting a boolean, but the function accepts anything.  Somewhere else in your code, you have the following line:
 
-```javascript
+{% highlight js %}
 myFunction([]);
-```
+{% endhighlight %}
 
 You may be shocked to find out that `doSomething()` is called in this case.  That's because `[] == false` in JavaScript land.  This is what I term a "preventable bug" - it's easy to configure eslint to find this sort of thing and do something about it.  Normally, I'm using TypeScript.  I can add a type to x and I can switch to using `===`.  The triple-eq requires that the types match as well.
 
 TypeScript settings can ensure you have strict type-checking.  Check out the following settings in your `tsconfig.json` file:
 
-```json
+{% highlight json %}
 "strict": true,                                      /* Enable all strict type-checking options. */
 // "noImplicitAny": true,                            /* Enable error reporting for expressions and declarations with an implied 'any' type. */
 // "strictNullChecks": true,                         /* When type checking, take into account 'null' and 'undefined'. */
@@ -66,7 +66,7 @@ TypeScript settings can ensure you have strict type-checking.  Check out the fol
 // "noPropertyAccessFromIndexSignature": true,       /* Enforces using indexed accessors for keys declared using an indexed type. */
 // "allowUnusedLabels": true,                        /* Disable error reporting for unused labels. */
 // "allowUnreachableCode": true,                     /* Disable error reporting for unreachable code. */
-```
+{% endhighlight %}
 
 You should think about enabling a lot of these settings.  For everything else, there is eslint.
 
@@ -74,11 +74,11 @@ You should think about enabling a lot of these settings.  For everything else, t
 
 There are almost always cases where the `eslint` rules cannot be followed, but `eslint` makes you be deliberate about that case.  You can use comments to disable the next line, using the following (as an example)
 
-```javascript
+{% highlight js %}
 /* alerting is allowed here because reasons... */
 /* eslint-disable-next-line no-alert */
 alert('foo');
-```
+{% endhighlight %}
 
 * I always include a specific rule (or rules) that are being disabled.  Being specific is better.
 * I also include a reason for the disabling of the rules.  This ensures that I remember WHY the rule is disabled when I inevitably return to the code later with zero memory of the reason.
@@ -98,15 +98,15 @@ Let's look at each of these in turn.
 
 First step - install the dependencies:
 
-```bash
+{% highlight bash %}
 npm install -D eslint prettier eslint-plugin-prettier eslint-config-prettier
-```
+{% endhighlight %}
 
 Eslint comes with a prompted configuration utility:
 
-```bash
+{% highlight bash %}
 npm init @eslint/config@latest
-```
+{% endhighlight %}
 
 I like to start there.  My default answers are:
 
@@ -118,7 +118,7 @@ I like to start there.  My default answers are:
 
 The only questions here that need thought are the framework (if you are using React or Vue) and browser vs. node.  After these questions, there are a couple of confirmation questions to make changes to your project.  A base `eslint.config.js` file will be created.  I modify this to include prettier and to restrict linting to TypeScript files:
 
-```javascript
+{% highlight js %}
 import globals from "globals";
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
@@ -139,23 +139,23 @@ export default [
   ...tseslint.configs.recommended,
   prettierRecommended,
 ];
-```
+{% endhighlight %}
 
 If you don't want to go through the `npm init` interactive process, you can add the relevant modules to your project:
 
-```bash
+{% highlight bash %}
 npm install -D @eslint/js typescript-eslint
-```
+{% endhighlight %}
 
 Then create the `eslint.config.js` file as above.
 
 Next, move onto configuration of prettier. Both eslint and prettier can use a variety of configuration files.  I prefer the `.config.js` mechanism and try to conform to that where I can.  Here is my `prettier.config.js` file:
 
-```javascript
+{% highlight js %}
 export default {
     // Put your prettier configuration here
 };
-```
+{% endhighlight %}
 
 Yes, that's an empty object.  I'm taking all the defaults!  The defaults are actually reasonable.  If you have a gripe with any of them, you can configure those changes in this file.
 
@@ -172,7 +172,7 @@ For example, you might want to use [eslint-config-standard](https://www.npmjs.co
 
 The JavaScript Standard Style is irrelevant to me though.  I use TypeScript.  The [typescript-eslint](https://typescript-eslint.io/getting-started) package comes with two shared configurations that I can use:
 
-```javascript
+{% highlight js %}
 import globals from "globals";
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
@@ -196,7 +196,7 @@ export default [
   ...tseslint.configs.stylistic,
   prettierRecommended,
 ];
-```
+{% endhighlight %}
 
 There are other shared configurations that `typescript-eslint` provides.  Take a look and decide what works for you.  The more opinionated the configuration, the more likely you are going to get consistent code at the end.
 
@@ -209,7 +209,7 @@ I'm not going to cover creating your own shared configuration.  It involves crea
 
 However, exceptions are easy.  For instance, There is a rule called `@typescript-eslint/array-type`.  It determines if your array types should be `T[]` or `Array<T>`. I prefer `T[]` as the type and I want it to be specific.  I can set this up in my `eslint.config.js` file like this:
 
-```javascript
+{% highlight js %}
 export default [
   {
     files: [
@@ -232,23 +232,23 @@ export default [
     }
   }
 ];
-```
+{% endhighlight %}
 
 Each rule is an array.  The first element is either "off", "warn", or "error".  The second element is the options for the rule, and it can be a number, a string, an array, or an object.  Most rules have options, but it's not required.
 
 Prettier is simpler than eslint.  There are several statements inside the object that correlate to options that you can set.  You can find [the canonical list of options](https://prettier.io/docs/en/options) on their website.  Prettier also has a great integration with `.editorconfig`, so you can set up your preferred settings in either file.  I like the defaults that prettier brings, so the only thing I set is how semi-colons are treated (see my previous comments on my love of semi-colons).  My `prettier.config.js` file generally looks like this:
 
-```javascript
+{% highlight js %}
 export default {
     semi: true
 };
-```
+{% endhighlight %}
 
 ### 3. Add some scripts so you can run the tools
 
 Ideally, I want eslint and prettier to be run automatically when I run my build.  I added an additional script to my `package.json`:
 
-```json
+{% highlight json %}
   "scripts": {
     "build": "run-s build:format build:typecheck build:lint build:compile",
     "build:format": "prettier -w ./src",
@@ -257,7 +257,7 @@ Ideally, I want eslint and prettier to be run automatically when I run my build.
     "build:compile": "swc ./src --out-dir dist --strip-leading-paths",
     "clean": "rimraf -fr dist"
   },
-```
+{% endhighlight %}
 
 The new script is called `build:lint` and it's run as part of the build process.  
 
@@ -265,7 +265,7 @@ The new script is called `build:lint` and it's run as part of the build process.
 
 To test my new configuration, I altered the `src/modules/hello.ts` so that it contains a bunch of bad code:
 
-```typescript
+{% highlight typescript %}
 let messages = [
     "Hello from the hello module!",
     "Hello from the CLI",
@@ -281,7 +281,7 @@ export function sayHello(messageId = 1) {
     }
     console.log('Could not find a message ID = ' + messageId);
 }
-```
+{% endhighlight %}
 
 Can you spot all the problems?  ESLint can:
 
@@ -289,13 +289,13 @@ Can you spot all the problems?  ESLint can:
 
 A lot of the output is from prettier.  That's because my `.editorconfig` file is out of sync with the options within prettier, so the editor hasn't been following the right rule set.  However, I can fix the files using the following command:
 
-```bash
+{% highlight bash %}
 npx prettier -w ./src
-```
+{% endhighlight %}
 
 The `-w` option means "edit in-place".  I can also update my `.editorconfig` so that the editor knows what to do:
 
-```ini
+{% highlight ini %}
 root = true
 
 [*]
@@ -305,7 +305,7 @@ insert_final_newline = true
 indent_style = tab
 indent_size = 2
 trim_trailing_whitespace = true
-```
+{% endhighlight %}
 
 You can take a look at the [exhaustive list of options](https://spec.editorconfig.org/#supported-pairs) for editorconfig. Prettier and editorconfig work hand in hand.  Editorconfig takes care of code formatting in-editor and prettier takes care of code formatter outside of the editor.  Most importantly, prettier will use editorconfig as the defaults for its work when a matching option is available.
 
@@ -319,7 +319,7 @@ Yes, your linting rules need testing.  This is why it's important to get a solid
 
 There is a "type-checking" version of the eslint ruleset within typescript-eslint that covers most of these.  I can also adjust those rules with a rules block in my `eslint.config.js` file:
 
-```javascript
+{% highlight js %}
   {
     rules: {
         "eqeqeq": [ "error", "always" ],
@@ -327,7 +327,7 @@ There is a "type-checking" version of the eslint ruleset within typescript-eslin
         "@typescript-eslint/explicit-function-return-type": "error"
     }
   }
-```
+{% endhighlight %}
 
 This now throws the appropriate errors:
 
@@ -343,16 +343,16 @@ Husky is a module that automatically runs "stuff" when you do things to your git
 
 Start by installing husky:
 
-```bash
+{% highlight bash %}
 npm install -D husky lint-staged
 npx husky-init
-```
+{% endhighlight %}
 
 Alongside husky, I am going to use `lint-staged` to manage multiple elements in a pipeline (in this case, formatting with prettier followed by linting with eslint). The `husky-init` tool will initialize husky, writing some default configuration and installing other packages for you.
 
 Next, create the appropriate configuration for `lint-staged`.  This is done within the `package.json` file:
 
-```json
+{% highlight json %}
   "scripts": {
     // Rest of the scripts
     "precommit": "lint-staged"
@@ -363,18 +363,18 @@ Next, create the appropriate configuration for `lint-staged`.  This is done with
       "eslint ./src"
     ]
   }
-```
+{% endhighlight %}
 
 I can now use `npm run precommit` to run `lint-staged` which will run `prettier` (editing in-place) and then run `eslint` (reporting any problems).  Husky will prevent the check-in from completing if `eslint` reports any errors.
 
 Finally, let's change the pre-commit command.  When `npx husky-init` was run, `.husky/pre-commit` was created.  The default version looks like this:
 
-```bash
+{% highlight bash %}
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
 npm test
-```
+{% endhighlight %}
 
 I need to change that `npm` command to `npm run precommit`.
 

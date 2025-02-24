@@ -10,9 +10,9 @@ I'm in the middle of adding authentication to my Blazor WASM app.  In the [last 
 
 I've got a Sign-in button called `AuthButton.razor` that looks like this:
 
-``` html
+{% highlight html %}
 <button type="button" class="auth-button">Sign in</button>
-```
+{% endhighlight %}
 
 Exciting, isn't it.  It doesn't do anything.  What I'll be doing in this article is turning it into something that allows the user to trigger an authentication event and that allows the user to sign out later on, changing state as necessary.
 
@@ -63,7 +63,7 @@ You will now be shown the settings for the app registration.  You can also get t
 
 Open up the `cloudmud.Client` project, then the `wwwroot` directory.  Add `appsettings.json` file to the `wwwroot` with the following contents:
 
-``` json
+{% highlight json %}
 {
   "AzureAd": {
     "Authority": "https://login.microsoftonline.com/{TENANT ID}",
@@ -72,11 +72,11 @@ Open up the `cloudmud.Client` project, then the `wwwroot` directory.  Add `appse
     "Scope": "api:{SERVER APP ID}/API.Access"
   }
 }
-```
+{% endhighlight %}
 
 Replace the replacable things here with your settings from your Notepad file.  For example, using the example data I used last time:
 
-``` json
+{% highlight json %}
 {
   "AzureAd": {
     "Authority": "https://login.microsoftonline.com/e86c78e2-8bb4-4c41-aefd-918e0565a45e",
@@ -85,7 +85,7 @@ Replace the replacable things here with your settings from your Notepad file.  F
     "Scope": "api://41451fa7-82d9-4673-8fa5-69eff5a761fd/API.Access"
   }
 }
-```
+{% endhighlight %}
 
 It's easy enough to mess up the app registrations here - make sure the `ClientId` is the app registration you created above and the `Scope` is the scope string you copied when you exposed the API during the last article.
 
@@ -102,7 +102,7 @@ The `Microsoft.Authentication.WebAssembly.Msal` NuGet package to the `cloudmud.C
 
 Back in the `cloudmud.Client` project, open up the `Program.cs` file.  This is a file I have not touched thus far, but it's thankfully short.  There is already a `HttpClient` service that has been added to support REST requests.  I'm going to replace that with the following code:
 
-``` csharp
+{% highlight csharp %}
 /*
 ** Add a HttpClient for REST APIs to the app.
 */
@@ -123,28 +123,28 @@ builder.Services
         builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
         options.ProviderOptions.DefaultAccessTokenScopes.Add(aadScope);
     });
-```
+{% endhighlight %}
 
 The first section changes the provided `HttpClient` and swaps it for a named `IHttpClientFactory` which handles adding the authorization header for me if the user is authenticated.  The second section brings in the MSAL authentication module.
 
 Finally, add the MSAL low-level service to the `wwwroot/index.html` file.  Add the following line in the same place as where the `_framework/blazor.webassembly.js` file is brought in:
 
-``` html
+{% highlight html %}
 <script src="_content/Microsoft.Authentication.WebAssembly.Msal/AuthenticationService.js"></script>
-```
+{% endhighlight %}
 
 Finally (before I tackle the components that I have written), I need to update three existing razor files.  First up is `_Imports.razor`.  I want to be able to handle authorization everywhere.  To do
 that, add the following lines:
 
-``` csharp
+{% highlight csharp %}
 @using Microsoft.AspNetCore.Authorization;
 @using Microsoft.AspNetCore.Components.Authorization;
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
-```
+{% endhighlight %}
 
 Order is not important, so just add it where you feel like it should go.  Next up, I need to ensure that the authorization context is available in all the components.  To do that, update the `App.razor` as follows:
 
-``` xml
+{% highlight xml %}
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
@@ -162,13 +162,13 @@ Order is not important, so just add it where you feel like it should go.  Next u
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
-```
+{% endhighlight %}
 
 The basics here are that the entire router is surrounded by a `CascadingAuthenticationState` - this ensures that the authorization context is available everywhere.  Then, replace the `RouteView` with the `AuthorizeRouteView` and ensure that a `NotAuthorized` section is added to handle the case when the user is not authenticated.
 
 Finally, add `Pages/Authentication.razor` with the following contents:
 
-``` csharp
+{% highlight csharp %}
 @page "/authentication/{action}"
 
 <RemoteAuthenticatorView Action="@Action" />
@@ -177,7 +177,7 @@ Finally, add `Pages/Authentication.razor` with the following contents:
     [Parameter]
     public string? Action {get; set; }
 }
-```
+{% endhighlight %}
 
 This creates routes called `/authentication/login` and `/authentication/logout` to help with the authentication process.  You can actually attach it to any URL.
 
@@ -185,7 +185,7 @@ This creates routes called `/authentication/login` and `/authentication/logout` 
 
 Now, let's talk about updating the `AuthButton.razor` component so that it is aware of Azure Active Directory.  Before, we just had a button.  Now let's look at it:
 
-``` csharp
+{% highlight csharp %}
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inject NavigationManager Navigation
 
@@ -207,7 +207,7 @@ Now, let's talk about updating the `AuthButton.razor` component so that it is aw
         Navigation.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
     }
 }
-```
+{% endhighlight %}
 
 The button is a sign-out button when the user is authorized, and a sign-in button when the user is not authorized.  When you run the app, clicking on Sign in will create a pop-up, asking you to sign in, then asking you to consent (check out which strings are used where so you can adjust to get the right user experience on consent).  
 
@@ -215,7 +215,7 @@ It's likely that sign-out doesn't work (at least, it didn't for me - I'll work o
 
 Let's do something more significant, however.  In the last article, I set up an API that required authorization.  I can update the `Pages/Index.razor` to use that now:
 
-``` csharp
+{% highlight csharp %}
 @page "/"
 @attribute [AllowAnonymous]
 @inject HttpClient Http
@@ -273,7 +273,7 @@ Let's do something more significant, however.  In the last article, I set up an 
         }
     }
 }
-```
+{% endhighlight %}
 
 Let's take this bit by bit.  The `[AllowAnonymous]` at the top says that the user doesn't have to be authenticated to use this page, but I still want to know if they are authenticated or not.  I then wrap the page in an `<AuthorizeView>` which lets me define different layouts depending on whether the user is signed in currently.  If the user is signed in, then a terse message is displayed.  If not, then the data is fetched and then a table is displayed.
 

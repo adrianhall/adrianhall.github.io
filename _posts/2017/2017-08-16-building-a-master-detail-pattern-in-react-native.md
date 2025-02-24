@@ -18,7 +18,7 @@ Now it’s time to get to the master-detail pattern itself. Master-Detail is a b
 
 I’m using a container component for this. The premise is that I will detect what size device and what sort of orientation it is in and then produce the right output. Let’s get started with the `index.tsx` file:
 
-```typescript
+{% highlight typescript %}
 export default class App extends React.Component<undefined, undefined> {
   /**
    * Lifecycle method that renders the component - required
@@ -34,11 +34,11 @@ export default class App extends React.Component<undefined, undefined> {
     );
   }
 }
-```
+{% endhighlight %}
 
 I’m going to wrap all the logic inside of the `src/components/MasterDetail.tsx` component:
 
-```typescript
+{% highlight typescript %}
 @inject('noteStore')
 @observer
 export default class MasterDetail extends React.Component<MasterDetailProperties, MasterDetailState> {
@@ -56,11 +56,11 @@ export default class MasterDetail extends React.Component<MasterDetailProperties
 
     // ...
 }
-```
+{% endhighlight %}
 
 The MasterDetail object has two properties. One is the `noteStore` and is injected from MobX. The other is `forceTwoPane` – a boolean that can be used to force the two-pane mode if you need to. I don’t use it normally, but you can wire a button so that you can use two-pane mode in portrait mode on a tablet. The state contains the current orientation, and I wire up an event handler to adjust this so that the component will be re-rendered if the orientation changes. Note that the `addEventListener()` and `removeEventListener()` methods were not included in the react-native typings, so I published a pull request for these. Hopefully they will make it into an official npm package by the time you read this.
 
-```typescript
+{% highlight typescript %}
 isLandscape(): boolean {
     const dim = Dimensions.get('screen');
     return dim.width >= dim.height;
@@ -75,11 +75,11 @@ isTablet(): boolean {
 useTwoPane(): boolean {
     return this.props.forceTwoPane || (this.isTablet() && this.isLandscape());
 }
-```
+{% endhighlight %}
 
 The next set of methods determine if the interface should be in two-pane mode or not. These are taken directly from my work on [detecting orientation changes]({% post_url 2017/2017-07-26-handling-orientation-changes-in-react-native %}).
 
-```typescript
+{% highlight typescript %}
 onSelectItem(item: Note) {
     this.props.noteStore.setActiveNote(item);
 }
@@ -95,7 +95,7 @@ onChangeItem(item: Note) {
 onClearSelection() {
     this.props.noteStore.clearActiveNote();
 }
-```
+{% endhighlight %}
 
 I added an `activeNote` variable to my `noteStore` implementation. This is altered by `setActiveNote()` and `clearActiveNote()`. These event handlers adjust things in the store, which will then filter their way through the rest of the interface.
 
@@ -107,7 +107,7 @@ Finally, let’s look at the `render()` method. There are three cases to deal wi
 
 Each of these are a case. Theoretically, it would make for a better user experience if I used a `Navigator` object and `react-native-navigation` instead of three screens. If I did that, then the back button would be dealt with for me and the scenes would change by a swipe animation. However, I want to do things in the toolbar, which the `Navigator` pattern does not allow, so I’m happy to avoid the animation for now.
 
-```typescript
+{% highlight typescript %}
 render(): JSX.Element {
      if (this.useTwoPane()) {
          /*
@@ -211,7 +211,7 @@ render(): JSX.Element {
           */
      }
  }
-```
+{% endhighlight %}
 
 This is a longer code set, so I’ve marked the beginning and end of each section. Yes, a Master-Detail pattern is just an if-then-else statement with the appropriate logic at each step and distinguishable blocks.
 

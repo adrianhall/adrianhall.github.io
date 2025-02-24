@@ -17,7 +17,7 @@ There are even packages that rewire the CRA so that you can do more.  CRA tries 
 
 All JavaScript applications seem to start off the same way:
 
-```bash
+{% highlight bash %}
 $> mkdir parcel-typescript-template
 $> cd parcel-typescript-template
 $> git init
@@ -26,7 +26,7 @@ $> cd webapp
 $> npm init -y
 $> git add -A
 $> git commit -m "Initial checkin"
-```
+{% endhighlight %}
 
 Why do I put my web application one directory down?  Well, I normally create connected apps, so there is an infrastructure component which sits alongside the web application.  By putting the web application in a sub-directory, I can also store the infrastructure.
 
@@ -36,16 +36,16 @@ Add a `LICENSE.md` and `README.md` to this project at the top level.  Finally, a
 
 Next, let's create a basic React app using [Parcel](https://parceljs.org/) as the bundler and [Typescript](https://www.typescriptlang.org/) for the language.  Everything happens in the `webapp` folder. First, add some libraries:
 
-```bash
+{% highlight bash %}
 $> npm i -D parcel-bundler typescript @types/react @types/react-dom
 $> npm i -s react react-dom
-```
+{% endhighlight %}
 
 The first line installs the `devDependencies`: Parcel and Typescript, plus the type definitions for React.  Technically, Parcel will install Typescript for me, but I like to be explicit - it saves time later on.  The second line installs the dependencies that will be included in the final bundles.
 
 Next, create a basic `index.html` file in a new `src` directory:
 
-```html
+{% highlight html %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -61,11 +61,11 @@ Next, create a basic `index.html` file in a new `src` directory:
     <script src="../src/index.tsx"></script>
   </body>
 </html>
-```
+{% endhighlight %}
 
 Note that I'm not including a bundle.  I'm including my Typescript file (that I have yet to write) right in the script tag.  Parcel will take care of bundling this for me.  Aadd the following `src/index.tsx` file:
 
-```typescript
+{% highlight typescript %}
 import React from 'react';
 import { render } from 'react-dom';
 
@@ -74,13 +74,13 @@ const Application: React.SFC<{}> = () => (
 );
 
 render(<Application />, document.getElementById('root'));
-```
+{% endhighlight %}
 
 As React applications go, this is fairly bare-bones.  It prints `Application` in the web browser.
 
 The final piece you absolutely must do is to configure Typescript.  You can create a basic `tsconfig.json` file using `npx tsc --init`.  There are a couple of things you must set though.  Here is my minimal version (I've removed everything that is a comment from it):
 
-```json
+{% highlight json %}
 {
   "compilerOptions": {
     /* Specify ECMAScript target version */
@@ -119,15 +119,15 @@ The final piece you absolutely must do is to configure Typescript.  You can crea
     "src/**/*"
   ]
 }
-```
+{% endhighlight %}
 
 Now that I have all the code written, I want to run the application.  Add the following to the `package.json` scripts section:
 
-```json
+{% highlight json %}
 "scripts": {
   "start": "parcel src/index.html --open"
 },
-```
+{% endhighlight %}
 
 This tells parcel to bundle all the scripts together, then run it on a built-in server and open the default browser to the page.  At this point, your directory structure should look like this:
 
@@ -135,28 +135,28 @@ This tells parcel to bundle all the scripts together, then run it on a built-in 
 
 It's time to run the web app!
 
-```bash
+{% highlight bash %}
 $> npm start
-```
+{% endhighlight %}
 
 Your browser should open (eventually) and the application will be displayed.
 
 I also want to be able to build a clean production version of the app.  Parcel will happy build a copy of the web app in the `dist` directory for me.  To ensure it is clean, I want to add a couple of modules:
 
-```bash
+{% highlight bash %}
 $> npm i -D rimraf npm-run-all
-```
+{% endhighlight %}
 
 The `rimraf` module allows me to remove a whole directory easily.  The `npm-run-all` module allows me to run sequences of commands from within npm.  Since I fully intend to add to the pre-build step, it makes sense to use this functionality as well.  I can add the following to the scripts section:
 
-```json
+{% highlight json %}
 "scripts": {
   "prebuild": "run-s clean",
   "build": "parcel build src/index.html --no-source-maps",
   "clean": "rimraf ./dist",
   "start": "parcel src/index.html --open"
 }
-```
+{% endhighlight %}
 
 > Why do I like Parcel over Webpack?  It's a zero-configuration bundler (note that there was no configuration to do), and it is significantly faster than webpack.  Why do I like TypeScript?  I like the type safety.  It allows me to spot type errors much more easily.  Having Intellisense within Visual Studio Code isn't a bad thing either!
 
@@ -168,7 +168,7 @@ Most applications have some sort of stylesheet.  I tend to use [ant.design](http
 
 Let's create a `src/assets/styles` directory and place an `_base.scss` file in there:
 
-```css
+{% highlight css %}
 @mixin full-page {
   height: 100%;
   left: 0;
@@ -176,11 +176,11 @@ Let's create a `src/assets/styles` directory and place an `_base.scss` file in t
   top: 0;
   width: 100%;
 }
-```
+{% endhighlight %}
 
 Then create a `src/assets/index.scss` file:
 
-```css
+{% highlight css %}
 @import 'base';
 
 html,
@@ -190,11 +190,11 @@ div#root {
   margin: 0;
   padding: 0;
 }
-```
+{% endhighlight %}
 
 This will make the application "full screen" by default.  There are other things you can do here.  For instance, the entire [Bootstrap4](https://getbootstrap.com/) is based on SASS, so you can pull that in easily.  Just like `create-react-app`, you want to import the `index.scss` file into your `index.tsx` file:
 
-```typescript
+{% highlight typescript %}
 import React from 'react';
 import { render } from 'react-dom';
 import './assets/index.scss';
@@ -204,7 +204,7 @@ const Application: React.SFC<{}> = () => (
 );
 
 render(<Application />, document.getElementById('root'));
-```
+{% endhighlight %}
 
 If you run the application now, you will get a build error - right in the browser (which is convenient):
 
@@ -212,9 +212,9 @@ If you run the application now, you will get a build error - right in the browse
 
 This is a good indication of the error.  The SASS processor doesn't know to go looking in the `src/assets/styles` directory.  To set this up, there is a convention - place the directory as the value for `SASS_PATH` in the `.env` file.  Create a file called `.env` in the same place as your `package.json` file and add the following to it:
 
-```bash
+{% highlight bash %}
 SASS_PATH="./src/assets/styles"
-```
+{% endhighlight %}
 
 You will need to kill and re-run the `npm start` command to read this.  Once you have re-opened your application, open up the browser developer tools and check that the CSS has been applied.
 
@@ -228,13 +228,13 @@ Start by running `npx eslint --init`:
 
 This gives you a pretty good starting point for your own eslint configuration.  I like to add to the default:
 
-```bash
+{% highlight bash %}
 $> npm i -D @typescript-eslint/eslint-plugin eslint-plugin-react-hooks
-```
+{% endhighlight %}
 
 The first library contains some defaults for TypeScript applications.  The second provides some good rules for React Hooks.  My `.eslintrc.js` file now looks like this:
 
-```javascript
+{% highlight js %}
 module.exports = {
   env: {
     browser: true,
@@ -273,11 +273,11 @@ module.exports = {
   rules: {
   }
 }
-```
+{% endhighlight %}
 
 Now, add some more scripts to the `package.json` to run the linter:
 
-```json
+{% highlight json %}
 "scripts": {
   "prebuild": "run-s clean lint",
   "build": "parcel build src/index.html --no-source-maps",
@@ -286,17 +286,17 @@ Now, add some more scripts to the `package.json` to run the linter:
   "lint:code": "eslint --ext ts,tsx src",
   "start": "parcel src/index.html --open"
 },
-```
+{% endhighlight %}
 
 The linter is placed in `lint:code` because I'm intending on having a `stylelint` configuration as well (left as an exercise for the reader - I've included it in my template though).  The `lint` script will run all the linters, and the lint rule is triggered as part of the prebuild step.
 
 Although I've used the "[Javascript standard](https://standardjs.com/)" style guide, I don't actually use it verbatim since I don't like some of the rules it enforces.  It demands that you don't use semi-colons, and I like semi-colons.  However, it's a good starting set and the rules are easy to adjust.  Add a `rule` to the `.eslintrc.js` file:
 
-```javascript
+{% highlight js %}
   rules: {
     semi: [ 'error', 'always' ]
   }
-```
+{% endhighlight %}
 
 This fixes up the errors in the lint output for me.  I could also swap out `eslint-config-standard` for `eslint-config-semistandard` and get the same effect.
 

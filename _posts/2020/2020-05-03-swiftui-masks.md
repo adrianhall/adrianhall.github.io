@@ -12,7 +12,7 @@ What happens when you only want a couple of corners rounded?  For this, you need
 
 Let's set up a view to experiment with:
 
-```swift
+{% highlight swift %}
 struct ContentView: View {
     
     var body: some View {
@@ -30,11 +30,11 @@ struct ContentView: View {
         .mask(CustomShape(radius: 25))
     }
 }
-```
+{% endhighlight %}
 
 You probably saw this technique when doing the SwiftUI tutorial, but with a `Circle` to generate the circular image.  A custom shape is just a struct conforming to the `Shape` protocol:
 
-```swift
+{% highlight swift %}
 struct CustomShape: Shape {
     let radius: CGFloat
     
@@ -49,11 +49,11 @@ struct CustomShape: Shape {
         return path
     }
 }
-```
+{% endhighlight %}
 
 I'm passing in a radius here, but you can pass in any parameters you want for your situation.  To generate the path, you need to move to the start point (which, in my case, is the top left corner of the containing rectangle) and then add lines to enclose the masked area.  For a simple rectangle, for instance:
 
-```swift
+{% highlight swift %}
 struct CustomShape: Shape {
     let radius: CGFloat
     
@@ -75,11 +75,11 @@ struct CustomShape: Shape {
         return path
     }
 }
-```
+{% endhighlight %}
 
 We could even do a funky "cut-the-corners" type view:
 
-```swift
+{% highlight swift %}
 struct CustomShape: Shape {
     let radius: CGFloat
     
@@ -105,7 +105,7 @@ struct CustomShape: Shape {
         return path
     }
 }
-```
+{% endhighlight %}
 
 Which will give you something like this:
 
@@ -113,7 +113,7 @@ Which will give you something like this:
 
 This is closer to what I want, but not rounded.  To fix that, I need to add an arc.  There are a bunch of methods in the `Path` object to do what I want, but I find the simplest to use is the `addRelativeArc()` method.  This requires the center (which is offset from the bottom and in by the radius), the radius, the starting angle (which is relative to 3pm on a clock-face) and the angle to continue:
 
-```swift
+{% highlight swift %}
 struct CustomShape: Shape {
     let radius: CGFloat
     
@@ -139,7 +139,7 @@ struct CustomShape: Shape {
         return path
     }
 }
-```
+{% endhighlight %}
 
 I'm used to angles starting from the top of the circle, so finding the proper angles was a little bit of trial and error.  This produces the following:
 
@@ -147,7 +147,7 @@ I'm used to angles starting from the top of the circle, so finding the proper an
 
 Now all I need to do is add a nice shadow, position it properly, and I've got a working mask for my project!
 
-```swift
+{% highlight swift %}
 struct ContentView: View {
     var body: some View {
         VStack {
@@ -170,7 +170,7 @@ struct ContentView: View {
         }
     }
 }
-```
+{% endhighlight %}
 
 This produces the following:
 

@@ -53,7 +53,7 @@ To do that, you need to create an authenticated and unauthenticated role, then c
 
 In Serverless Framework, this is defined in the `Resources` section of the `serverless.yml` file. First, let’s configure an Amazon Cognito user pool:
 
-```yaml
+{% highlight yaml %}
 CognitoUserPoolMyPool:
   Type                     : AWS::Cognito::UserPool
   Description              : "Username / Password auth database"
@@ -80,11 +80,11 @@ AndroidUserPoolClient:
     ClientName             : ${self:provider.apiname}-android
     GenerateSecret         : true
     UserPoolId             : { Ref: CognitoUserPoolMyPool }
-```
+{% endhighlight %}
 
 Note that an Amazon Cognito user pool logical ID must always start with the string `CognitoUserPool` if you want to use it when defining triggers. Now, let’s define the two roles we will need:
 
-```yaml
+{% highlight yaml %}
 AuthRole:
   Type                     : AWS::IAM::Role
   Description              : "Role that the an authenticated user assumes"
@@ -116,13 +116,13 @@ UnAuthRole:
           Condition:
             ForAnyValue:StringLike:
               "cognito-identity.amazon.com:amr": "unauthenticated"
-```
+{% endhighlight %}
 
 These are the basic role definitions for authenticated and unauthenticated identities. They don’t actually give you permissions to access any resources. You need to attach policies to these to allow the users to access AWS services (which we will do later).
 
 Now, let’s create the identity pool:
 
-```yaml
+{% highlight yaml %}
 IdentityPool:
   Type                  : AWS::Cognito::IdentityPool
   Description           : "Federation for the User Pool members to access AWS resources"
@@ -141,7 +141,7 @@ IdentityPoolRoleMap:
     Roles:
       unauthenticated   : { Fn::GetAtt: [ UnAuthRole, Arn ]}
       authenticated     : { Fn::GetAtt: [ AuthRole, Arn ]}
-```
+{% endhighlight %}
 
 Identity pools consist of two parts:
 
@@ -150,14 +150,14 @@ Identity pools consist of two parts:
 
 The final step in the process is to change your GraphQL API to be `AWS_IAM`. I am using the `serverless-appsync-plugin`, which makes it easy:
 
-```yaml
+{% highlight yaml %}
 custom:
   appSync:
     name: ${self:provider.apiname}
     region: ${self:provider.region}
     authenticationType: AWS_IAM
     serviceRole: "AppSyncServiceRole"
-```
+{% endhighlight %}
 
 The good news is that this is all pretty much boiler-plate. Take it as a single snippet and integrate it into your `serverless.yml` whenever you need to use federated identities.
 
@@ -167,7 +167,7 @@ Make sure you also update your client to use `AWS_IAM` and an authentication pro
 
 Since I am using the `serverless-appsync-plugin`, this is easy. I have to add something to my `schema.graphql` file:
 
-```graphql
+{% highlight graphql %}
 type Mutation {
     addUser(userId: ID!, userDetails: UserInput): User
     updateUser(userDetails: UserInput!): User
@@ -177,7 +177,7 @@ type Subscription {
     userUpdates: User
     @aws_subscribe(mutations: ["addUser", "updateUser"])
 }
-```
+{% endhighlight %}
 
 While you are here, remove any `@aws_auth` decorators. The` @aws_auth` decorator only applies to the Amazon Cognito user pool, and we are not using that directly any more.  I added the `addUser()` mutation for the Lambda to call.  It will not be available to users.
 
@@ -185,7 +185,7 @@ I also added the mutation to the list of mutations in the `@aws_subscribe` decor
 
 The mapping templates should do “what is required”. In my case, I want to add or update the user record in the users table within DynamoDB. The request mapping looks like this:
 
-```json
+{% highlight json %}
 {
     "version": "2017-02-28",
     "operation": "PutItem",
@@ -194,17 +194,17 @@ The mapping templates should do “what is required”. In my case, I want to ad
     },
     "attributeValues": $util.dynamodb.toMapValuesJson($ctx.args.userDetails)
 }
-```
+{% endhighlight %}
 
 It is linked into the GraphQL API using the `serverless-appsync-plugin`:
 
-```yaml
+{% highlight yaml %}
 - type        : Mutation
   field       : addUser
   dataSource  : "UsersTable"
   request     : "addUser-request.vtl"
   response    : "single-response.vtl"
-```
+{% endhighlight %}
 
 ## Step 3: Add policy to the authenticated role
 
@@ -212,7 +212,7 @@ I want authenticated users to be able to access all the queries and subscription
 
 To do this, I will adjust the `AuthRole` as follows:
 
-```yaml
+{% highlight yaml %}
 AuthRole:
   Type                : AWS::IAM::Role
   Description         : "Role that the an authenticated user assumes"
@@ -239,7 +239,7 @@ AuthRole:
                 - { Fn::Join: [ '', [ { Ref: GraphQlApi }, '/types/Query/fields/*' ] ] }
                 - { Fn::Join: [ '', [ { Ref: GraphQlApi }, '/types/Subscription/fields/*' ] ] }
                 - { Fn::Join: [ '', [ { Ref: GraphQlApi }, '/types/Mutation/fields/updateUser' ] ] }
-```
+{% endhighlight %}
 
 There are a couple of things to note here. The permissions you give to an authenticated user are defined in the `Policies` section. This is an array of policy documents, so you can add multiple policies for multiple services here.
 
@@ -251,7 +251,7 @@ You can do the same thing with unauthenticated users by altering the `UnauthRole
 
 The final bit is that I need an IAM role that will allow my Lambda function to access the AWS AppSync API:
 
-```yaml
+{% highlight yaml %}
 PostAuthenticationRole:
   Type             : AWS::IAM::Role
   Properties:
@@ -281,7 +281,7 @@ PostAuthenticationRole:
             - Effect  : Allow
               Action  : [ logs:CreateLogStream, logs:PutLogEvents ]
               Resource: "arn:aws:logs:${self:provider.region}:#{AWS::AccountId}:log-group:/aws/lambda/${self:service}-${self:provider.stage}-postAuthentication:*"
-```
+{% endhighlight %}
 
 I am only allowing the Lambda function to access a single mutation — the `addUser` mutation. This mutation is not available to the users — as we explicitly did not list it in the `AuthRole` previously.
 
@@ -293,7 +293,7 @@ Note that you also need to include the policies from the Basic Execution Role fo
 
 All this set up has been leading to this. How do I write a Lambda function to execute a mutation? Well, first off, let’s define a Lambda function within `serverless.yml` that will be triggered on the post authentication step:
 
-```yaml
+{% highlight yaml %}
 provider:
   name                 : aws
   region               : us-east-1
@@ -312,7 +312,7 @@ functions:
       - cognitoUserPool:
           pool         : MyPool
           trigger      : PostAuthentication
-```
+{% endhighlight %}
 
 What does this do?
 
@@ -322,7 +322,7 @@ What does this do?
 
 The Serverless Framework will bundle all the relevant files for us and deploy the function. Now, let’s take a look at my first look at the `cognito.js` file:
 
-```javascript
+{% highlight js %}
 const env = require('process').env;
 exports.postauth = (event, context, callback) => {
   console.log("Authentication successful");
@@ -331,11 +331,11 @@ exports.postauth = (event, context, callback) => {
   console.log(`Environment = ${JSON.stringify(env, null, 2)}`);
   callback(null, event);
 }
-```
+{% endhighlight %}
 
 Really, all I am doing here is looking at a valid authentication event. I want to ensure that the environment is what I expect, and I want to take a look at the event that is passed to me. Once I authenticate, I’ll see something akin to the following for the event structure:
 
-```json
+{% highlight json %}
 {
   "version": "1",
   "region": "us-east-1",
@@ -360,7 +360,7 @@ Really, all I am doing here is looking at a valid authentication event. I want t
   },
   "response": {}
 }
-```
+{% endhighlight %}
 
 You can check this for yourself in the CloudWatch logs. We need something like this because it allows us to test our Lambda function using the test facility within the AWS Lambda console:
 
@@ -453,9 +453,9 @@ exports.postauth = (event, context, callback) => {
 
 You will need to add `node-fetch` and `aws-sdk` to the `package.json`:
 
-```bash
+{% highlight bash %}
 npm install --save node-fetch aws-sdk
-```
+{% endhighlight %}
 
 The parts of this:
 

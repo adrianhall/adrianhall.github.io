@@ -10,7 +10,7 @@ For the longest time, the Controller was the only way to introduce an API into y
 
 If you've spent some time with minimal APIs, you've likely written some unreadable code.  Something like this:
 
-```csharp
+{% highlight csharp %}
 app.MapGet("/api/articles", async (
   [FromServices] IHttpContextAccessor contextAccessor,
   [FromServices] ILogger<MyApiService> logger,
@@ -22,7 +22,7 @@ app.MapGet("/api/articles", async (
 {
   // Your code here.
 });
-```
+{% endhighlight %}
 
 It's ugly and quickly becomes unreadable and hard to maintain. You also likely have a whole bunch of mappings that take exactly the same services and you probably have common models for queries, such as pagination (like I do here).  The more services and parameters you introduce, the longer that argument list becomes and the less readable the code becomes.
 
@@ -32,7 +32,7 @@ There is a better way, and I'm sad to say I only learned it this week.
 
 My class for the above mapping looks like this:
 
-```csharp
+{% highlight csharp %}
 public class ArticleServices(
   IHttpContextAccessor contextAccessor,
   ILogger<MyApiService> logger,
@@ -45,7 +45,7 @@ public class ArticleServices(
   public IFileProvider FileProvider { get; } = fileProvider;
   public ApplicationDbContext DbContext { get; } = dbContext;
 }
-```
+{% endhighlight %}
 
 It's nice and simple.  It also allows me to make any other temporary services that depend on these services.  Repository patterns are not unheard of as a level of abstraction over the `DbContext` for example.  I can create a new repository based on the `DbContext` while I am at it.
 
@@ -53,13 +53,13 @@ It's nice and simple.  It also allows me to make any other temporary services th
 
 I have the following struct in my code:
 
-```csharp
+{% highlight csharp %}
 public struct PaginationRequest
 {
   public int? Skip { get; }
   public int? Top { get; }
 }
-```
+{% endhighlight %}
 
 Again - nice and simple.  It also has the advantage of being reusable.  If I want to add a new thing to the pagination request, I can do it in one place.
 
@@ -67,11 +67,11 @@ Again - nice and simple.  It also has the advantage of being reusable.  If I wan
 
 So, what does my mapping look like now?
 
-```csharp
+{% highlight csharp %}
 app.MapGet("/api/articles", async ([AsParameters] ArticleServices services, [AsParameters] PaginationRequest request) => {
   // My code here
 });
-```
+{% endhighlight %}
 
 I find this to be much more readable!
 
@@ -79,7 +79,7 @@ I find this to be much more readable!
 
 I don't actually do this in my code any more.  Sure, it's good for simple cases.  However, mappings quickly explode in "real" applications.  I now write an extension method to define the API **without the prefix**:
 
-```csharp
+{% highlight csharp %}
 public static partial class ApiDefinitions
 {
   public static IEndpointRouteBuilder MapMyApi(this IEndpointRouteBuilder api)
@@ -91,23 +91,23 @@ public static partial class ApiDefinitions
     api.MapDelete("/{id:string}", MyApi.RemoveItemAsync);
   }
 }
-```
+{% endhighlight %}
 
 It's in a partial class because I put all my API definitions in one place but I split each definition into its own file.  In `Program.cs`, I have something like this:
 
-```csharp
+{% highlight csharp %}
 app.MapGroup("/api/articles").MapMyApi();
-```
+{% endhighlight %}
 
 If I decide to add versioning, then I can do so easily:
 
-```csharp
+{% highlight csharp %}
 app.MapGroup("/api/articles").HasApiVersion(1.0).MapMyApi();
-```
+{% endhighlight %}
 
 Finally, you'll notice that I defined the actual underlying methods for the API in a separate static class called `MyApi`:
 
-```csharp
+{% highlight csharp %}
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace MyApp.Apis.MyApi
@@ -122,7 +122,7 @@ namespace MyApp.Apis.MyApi
     }
   }
 }
-```
+{% endhighlight %}
 
 A few things:
 

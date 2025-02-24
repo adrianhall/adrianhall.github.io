@@ -29,15 +29,15 @@ First, I just want to get the two-step compilation process working.
 
 This is a simple `npm` command:
 
-```bash
+{% highlight bash %}
 npm install -D @swc/cli @swc/core
-```
+{% endhighlight %}
 
 ### 2. Update your tsconfig.json file.
 
 At a minimum, you need to set `noEmit` to true.  The [swc documentation](https://swc.rs/docs/migrating-from-tsc) also suggests a number of other changes.  Here are all the changes I made:
 
-```json
+{% highlight json %}
 {
     "compilerOptions": {
         "noEmit": true,
@@ -48,7 +48,7 @@ At a minimum, you need to set `noEmit` to true.  The [swc documentation](https:/
         /* Rest of your tsconfig.json */
     }
 }
-```
+{% endhighlight %}
 
 You can see the complete [tsconfig.json on my GitHub repository](https://github.com/adrianhall/esm-typescript-library/blob/v2/tsconfig.json).
 
@@ -56,7 +56,7 @@ You can see the complete [tsconfig.json on my GitHub repository](https://github.
 
 I copied this from the swc repository.  Based on the number of blogs and repositories I reviewed, everyone else did too.  You might as well copy it as well:
 
-```json
+{% highlight json %}
 {
     "$schema": "https://swc.rs/schema.json",
     "jsc": {
@@ -70,7 +70,7 @@ I copied this from the swc repository.  Based on the number of blogs and reposit
         "type": "nodenext"
     }
 }
-```
+{% endhighlight %}
 
 The `baseUrl`, `target`, and `module` must match the same settings in your `tsconfig.json` file.  Otherwise, the settings are pretty straight forward.
 
@@ -78,7 +78,7 @@ The `baseUrl`, `target`, and `module` must match the same settings in your `tsco
 
 Here is the relevant part of my build definition in the `package.json` file:
 
-```json
+{% highlight json %}
   "main": "dist/index.js",
   "type": "module",
   "imports": {
@@ -90,7 +90,7 @@ Here is the relevant part of my build definition in the `package.json` file:
     "build:compile": "swc ./src --out-dir dist --strip-leading-paths",
     "clean": "rimraf -fr dist"
   },
-```
+{% endhighlight %}
 
 Swc does not do type checking, so I've added an explicit type-check as part of the build pipeline. You can find the code thus far on [my GitHub repository](https://github.com/adrianhall/esm-typescript-library/blob/v2).
 
@@ -98,38 +98,38 @@ Swc does not do type checking, so I've added an explicit type-check as part of t
 
 My next step is to get `.ts` imports working.  If I change my `./src/index.ts` file to the following:
 
-```typescript
+{% highlight typescript %}
 import { sayHello } from '#root/modules/hello.ts';
 
 sayHello();
-```
+{% endhighlight %}
 
 I want that to work.  It makes a lot more sense (to me) to be importing TypeScript files in a TypeScript world.  However, as soon as you make that change, you get the dreaded red squiggly lines in Visual Studio Code.  Update your `paths` section in the `tsconfig.json` file:
 
-```json
+{% highlight json %}
 {
     "compilerOptions": {
         "allowImportingTsExtensions": true,
         /* Rest of your tsconfig.json file */
     }
 }
-```
+{% endhighlight %}
 
 Now that the red squiggly lines have gone away, I can run the build. However, there is nothing to transform the import into the equivalent `.js` import (which is needed when running the application from Node).  I get the following error:
 
-```text
+{% highlight text %}
 node:internal/modules/esm/resolve:291
   return new ERR_PACKAGE_IMPORT_NOT_DEFINED(
          ^
 
 TypeError [ERR_PACKAGE_IMPORT_NOT_DEFINED]: Package import specifier "#root/modules/hello.ts" is not defined in package /.../esm-typescript-library/package.json imported from /.../esm-typescript-library/dist/index.js
-```
+{% endhighlight %}
 
 Fortunately, swc has a concept of plugins.  Unfortunately, they are experimental and I've found them rather temperamental at times.  The plugin I am using for this is `@swc/plugin-transform-imports`.  It has no documentation, so I had to copy the code from [another blog](https://dev.to/a0viedo/nodejs-typescript-and-esm-it-doesnt-have-to-be-painful-438e), which turned out to be super helpful.  First off, install the plugin:
 
-```bash
+{% highlight bash %}
 npm install -D @swc/plugin-transform-imports
-```
+{% endhighlight %}
 
 Here is the new `.swcrc` file:
 
@@ -174,10 +174,10 @@ I am not good at regular expressions, but I've found [regex101](https://regex101
 
 Clean and build your project, then analyze the `./dist/index.js` file.  This is the compiled file:
 
-```javascript
+{% highlight js %}
 import { sayHello } from "#root/modules/hello.js";
 sayHello();
-```
+{% endhighlight %}
 
 You can see that the import has been modified correctly.  You can also run `node ./dist/index.js` and see that the application runs correctly.
 

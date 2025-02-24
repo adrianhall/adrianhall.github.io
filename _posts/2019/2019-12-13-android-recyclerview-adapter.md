@@ -23,7 +23,7 @@ Here is the theory.  Let's say I have an adapter that is always the same.  The o
 
 Here is the abstract adapter class:
 
-```kotlin
+{% highlight kotlin %}
 package com.github.adrianhall.utils
 
 import android.view.LayoutInflater
@@ -57,7 +57,7 @@ abstract class SimpleListAdapter(@LayoutRes private val rowLayout: Int)
 
   class VH(itemView: View): RecyclerView.ViewHodler(itemView)
 }
-```
+{% endhighlight %}
 
 It's not a big class and it can be re-used again and again.  The essence is:
 
@@ -69,7 +69,7 @@ It's not a big class and it can be re-used again and again.  The essence is:
 
 When does the code necessary to create a list become?  It is also (in my opinion) simplified.  I only have to create the list adapter and define one method:
 
-```kotlin
+{% highlight kotlin %}
 class MyFragment: Fragment() {
   private val vm by viewModel<MyViewModel>()
 
@@ -96,7 +96,7 @@ class MyFragment: Fragment() {
     title.text = data.title
   }
 }
-```
+{% endhighlight %}
 
 This is a really simple example, but you can see the initialization is straight forward.  I pass the layout of an individual row as an argument, then I override the `onBindData()` method.  This is called for every row to bind the data to the row.  The new adapter doesn't know what sort of data is in your list, nor does it know what is in your layout.  You provide the binding.
 
@@ -106,13 +106,13 @@ To populate the list, you call `setItems()`.  This will wipe out the data that i
 
 You can easily handle row clicks by registering a click-listener within `bindDataToRow()` method:
 
-```
+{% highlight kotlin %}
   private fun bindDataToRow(view: View, data: MyData) {
     //...
 
     view.setOnClickListener { this.onClick(data) }
   }
-```
+{% endhighlight %}
 
 ## Why not a library?
 

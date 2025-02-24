@@ -19,9 +19,9 @@ This is how I did it.
 
 By default, your code will be CommonJS.  Add the following to `package.json` to move your code over to be recognized as ESM:
 
-```json
+{% highlight json %}
   "type": "module",
-```
+{% endhighlight %}
 
 While you are there, also make sure you are using the latest version of TypeScript.  This ensures you have the best support for ESM.  You may also need to update the `engine` section of your `package.json` to support Node v18 or later.  My CLI was originally written for Node v14 and some things just didn't work.
 
@@ -31,7 +31,7 @@ Yes, maintaining legacy apps is a bear - but there is way more legacy than new s
 
 I made the following changes to my `tsconfig.json` file:
 
-```json
+{% highlight json %}
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -40,7 +40,7 @@ I made the following changes to my `tsconfig.json` file:
     // ... rest of your tsconfig.json file
   }
 }
-```
+{% endhighlight %}
 
 Several pieces of online advice suggest using `ESNext` and `NodeNext`.  These monikers are substitutes "use the latest thing".  I like to lock versions down so that I avoid any hidden problems when my tooling changes.  The values I am using are identical to those used by `ESNext` and `NodeNext` right now.  They may not be in the future (including when you read this).
 
@@ -54,20 +54,20 @@ So, go through each and every source code file and add the extension on the end 
 
 I had a number of aggregator `index.ts` files that looked like this:
 
-```typescript
+{% highlight typescript %}
 export * from "./myfile.ts";
 export * from "./myotherfile.ts";
-```
+{% endhighlight %}
 
 This isn't allowed any more.  You have to be specific about what you are exporting:
 
-```typescript
+{% highlight typescript %}
 export {
     MyClass,
     myfunc,
     MYCONSTANT
 } from "./myfile.ts";
-```
+{% endhighlight %}
 
 I found it actually easier to just forego the `index.ts` files and go direct to the source.  If I move a function from one file to another, I need to change a whole bunch of files anyhow.  Maybe I'll figure out a better way using namespacing where I don't have to specify a relative path, but that day is not today.
 
@@ -75,15 +75,15 @@ I found it actually easier to just forego the `index.ts` files and go direct to 
 
 In CommonJS, you would use `require()` to bring in a JSON file:
 
-```typescript
+{% highlight typescript %}
 const pkg = require('../../package.json');
-```
+{% endhighlight %}
 
 In ESM, the syntax is different:
 
-```typescript
+{% highlight typescript %}
 import pkg from '../../package.json' with { type: 'json' };
-```
+{% endhighlight %}
 
 I brought in the `package.json` in several places throughout my code.  I created a new module `package.ts` that did the import for me, then included that everywhere.  In this way, I can isolate the special syntax in one file.
 
@@ -91,18 +91,18 @@ I brought in the `package.json` in several places throughout my code.  I created
 
 There is no `__dirname` in ESM.  For Node v20.11 / v21.2 and later, you can use the following:
 
-```typescript
+{% highlight typescript %}
 const __dirname = import.meta.dirname
-```
+{% endhighlight %}
 
 If you are not lucky enough to be able to rev the Node version easily (hello legacy maintainers!), you can use the following:
 
-```typescript
+{% highlight typescript %}
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
     
 const __dirname = dirname(fileURLToPath(import.meta.url));
-```
+{% endhighlight %}
 
 ## Step 7: Update incompatible libraries
 

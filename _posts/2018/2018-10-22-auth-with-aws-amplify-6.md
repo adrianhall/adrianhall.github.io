@@ -43,12 +43,12 @@ In this article, we are going to go back to our original username and password a
 
 You can easily re-create the backend using the following:
 
-```bash
+{% highlight bash %}
 $ amplify init
 $ amplify add auth
 $ amplify add analytics
 $ amplify push
-```
+{% endhighlight %}
 
 Setting up TOTP is easily accomplished when using `amplify add auth` with the following answers:
 
@@ -68,26 +68,26 @@ That leaves us with configuring TOTP for an individual user. For this, I'm going
 
 To implement this, I've added a new method to the `IdentityRepository` interface:
 
-```kotlin
+{% highlight kotlin %}
 /**
  * Initiate registration for TOTP passwords
  */
 fun initiateTOTPSignup(handler: IdentityHandler)
-```
+{% endhighlight %}
 
 This has also been added to the `AuthenticatorViewModel` as a pass-thru, similar to the other flow initiation methods. I've also added an element into the `nav_drawer_menu.xml` file:
 
-```xml
+{% highlight xml %}
 <item
     android:id="@+id/main_drawer_totp"
     android:icon="@drawable/ic_password_black_24dp"
     android:title="@string/nav_totp"
     android:enabled="false" />
-```
+{% endhighlight %}
 
 I've updated the `updateNavigationDrawer()` method in the `MainActivity` to enable or disable the menu item based on the authentication:
 
-```kotlin
+{% highlight kotlin %}
 private fun updateNavigationDrawer(isSignedIn: Boolean = false) {
     val loginItem = nav_view.menu.findItem(R.id.main_drawer_login)
     val totpItem = nav_view.menu.findItem(R.id.main_drawer_totp)
@@ -99,11 +99,11 @@ private fun updateNavigationDrawer(isSignedIn: Boolean = false) {
         totpItem.isEnabled = true
     }
 }
-```
+{% endhighlight %}
 
 Finally, I've added some code to the `onNavigationItemSelected()` method in the `MainActivity` to switch to the `ConfigureTOTPActivity` when the menu item is clicked:
 
-```kotlin
+{% highlight kotlin %}
 override fun onNavigationItemSelected(item: MenuItem): Boolean {
     when (item.itemId) {
         R.id.main_drawer_login -> {
@@ -121,7 +121,7 @@ override fun onNavigationItemSelected(item: MenuItem): Boolean {
     drawer_layout.closeDrawer(GravityCompat.START)
     return true
 }
-```
+{% endhighlight %}
 
 Now that the basics of switching to the new activity are covered, let's take a look at implementation of the TOTP initialization process.
 
@@ -137,7 +137,7 @@ Once successful, you need to also set TOTP as the preferred method. This is done
 
 Let's turn this into code:
 
-```kotlin
+{% highlight kotlin %}
 override fun initiateTOTPSignup(handler: IdentityHandler) {
   userPool.currentUser.associateSoftwareTokenInBackground(null, object : RegisterMfaHandler {
       override fun onSuccess(sessionToken: String?) {
@@ -173,19 +173,19 @@ override fun initiateTOTPSignup(handler: IdentityHandler) {
       }
   })
 }
-```
+{% endhighlight %}
 
 ## The ConfigureTOTPActivity
 
 The activity uses the same `AuthenticatorViewModel` as all the other auth activities. In the `onCreate()` method, we initiate the TOTP signup:
 
-```kotlin
+{% highlight kotlin %}
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_configure_totp)
     model.initiateTOTPSignup { i,p,c -> handler(i, p, c) }
 }
-```
+{% endhighlight %}
 
 The handler is where the main work happens. We need to deal with three callbacks (values of `identityRequest`):
 
@@ -201,7 +201,7 @@ The _issuer_ and _account_ are strings that you provide. So you might want to se
 
 Let's look at this in practice:
 
-```kotlin
+{% highlight kotlin %}
 private fun handler(identityRequest: IdentityRequest, params: Map<String,String>?, callback: IdentityResponse) {
     when(identityRequest) {
         IdentityRequest.SUCCESS -> {
@@ -263,7 +263,7 @@ private fun handler(identityRequest: IdentityRequest, params: Map<String,String>
         }
     }
 }
-```
+{% endhighlight %}
 
 ## Other concerns
 

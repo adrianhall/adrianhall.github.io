@@ -52,7 +52,7 @@ Note that you should always write your tests to import the transpiled code.  If 
 
 Most of these frameworks support a "standard" form for writing tests.  This follows the form:
 
-```javascript
+{% highlight js %}
 import { something } from '../dist/something.js';
 import { expect } from 'chai';
 
@@ -60,11 +60,11 @@ describe('it should do something', () => {
     const x = something();
     expect(x).to.equal('it');
 });
-```
+{% endhighlight %}
 
 The `expect(x).to.equal('it')` is an assertion.  There are three basic flavors of assertions:
 
-```javascript
+{% highlight js %}
 // Assert style
 assert.equal(x, 'it');
 
@@ -73,7 +73,7 @@ expect(x).to.equal('it');
 
 // Should style
 x.should().equal('it');
-```
+{% endhighlight %}
 
 Most people like one form and dislike the others. It's a good idea for your tests to be consistent, so pick whichever you want to use and stick with it.
 
@@ -87,7 +87,7 @@ CucumberJS is not a package I have personally used.  As such, a lot of this info
 
 First off, CucumberJS does NOT use the standard form for tests.  Most test runners in this list use the standard form of tests.  Instead, CucumberJS is using behavior driven testing.  A test might look like this:
 
-```text
+{% highlight text %}
 Feature: Is it Friday yet?
   Everybody wants to know when it's Friday
 
@@ -95,7 +95,7 @@ Feature: Is it Friday yet?
     Given today is Sunday
     When I ask whether it's Friday yet
     Then I should be told "Nope"
-```
+{% endhighlight %}
 
 This is called a scenario and it maps directly to what you want to happen in plain language (technically, it's [Gherkin](https://cucumber.io/docs/gherkin/), but it's still readable as english.)  This change in testing focus makes it really hard to compare to other test runners.  I can group all the unit test runners together, and I can group all the UI test runners together.  Where do I put this one?  It's kind of out on its own island.
 

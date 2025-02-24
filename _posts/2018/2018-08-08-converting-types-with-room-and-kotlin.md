@@ -66,7 +66,6 @@ interface AlbumDao {
 This DAO does the normal CRUD operations. I have a funky custom select statement for dealing with the ordering of the albums. I want “pinned” albums to appear first and then in alphabetical order. I’m also using a data source as a return value here so I can deal with the paging adapter. Finally, here is my app database class:
 
 {% highlight kotlin %}
-
 import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
@@ -96,12 +95,12 @@ Again, this is a fairly normal — even boilerplate — implementation o
 
 Compiling this, I get the following errors:
 
-```
+{% highlight text %}
 error: Cannot figure out how to save this field into database. You can consider adding a type converter for it.
     private final java.time.Instant created = null;
 error: Cannot figure out how to save this field into database. You can consider adding a type converter for it.
     private java.time.Instant modified;
-```
+{% endhighlight %}
 
 This is not unexpected. As I mentioned earlier, SQLite doesn’t understand the `Instant` type, so it needs to be converted before being stored. Fortunately, the Room persistence library has provided a mechanism for this. First, create a class with a to/from pair of type converters:
 
@@ -162,9 +161,9 @@ The important line here is line 8 — the @TypeConverters annotation. You ca
 
 There is another warning that creeps up:
 
-```
+{% highlight text %}
 warning: There are multiple good constructors and Room will pick the no-arg constructor. You can use the @Ignore annotation to eliminate unwanted constructors.
-```
+{% endhighlight %}
 
 If you have done any Room development with Kotlin, the likelihood is that you have run into this. This is because the de-facto advice is to use a data class as the model, such as I have done above. You can easily get rid of this warning by switching to a normal class. This is my converted class:
 

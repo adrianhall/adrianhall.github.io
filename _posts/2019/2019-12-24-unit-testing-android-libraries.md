@@ -19,7 +19,7 @@ There are quite a few classes in the Android standard library that are not Andro
 
 To do this, use `Unmock` - a library that does this for a whole host of standard classes.  First, edit the project-level `build.gradle` file, and add the appropriate line:
 
-```gradle
+{% highlight gradle %}
 buildscript {
     ext.kotlin_version = '1.3.61'
     repositories {
@@ -32,12 +32,12 @@ buildscript {
         classpath 'de.mobilej.unmock:UnMockPlugin:0.7.3'
     }
 }
-```
+{% endhighlight %}
 {:.line-numbers data-start="1" data-line="10"}
 
 Then edit the `build.gradle` for the module containing the tests.  Add the plugin at the top:
 
-```gradle
+{% highlight gradle %}
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -52,7 +52,7 @@ unMock {
 }
 
 # Rest of the build.gradle file
-```
+{% endhighlight %}
 {:.line-numbers data-start="1" data-line="4"}
 
 I want to mock `android.net.Uri` as well since I parse a Uri.  Using this class instead of the more normal `java.net.Uri` class allows me to pass it directly to an Intent to start the web browser.  The other classes that are included were required by the two main classes.  Unmock can mock a whole host of classes.  There is an exhaustive list on [their web site](https://github.com/bjoernQ/unmock-plugin).
@@ -67,18 +67,18 @@ Enter `Mockito` - a library that mocks objects for you.  Using this library in K
 
 Start by adding the [Mockito library](https://site.mockito.org/) as a test dependency in your module-level `build.gradle` file.
 
-```gradle
+{% highlight gradle %}
 dependencies {
     # Rest of the gradle dependencies
 
     testImplementation 'org.mockito:mockito-core:2.23.0'
 }
-```
+{% endhighlight %}
 {:.line-numbers data-start="22"}
 
 You can create the mock anywhere during the test creation.  I have a string referenced by the id `R.string.dslib_api_key`, which I mock like this:
 
-```kotlin
+{% highlight kotlin %}
 @Test(expected = InvalidApiKey::class)
 fun test_api_key() {
     va api_key = "1234"
@@ -89,7 +89,7 @@ fun test_api_key() {
     val actual = DSLibrary(context)
     // This should throw
 }
-```
+{% endhighlight %}
 
 You have to surround the `when` method with back-ticks because `when` is a reserved word in Kotlin.  Thanks Mockito!  I hope they return to `whenever` as a method name or provide both as alternatives, as this tripped me up for a while.
 

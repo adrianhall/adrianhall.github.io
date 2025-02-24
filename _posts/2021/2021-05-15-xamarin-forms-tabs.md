@@ -10,7 +10,7 @@ Following on from [last weeks article]({% post_url 2021/2021-05-09-xamarin-forms
 
 To start, I created the three pages as `ContentPage` views, complete with XAML layout.  For example, here is my `ListContactsPage` XAML file:
 
-``` xml
+{% highlight xml %}
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -25,11 +25,11 @@ To start, I created the three pages as `ContentPage` views, complete with XAML l
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
-```
+{% endhighlight %}
 
 The `WindowBackgroundColor` is defined in the application level `App.xaml` file:
 
-``` xml
+{% highlight xml %}
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:ContactsApp.Controls"
@@ -45,7 +45,7 @@ The `WindowBackgroundColor` is defined in the application level `App.xaml` file:
         </ResourceDictionary>
     </Application.Resources>
 </Application>
-```
+{% endhighlight %}
 
 The `ListContactsPage.xaml.cs` is nothing special at this point.  In fact, it's the default when you create a `ContentPage`.
 
@@ -57,7 +57,7 @@ Xamarin Forms introduced the concept of an app shell a while ago.  It's a near c
 
 Create a new `xaml`/`xaml.cs` file combination in your shared project - it can be a `ContentPage` or `ContentView` - it really doesn't matter.  By convention, this is called `AppShell.xaml`, but it is really up to you what you call it.  The `AppShell.xaml.cs` file can be "normal":
 
-``` csharp
+{% highlight csharp %}
 namespace ContactsApp
 {
     public partial class AppShell : Xamarin.Forms.Shell
@@ -68,7 +68,7 @@ namespace ContactsApp
         }
     }
 }
-```
+{% endhighlight %}
 
 The important thing here is that it inherits from the `Xamarin.Forms.Shell` and you initialize the component (which is common to all Xamarin Forms components).
 
@@ -76,7 +76,7 @@ The important thing here is that it inherits from the `Xamarin.Forms.Shell` and 
 
 The work is done in the XAML for the app shell:
 
-``` xml
+{% highlight xml %}
 <Shell xmlns="http://xamarin.com/schemas/2014/forms"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:views="clr-namespace:ContactsApp.Views"
@@ -111,28 +111,28 @@ The work is done in the XAML for the app shell:
         </ShellContent>
     </TabBar>
 </Shell>
-```
+{% endhighlight %}
 
 There are two sections here.  First, the resources.  We're setting up a style for the tab bar that uses colors defined in the `App.xaml` file.  I like to centralize all these definitions.  It makes it easier to make changes in one color.  You can define the colors like this:
 
-``` xml
+{% highlight xml %}
     <!-- Colors for the tab bar -->
     <Color x:Key="TabBarBackgroundColor">#252836</Color>
     <Color x:Key="TabBarTitleColor">#6FCF97</Color>
     <Color x:Key="TabBarUnselectedColor">#828282</Color>
-```
+{% endhighlight %}
 
 Select whatever colors you want.  The `TabBarTitleColor` is the color of the selected icon, and the `TabBarUnselectedColor` is the color of the rest of the icons.
 
 The second section is the tabs themselves.  You can create multiple tab bars, each with their own navigation stack.  The tab bars will be swapped out when you navigate to a route defined by the `Route`.  My tab bar has three tabs - Contacts, Groups, and Profile.  Here is the profile in isolation:
 
-``` xml
+{% highlight xml %}
     <ShellContent ContentTemplate="{DataTemplate views:ProfilePage}" Route="Profile" Title="Profile">
         <ShellContent.Icon>
             <FontImageSource FontFamily="{DynamicResource IconFontFamily}" Glyph="{StaticResource ProfileIcon}"/>
         </ShellContent.Icon>
     </ShellContent>
-```
+{% endhighlight %}
 
 Each tab definition contains four things:
 
@@ -147,13 +147,13 @@ The icon can be an image (like a PNG), or - as I am doing here - a web font glyp
 
 The final step is to wire up the app shell so that it is displayed when the application starts.  This is done within the `App.xaml.cs` file:
 
-``` csharp
+{% highlight csharp %}
     public App()
     {
         InitializeComponent();
         MainPage = new AppShell();
     }
-```
+{% endhighlight %}
 
 Just replace the default `MainPage` with `AppShell`.  Yes - it really is that simple.
 

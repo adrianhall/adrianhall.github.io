@@ -75,9 +75,9 @@ After you have saved your schema, click the **Attach** button next to the `Weath
 
 The request mapping turns your GraphQL query into the HTTP request that your backend API needs. The OpenWeatherMap API has a form for a “city search” query as follows:
 
-```
+{% highlight text %}
 https://api.openweathermap.org/data/2.5/weather?q=name&APPID=apikey
-```
+{% endhighlight %}
 
 This is provided by the following request mapping:
 
@@ -104,7 +104,7 @@ Replace the _APIKEY_ with the API key of your OpenWeatherMap API. You can includ
 
 One of the criteria I have for this API is that I want to hide the details of the backend API. I do this by divorcing the types — one type for the client and one type for the backend API. The response mapping template does the work of mapping one to the other
 
-```
+{% highlight text %}
 #if($context.result.statusCode == 200)
 ## Success - decode the body and reconstruct the response with the schema in mind
 #set($response = $util.parseJson($context.result.body))
@@ -127,7 +127,7 @@ $util.toJson($result)
 ## Error - send the proper error message
 $utils.appendError($ctx.result.body, $ctx.result.statusCode)
 #end
-```
+{% endhighlight %}
 
 One important consideration is that the body of the response is provided as a string. If the API provides data as JSON or XML, you need to convert it to an object before use. This is done with `$util.parseJson()` in the case of JSON data.
 
@@ -149,9 +149,9 @@ query GetWeather($city:String!) {
 
 Select the **Query Variables** section below the query editor and enter the following:
 
-```
+{% highlight json %}
 { "city": "London" }
-```
+{% endhighlight %}
 
 Click the Play button.  You should see the following results:
 
@@ -161,7 +161,7 @@ Congratulations! You’ve created a GraphQL weather API.
 
 However, we aren’t finished. There are a couple of issues. here. Firstly, the location does not include the country information. Secondly, the temperature is in degrees kelvin, which isn’t exactly a normal temperature. I’d prefer degrees celsius. Also, the timestamp is in some obscure format. I’d prefer that to be in ISO-8601 format. Adding the country is easy. Just place curly-braces around the text and add in the country (which is stored in `sys.country` in the response. Similarly, converting kelvin to celsius is a little bit of math that you can put in the resolver. Here is the new response mapping template:
 
-```
+{% highlight text %}
 #if($context.result.statusCode == 200)
 ## Success - decode the body and reconstruct the response with the schema in mind
 #set($response = $util.parseJson($context.result.body))
@@ -187,7 +187,7 @@ $util.toJson($result)
 ## Error - send the proper error message
 $utils.appendError($ctx.result.body, $ctx.result.statusCode)
 #end
-```
+{% endhighlight %}
 
 Note that the calculations are done before the result is formed. The calculations or formatting has to be done prior to putting it in an object.
 

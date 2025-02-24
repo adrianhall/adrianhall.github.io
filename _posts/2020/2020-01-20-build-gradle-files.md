@@ -16,7 +16,7 @@ Literally.  The language underlying gradle, which is used for builds by Android 
 
 Start by creating a file called `prebuild.gradle` at the same level as the project `build.gradle`.  Fill it with these contents:
 
-```gradle
+{% highlight gradle %}
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 
@@ -34,15 +34,15 @@ task generateAppConfigurationFile(type:Exec) {
 }
 
 build.dependsOn generateAppConfigurationFile
-```
+{% endhighlight %}
 
 This creates a task called `generateAppconfigurationFile`.  It reads in the JSON file specified (relative to **this gradle file**).  Once read in, you could create a new object.  For instance:
 
-```gradle
+{% highlight gradle %}
 def newData = [:]
 newData.baseUrl = data.base_url.value
 newData.clientId = data.client_id.value
-```
+{% endhighlight %}
 
 Once I've got the right data, I create the JSON string, and finally write it to the configuration file (again, relative to **this gradle file**). 
 
@@ -54,9 +54,9 @@ If `infrastructure.json` or the `app/src/main/res/raw` directory doesn't exist, 
 
 Now, go to the module-level `build.gradle` file.  For me, this is `app/build.gradle`.  Add the following line to the top:
 
-```gradle
+{% highlight gradle %}
 apply from: '../prebuild.gradle'
-```
+{% endhighlight %}
 
 Mine is right under the `apply plugin:` lines.
 

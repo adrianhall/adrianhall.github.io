@@ -51,7 +51,7 @@ I've added the `API-Key` header alongside the `ZUMO-API-VERSION` header.  The re
 
 We aren't quite done yet.  Azure Mobile Apps doesn't understand API keys, so you have to tell it by adding a policy to the client.  In .NET, a policy is a [DelegatingHandler](https://docs.microsoft.com/dotnet/api/system.net.http.delegatinghandler?view=netstandard-2.0).  Delegating handlers act as a pipeline - each one is given the chance to alter the request or do something with the response.  A simple version to add the API key would be as follows:
 
-```csharp
+{% highlight csharp %}
 public class ApiKeyPolicyHandler : DelegatingHandler
 {
     private string _key;
@@ -67,21 +67,21 @@ public class ApiKeyPolicyHandler : DelegatingHandler
         return base.SendAsync(request, token);
     }
 }
-```
+{% endhighlight %}
 
 It's a little harder to handle two keys.  You have to clone the request (including the body of the request), then add the API key before sending the request.  If the response is 401 and the right `WWW-Authenticate` header is present, then clone again and add the second key.  
 
 To enable the `ApiKeyPolicyHandler`, update the way you create the client:
 
-```csharp
+{% highlight csharp %}
 var client = new MobileServiceClient(Constants.BackendUrl, new ApiKeyPolicyHandler(Constants.ApiKey));
-```
+{% endhighlight %}
 
 You can also stack policies:
 
-```csharp
+{% highlight csharp %}
 var client = new MobileServiceClient(Constants.BackendUrl,
     new ApiKeyPolicyHandler(Constants.ApiKey), new LoggingPolicyHandler());
-```
+{% endhighlight %}
 
 For more information on this, see the [HOW-TO documentation](https://azure.github.io/azure-mobile-apps/howto/client/dotnet/#customize-request-headers).  Each Azure Mobile Apps client library has a similar functionality, so if you happen to be writing in JavaScript, Kotlin, or Swift, check out the appropriate documentation for those client libraries.

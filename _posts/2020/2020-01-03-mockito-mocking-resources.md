@@ -16,7 +16,7 @@ Actually, that wasn't the problem.  The problem was how do you test that functio
 
 I have a basic configuration library that is constructed like this:
 
-```kotlin
+{% highlight kotlin %}
 class Configuration internal constructor(jsonContext: String): Map<String, Any> {
   internal constructor(stream: InputStream)
     : this(stream.bufferedReader(Charsets.UTF_8)).readText()
@@ -34,7 +34,7 @@ class Configuration internal constructor(jsonContext: String): Map<String, Any> 
 
   // Rest of my class here
 }
-```
+{% endhighlight %}
 
 All the secondary constructors call one another in a cascade.  If I provide a resource name, it looks it up, calling the constructor above it (which has a resource ID) that opens the resource before calling the constructor above it (which takes a stream) that loads the JSON, which calls the primary constructor, which parses the JSON.
 
@@ -49,7 +49,7 @@ With my new best friend, [Mockito](https://site.mockito.org/), this should be ea
 
 I use both `mockito` and [`mockito-kotlin`](https://github.com/nhaarman/mockito-kotlin) in my testing.  You will see why in a moment.  Here are my dependencies:
 
-```gradle
+{% highlight gradle %}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -61,13 +61,13 @@ dependencies {
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     testImplementation "androidx.test:core:1.2.0"
 }
-```
+{% endhighlight %}
 
 ## Create a BaseTest class
 
 I tend to have a bunch of utility functions for loading JSON files and mocking.  They are used throughout the tests, so I put them in an abstract `BaseTest` class:
 
-```kotlin
+{% highlight kotlin %}
 abstract class BaseTest {
     fun openJsonFile(filename: String): InputStream
         = javaClass.classLoader!!.getResource(filename).openStream()
@@ -88,13 +88,13 @@ abstract class BaseTest {
         return context
     }
 }
-```
+{% endhighlight %}
 
 The `getTestContext()` method returns a mocked Android context that will allow you to interact with a resource.  This allows me to test different files at different times.
 
 I can then write my test as follows:
 
-```kotlin
+{% highlight kotlin %}
 class AzureConfigurationTest: BaseTest() {
     @Test
     fun `can load a configuration from a resource name`() {
@@ -103,7 +103,7 @@ class AzureConfigurationTest: BaseTest() {
         assertNotNull(actual)
     }
 }
-```
+{% endhighlight %}
 
 The test is good, but what went wrong?
 
@@ -114,7 +114,7 @@ The test is good, but what went wrong?
 
 The problem, in both cases, is in how I constructed the mock.  There are two mechanisms for returning data through the mock.  `doReturn` is for static data.  `doAnswer` is for dynamic data.  A stream is always dynamic data.  I can adjust the `openRawResource` call as follows:
 
-```kotlin
+{% highlight kotlin %}
   val resources = mock<Resources> {
       on { openRawResource(eq(id)) } doAnswer {
           val file = "${resource}.json"
@@ -122,13 +122,13 @@ The problem, in both cases, is in how I constructed the mock.  There are two mec
       }
       //...
   }
-```
+{% endhighlight %}
 
 In this interim state, I changed `eq(id)` to `any()` to see if it worked.  This was actually how I discovered that the `getIdentifier()` call was returning 0. 
 
 The second problem was a little harder to track down.  I adjusted the mock again to the following:
 
-```kotlin
+{% highlight kotlin %}
   val resources = mock<Resources> {
       on { openRawResource(eq(id)) } doAnswer {
           val file = "${resource}.json"
@@ -139,13 +139,13 @@ The second problem was a little harder to track down.  I adjusted the mock again
           id
       }
   }
-```
+{% endhighlight %}
 
 Now, set a breakpoint on the second `doAnswer` block.  It never gets executed.  Looking at the code and thinking through the process, I thought - "hmmm - I'm not mocking `context.packageName`.  What happens when the packageName is null?"  
 
 Short version: `any()` does not match null.  So I have to also mock the packageName:
 
-```kotlin
+{% highlight kotlin %}
 fun getTestContext(id: Int, resource: String): Context {
     val resources = mock<Resources> {
         on { openRawResource(eq(id)) } doAnswer {
@@ -163,7 +163,7 @@ fun getTestContext(id: Int, resource: String): Context {
 
     return context
 }
-```
+{% endhighlight %}
 
 With this version, I learned two valuable lessons:
 

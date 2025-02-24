@@ -41,11 +41,11 @@ The Whorlwind library takes care of the rest.
 
 Whorlwind is based on [RxJava](https://github.com/ReactiveX/RxJava), so you will actually need to add three libraries to your dependencies:
 
-```gradle
+{% highlight gradle %}
 implementation "io.reactivex.rxjava2:rxjava:2.1.3"
 implementation "io.reactivex.rxjava2:rxandroid:2.1.0"
 implementation "com.squareup.whorlwind:whorlwind:2.0.0"
-```
+{% endhighlight %}
 
 Don't forget to synchronize your IDE so you can use the new libraries
 
@@ -53,14 +53,14 @@ Don't forget to synchronize your IDE so you can use the new libraries
 
 Permissions are handled in the `AndroidManifest.xml` file:
 
-```xml
+{% highlight xml %}
 <!-- Biometrics -->
 <uses-feature
     android:name="android.hardware.fingerprint"
     android:required="false"/>
 <uses-permission
     android:name="android.permission.USE_FINGERPRINT"/>
-```
+{% endhighlight %}
 
 The feature states that we don't "require" a fingerprint reader, but we declare that we use it so that it displays the requirement within the Google Play Store if you distribute your app.
 
@@ -68,7 +68,7 @@ The feature states that we don't "require" a fingerprint reader, but we declare 
 
 Just because you have the permission listed in the `AndroidManifest.xml` doesn't mean that your users have given the app that permission. We need to ask for permission if it has not been granted. I've done this in the `AuthenticatorActivity`. First, let's set some things up:
 
-```kotlin
+{% highlight kotlin %}
 class AuthenticatorActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_PERMISSIONS_FINGERPRINT = 90001
@@ -87,7 +87,7 @@ class AuthenticatorActivity : AppCompatActivity() {
 
     // Rest of class
 }
-```
+{% endhighlight %}
 
 Permissions are handled by calling out to the OS and then handling the response - much the same way that dealing with the camera, as an example, is done. To handle the request, we need a request code which is located in the companion object. In addition, we've got a couple of booleans to ensure that we don't perpetually ask for permissions when they have been denied. 
 
@@ -95,7 +95,7 @@ I've also shown off the private variables I need to handle the Whorlwind library
 
 In the `onCreate()` method, we need to check for permissions and initiate a permissions request if we don't have them. I put this at the bottom of the `onCreate()` method so that it's the last thing that happens:
 
-```kotlin
+{% highlight kotlin %}
 // Ask for permission to use the fingerprint scanner
 if (fingerprintManager.isHardwareDetected) {
     if (checkSelfPermission(Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
@@ -108,11 +108,11 @@ if (fingerprintManager.isHardwareDetected) {
         hasPermissions = true
     }
 }
-```
+{% endhighlight %}
 
 Here, `fingerprintManager` is retrieved using `getSystemService()`. I also need to handle the response from the OS:
 
-```kotlin
+{% highlight kotlin %}
 /**
   * Callback for when the permissions has been requested and responded to.
   */
@@ -128,7 +128,7 @@ override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out
         }
     }
 }
-```
+{% endhighlight %}
 
 This is fairly standard boiler-plate code for handling permissions checks. You should be able to re-use this.
 
@@ -136,10 +136,10 @@ This is fairly standard boiler-plate code for handling permissions checks. You s
 
 In the `onCreate()` method, add the following:
 
-```kotlin
+{% highlight kotlin %}
 whorlwind = Whorlwind.create(this,
   SharedPreferencesStorage(this, "amazon.cognito"), "cognito")
-```
+{% endhighlight %}
 
 This will initialize the Whorlwind library.
 
@@ -147,18 +147,18 @@ This will initialize the Whorlwind library.
 
 We want biometric storage to be available whenever it is needed, so we need to store the password securely whenever there is a successful login. In the `handleLogin()` method, I updated the `SUCCESS` case with the following:
 
-```kotlin
+{% highlight kotlin %}
 IdentityRequest.SUCCESS -> {
     analyticsService.recordSuccessfulLogin(loginFormUsernameField.text.toString())
     model.updateStoredUsername(loginFormUsernameField.text.toString())
     saveToBiometricStore(loginFormPasswordField.text.toString())
     this@AuthenticatorActivity.finish()
 }
-```
+{% endhighlight %}
 
 This just calls a new method to store the password:
 
-```kotlin
+{% highlight kotlin %}
 
 /**
  * Save the current form data to the biometric store
@@ -176,7 +176,7 @@ private fun saveToBiometricStore(password: String) {
        toast("Biometric storage is not available")
     }
 }
-```
+{% endhighlight %}
 
 You can "fail silently" if you wish, but I've added a toast (from Anko) so that you can see when biometrics is not available.
 
@@ -193,13 +193,13 @@ The actual code is almost a direct copy from the Whorlwind sample app and is a g
 
 The final step is to load the data. I added a "fingerprint icon" to the UI with an ID of `loginFormFingerprintButton`. This is wired up within the `onCreate()` method to call my data loader:
 
-```kotlin
+{% highlight kotlin %}
 loginFormFingerprintButton.onClick { loadFromBiometricStorage() }
-```
+{% endhighlight %}
 
 This is similar to all the other buttons on the page. Now, let's load the data:
 
-```kotlin
+{% highlight kotlin %}
 /**
   * Load the data from the biometric store and populate the right fields
   */
@@ -239,7 +239,7 @@ private fun loadFromBiometricStore() {
         toast("Biometric storage is not available")
     }
 }
-```
+{% endhighlight %}
 
 When Whorlwind reads the storage, it can find itself in two states - it either needs authentication or it can provide the data. All other conditions are errors which you can silently eat or print errors for. I produce toasts for each of these conditions.
 

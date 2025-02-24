@@ -24,7 +24,7 @@ A pre-signed URL is used to grant a user temporary credentials to perform an act
 
 To accomplish this, I have expanded my GraphQL schema as follows:
 
-```graphql
+{% highlight graphql %}
 type S3Object {
   bucket: String
   key: String
@@ -39,7 +39,7 @@ type User {
   profilePicture: S3Object
   # Rest of the User object goes here
 }
-```
+{% endhighlight %}
 
 The `S3Object` is the same `S3Object` mentioned within the [AWS Amplify documentation when talking about complex file objects](https://aws-amplify.github.io/docs/cli/graphql#s3-objects), so the response is compatible with the AWS Amplify libraries when they add support for complex objects. However, I have extended the `S3Object` by adding two fields to it for the pre-signed URLs. The `profilePicture` value will be resolved by the AWS Lambda function I mentioned earlier. The AWS Lambda function is fed a context that consists of a source (the user that is being handled) and identity (the user that is making the request).
 
@@ -58,7 +58,7 @@ With this model, we can do several things (aside from uploading the file):
 
 Before we get to the Lambda functions, we need to create resources. I already have a configuration that includes AWS AppSync, [Amazon Cognito] user pools, and Amazon Cognito identity pools, plus some IAM roles. It is built using the [Serverless Framework] for repeatable deployments. Here is the Amazon S3 definition:
 
-```yaml
+{% highlight yaml %}
     FileStorage:
       Type: AWS::S3::Bucket
       Properties:
@@ -72,7 +72,7 @@ Before we get to the Lambda functions, we need to create resources. I already ha
                 - GET
                 - PUT
               MaxAge: 3000
-```
+{% endhighlight %}
 
 In addition, we need to adjust permissions via IAM roles. Specifically:
 
@@ -82,7 +82,7 @@ In addition, we need to adjust permissions via IAM roles. Specifically:
 
 I’m going to store the images with the key `profilePictures/id.png` within the S3 bucket where the id concerned is the id of the user. The AuthRole and UnauthRole definitions within my IAM roles provide the user permissions. For example, here is my new UnauthRole:
 
-```yaml
+{% highlight yaml %}
 UnauthRole:
       Type: AWS::IAM::Role
       Properties:
@@ -117,7 +117,7 @@ UnauthRole:
                   Effect: Allow
                   Resource:
                     - { Fn::Join: [ "/", [{ Fn::GetAtt: [ GraphQlApi, Arn ]}, "types/Query/*" ]]}
-```
+{% endhighlight %}
 
 > Operate under the “Least Privileges Possible” principal when dealing with S3 resources. Your users should only get access to the actual files they need. A common practice is to separate the web site (which is implemented via a PublicRead S3 bucket and an Amazon CloudFront distribution) and the data files (which are in a separate S3 bucket that has higher authentication requirements).
 
@@ -125,7 +125,7 @@ UnauthRole:
 
 Within Serverless, we first of all need to define a function:
 
-```yaml
+{% highlight yaml %}
   profilePictureResolver:
     handler: graphql.profilePictureResolver
     name: ${self:custom.api}-profilePictureResolver
@@ -135,11 +135,11 @@ Within Serverless, we first of all need to define a function:
     environment:
       S3_BUCKET: { Fn::GetAtt: [ FileStorage, Arn ]}
       S3_URL: { Fn::GetAtt: [ FileStorage, WebsiteURL ]}
-```
+{% endhighlight %}
 
 This defines a NodeJS 8.10 AWS Lambda function that will invoke the `profilePictureResolver` function within the `graphql.js` file. It also defines some environment variables for where the resource locations are and the IAM role that will be used:
 
-```yaml
+{% highlight yaml %}
     AWSAppSyncS3LambdaIAMRole:
       Type: AWS::IAM::Role
       Properties:
@@ -173,11 +173,11 @@ This defines a NodeJS 8.10 AWS Lambda function that will invoke the `profilePict
                   Effect: Allow
                   Resource:
                     - "arn:aws:logs:#{AWS::Region}:#{AWS::AccountId}:*"
-```
+{% endhighlight %}
 
 To test the facility, I’m going to use the following function definition:
 
-```javascript
+{% highlight js %}
 exports.profilePictureResolver = (event, context, callback) => {
   console.log(`Invoke: event = ${JSON.stringify(event, null, 2)}`);
   console.log(`context = ${JSON.stringify(context, null, 2)}`);
@@ -187,11 +187,11 @@ exports.profilePictureResolver = (event, context, callback) => {
   };
   callback(null, response);
 };
-```
+{% endhighlight %}
 
 This is a very simple function resolver that just returns constants, but it allows me to take a look at the event and context that is being passed in. Finally, let’s take a look at the data source definition that I have placed in the `custom.appSync` section of my `serverless.yml` file:
 
-```yaml
+{% highlight yaml %}
 custom:
   appSync:
     dataSources:
@@ -206,7 +206,7 @@ custom:
                 - "lambda:invokeFunction"
               Resource:
                 - { Fn::GetAtt: [ ProfilePictureResolverLambdaFunction, Arn ]}
-```
+{% endhighlight %}
 
 This allows us to set up a test suite within the AWS AppSync console. First, navigate to the appropriate resolver definition:
 
@@ -215,18 +215,18 @@ This allows us to set up a test suite within the AWS AppSync console. First, nav
 3. Select **Queries**.
 4. Add the following to the query window:
 
-    ```graphql
+    {% highlight graphql %}
     query Me {
       me {
         id
         profilePicture { url uploadUrl }
       }
     }
-    ```
+    {% endhighlight %}
 
 When you run this query, you will see the following in the output:
 
-```json
+{% highlight json %}
 {
   "data": {
     "me": {
@@ -238,7 +238,7 @@ When you run this query, you will see the following in the output:
     }
   }
 }
-```
+{% endhighlight %}
 
 This indicates that the Lambda function is being called and that it is returning what we expected. We can now take a look at the logs in CloudWatch:
 
@@ -253,7 +253,7 @@ This indicates that the Lambda function is being called and that it is returning
 
 The only real thing to note is this: nothing from the GraphQL context is passed into the Lambda context by default. It does not know about the identity of the calling user nor the source object, both of which are required for the functionality I want to provide. You need to specify what is passed in within the request mapping template. In this case, I need `$context.source` and `$context.identity` to be passed into the AWS Lambda function:
 
-```
+{% highlight json %}
 {
   "version": "2017-02-28",
   "operation": "Invoke",
@@ -262,11 +262,11 @@ The only real thing to note is this: nothing from the GraphQL context is passed 
     "identity": $util.toJson($context.identity)
   }
 }
-```
+{% endhighlight %}
 
 If we run the test again, we see that the payload becomes the event argument within the Lambda function. We can now move on to our simple Lambda function that generates the appropriate data:
 
-```javascript
+{% highlight js %}
 const AWS = require('aws-sdk');
 const process = require('process');
 
@@ -305,11 +305,11 @@ exports.profilePictureResolver = (event, context, callback) => {
 
     callback(null, response);
 };
-```
+{% endhighlight %}
 
 Now, when we run the test, we get the following:
 
-```json
+{% highlight json %}
 {
   "data": {
     "me": {
@@ -321,7 +321,7 @@ Now, when we run the test, we get the following:
     }
   }
 }
-```
+{% endhighlight %}
 
 Obviously, your data will be different. I can now do a PUT to the uploadUrl from my client using standard HTTP clients to upload a new picture. We can also use the same mechanism to generate a pre-signed URL for the getObject operation.
 
@@ -329,11 +329,11 @@ Obviously, your data will be different. I can now do a PUT to the uploadUrl from
 
 You might think that this is a great way to get the profile picture. It does, however, show off one problem that is an issue with GraphQL. Let’s take an example query:
 
-```
+{% highlight graphql %}
 query me {
   profilePicture { url }
 }
-```
+{% endhighlight %}
 
 This is a perfectly reasonable request — give me the download URL of my profile picture. Now, how does that affect the context of the request? The `$context.source` is a blank object because we are not asking for any other fields. We aren’t requesting any other fields, so nothing is passed down to the resolver of the profilePicture field. That means `$context.source.id` does not exist, and the URL construction will fail.
 

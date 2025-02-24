@@ -21,9 +21,9 @@ Use either `react-native init` to create your app. You can use `create-react-nat
 
 Use the following to add the appropriate packages:
 
-```bash
+{% highlight bash %}
 yarn add --dev react-native-typescript-transformer typescript @types/react @types/react-native
-```
+{% endhighlight %}
 
 The [first package](https://github.com/ds300/react-native-typescript-transformer) is the glue code that makes this all possible. After that, you should recognize the other packages as they are common for all TypeScript projects.
 
@@ -31,7 +31,7 @@ The [first package](https://github.com/ds300/react-native-typescript-transformer
 
 TypeScript has a [configuration file](https://www.typescriptlang.org/docs/handbook/tsconfig-json.html) called `tsconfig.json`. The major parts of this are as follows:
 
-```json
+{% highlight json %}
 {
     "compilerOptions": {
         "target": "es2015",
@@ -41,7 +41,7 @@ TypeScript has a [configuration file](https://www.typescriptlang.org/docs/handbo
         "allowSyntheticDefaultImports": true
     }
 }
-```
+{% endhighlight %}
 
 You can add whatever other options you need to your TypeScript configuration at this point. I like things like `noImplicitAny` here, for example.
 
@@ -49,7 +49,7 @@ You can add whatever other options you need to your TypeScript configuration at 
 
 This (along with the `react-native-typescript-transformer` package) is the bit that does the magic – compiling your TypeScript files on the fly! Create a file called `rn-cli.config.js` with the following contents:
 
-```javascript
+{% highlight js %}
 module.exports = {
     getTransformModulePath() {
         return require.resolve('react-native-typescript-transformer');
@@ -58,16 +58,18 @@ module.exports = {
         return [ 'ts', 'tsx' ]
     }
 };
-```
+{% endhighlight %}
+
 
 You will also want to update the start script definition within `package.json`:
 
-```json
+{% highlight json %}
 "scripts": {
     "start": "react-native start --transformer node_modules/react-native-typescript-transformer/index.js --sourceExts ts,tsx",
     "test": "jest"
 },
-```
+{% endhighlight %}
+
 
 This will add the transformer when you run `npm start` instead of using the IDE.
 
@@ -126,12 +128,12 @@ Yes, this is just plain old TypeScript+JSX, but using React Native components.
 
 Before we continue, there is a bunch of code in the `index.ios.js` and `index.android.js` files. Unless you want to hack the iOS and Android platform code, it’s best to leave these as JavaScript code. However, you can make them minimal. Both of mine are identical:
 
-```javascript
+{% highlight js %}
 import { AppRegistry } from 'react-native';
 import App from './src';
 
 AppRegistry.registerComponent('masterdetailtemplate', () => App);
-```
+{% endhighlight %}
 
 ## Add React Native Launch Controls and Debug
 

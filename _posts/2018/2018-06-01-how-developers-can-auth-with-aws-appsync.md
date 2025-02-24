@@ -98,7 +98,7 @@ type Mutation {
 
 In addition, we’ll want a separate setting so that only users in the `announcements` group, another group we’ve defined inside our user pool, can post to the `Announcements` category. This is done inside the request resolver:
 
-```
+{% highlight text %}
 #foreach($group in $ctx.identity.claims.get("cognito:groups"))
 #if($group == "announcements")
 #set($inAnnouncementsGroup = true)
@@ -121,7 +121,7 @@ In addition, we’ll want a separate setting so that only users in the `announce
 #else
 $utils.unauthorized()
 #endif
-```
+{% endhighlight %}
 
 The first few lines determine if the user is within the right group. Developers can do any checks we want here. For example, these checks might be verifying that the user is within the corporate network, or that the user has a specific claim within the directory.
 

@@ -43,7 +43,7 @@ Underneath, it's a fairly reasonable app, started with `create-react-app`.  Here
 One of the things I wanted to sort out in my mind first was the structure of the app.  I felt that having the lower level components be "pure" was a good idea.  Pure components don't hook into the state store, nor do they understand anything about the routing mechanism.  They just display the data and bubble the interactive events up to the top level.  Thus, for instance, I have a `RouteListItem` component that just displays the list components.  When a user clicks on the list item, it triggers an event that the parent component passes down to it as props.  All the routing and state management is done at the 
 top level:
 
-```javascript
+{% highlight js %}
 const RouteListItem = ({ displayUnits, onClick, route }) => {
   const colors = route.isCompleted ? { color: green[500] } : color: grey[500];
   const icon = route.isCompleted
@@ -76,7 +76,7 @@ RouteListItem.defaultProps = {
 };
 
 export default RouteListItem;
-```
+{% endhighlight %}
 
 The nice thing about pure components is that they can be tested individually.  I don't need to provide very many mock services to test the components.
 
@@ -94,7 +94,7 @@ To get around this, I provided a simple wrapper around the main application.  If
 
 The [redux-persist](https://www.npmjs.com/package/redux-persist) library is great for settings.  In fact, it's pretty good any time you want to load and save a complete section of the redux store.  However, if you want to store only partials, then you need something else.  My way feels really hacky.  First off, I created a `route-state-client`:
 
-```javascript
+{% highlight js %}
 import Dexie from 'dexie';
 
 class RouteStateService {
@@ -122,22 +122,22 @@ class RouteStateService {
 const routeServiceClient = new RouteStateService();
 
 export default routeServiceClient;
-```
+{% endhighlight %}
 
 This is a singleton.  When the app loads, it called `loadRouteState()`.  This returns a set of objects that look like this:
 
-```json
+{% highlight json %}
 [
   { "routeId": "some-uuid", "isCompleted": true },
   { "routeId": "some-other-uuid", "isCompleted": true }
 ]
-```
+{% endhighlight %}
 
 This is then fed into the redux store as a load event sequentially, setting an `isLoading` flag to ensure that the application doesn't save the events back again.  If the `routeServiceClient` was a network service, then that would result in additional network traffic and backend consumption.  
 
 On the save side, I have a piece of middleware:
 
-```javascript
+{% highlight js %}
 import { UPDATE_ROUTE_ACTION } from './reducers/routes';
 import routeServiceClient from '../services/route-service';
 
@@ -156,7 +156,7 @@ const saveRoutesMiddleware = () => (next) => async (action) => {
 };
 
 export default saveRoutesMiddleware;
-```
+{% endhighlight %}
 
 This looks for the route update actions and saves them once they make it through the redux dispatch process.  The save only happens when the `isLoading` flag is not set (i.e. when they aren't produced by a load operation).
 

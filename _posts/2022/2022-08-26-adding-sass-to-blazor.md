@@ -8,12 +8,12 @@ tags:
 
 As I mentioned in [my last article]({% post_url 2022/2022-08-25-building-a-serverless-mud %}), I'm building a cloud-based MUD using all the modern techniques that I have available to me.  One of the things I decided was that I was going to use an ASP.NET Core application hosting a single-page web application written in Blazor and I'm going to be running that inside a Docker image so I can deploy it onto Azure Container Apps.  Scaffolding the app out is easy:
 
-``` bash
+{% highlight bash %}
 $ mkdir cloudmud
 $ cd cloudmud
 $ dotnet new blazorwasm
 $ .\cloudmud.sln
-```
+{% endhighlight %}
 
 This opens up Visual Studio for me with three projects - a `Client`, a `Server`, and a `Shared` project - so far, so good.  
 
@@ -54,7 +54,7 @@ Once you are back in Visual Studio, open your `Client` project and create a new 
 
 You can put whatever you want inside the style sheet - SASS has a lot to offer in terms of a pre-processor for your style sheets, so experiment.  Let's look at a basic setup that I tend to use.  Firstly, I have a `Theme.scss` that includes a whole bunch of variables that I can use:
 
-``` scss
+{% highlight scss %}
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap');
 
 :root {
@@ -66,11 +66,11 @@ You can put whatever you want inside the style sheet - SASS has a lot to offer i
     --navbar-brand-color2: #808080;
     --page-background: #f9f9f9;
 }
-```
+{% endhighlight %}
 
 I have also moved (and re-formatted) the standard blazor UI stylesheet into `Blazor.scss`:
 
-``` scss
+{% highlight scss %}
 /*
 ** Standard Blazor Error Controls.
 */
@@ -102,11 +102,11 @@ I have also moved (and re-formatted) the standard blazor UI stylesheet into `Bla
         content: "An error has occurred";
     }
 }
-```
+{% endhighlight %}
 
 Just copy the data block from the `wwwroot/css/app.css` file - I've shortened it here for clarity.  Note how SASS allows me to embed the sub-elements, which makes the SASS version of the stylesheet much easier to read.  Now, let's pull this together into the `StyleSheet.scss` file:
 
-``` scss
+{% highlight scss %}
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 @import "Theme.scss";
@@ -120,7 +120,7 @@ html, page {
     margin: 0;
     padding: 0;
 }
-```
+{% endhighlight %}
 
 Now, compile the file by right-clicking on the `StyleSheet.scss` file, then selecting **Web Compiler** > **Compile file**.
 
@@ -132,14 +132,14 @@ This generates a `StyleSheet.css` file right in the `Styles` directory (which is
 
 Take a look at the generated `compilerconfig.json` file:
 
-``` json
+{% highlight json %}
 [
   {
     "outputFile": "Styles/StyleSheet.css",
     "inputFile": "Styles/StyleSheet.scss"
   }
 ]
-```
+{% endhighlight %}
 
 It's basically a list of objects with an input and output file.  This is where I can adjust the location of the generated file.  Set the `outputFile` to `wwwroot/css/app.css` and it will overwrite the existing CSS file that the project uses.  I like to rename it at this point so I don't overwrite the existing file.  The only requirement is that the build file be placed in the `wwwroot` directory somewhere so that it is copied "as is" to the built site. If you rename the file, don't forget to adjust the `index.html` file to load the style sheet from the new location.
 
@@ -153,7 +153,7 @@ When you change ANY file in the project that is handled by the Web Compiler, the
 
 Take a look at the `compilerconfig.json.defaults` file.  It contains all the settings that will be used to compile each type of file.  I'm only interested in the SASS and minifiers at the moment, so I can remove the other sections.  (I won't because they don't really affect things and I may need them later on).
 
-``` json
+{% highlight json %}
 {
   "compilers": {
     "sass": {
@@ -172,11 +172,11 @@ Take a look at the `compilerconfig.json.defaults` file.  It contains all the set
     },
   }
 }
-```
+{% endhighlight %}
 
 I can set the defaults here, or I can edit the `compilerconfig.json` file.  For instance, If I want to enable source maps (which is a good idea for debugging purposes), I can set `sourceMap` to true above, or I can set it in `compilerconfig.json` like this:
 
-``` json
+{% highlight json %}
 [
   { 
     "inputFile": "Styles/StyleSheet.scss", 
@@ -187,7 +187,7 @@ I can set the defaults here, or I can edit the `compilerconfig.json` file.  For 
     }
   }
 ]
-```
+{% endhighlight %}
 
 The choice is yours.  I prefer to set the defaults for all the files.  The options that can be set in the SASS section are:
 
@@ -215,7 +215,7 @@ This will prompt you to approve the addition of a NuGet package to the project:
 
 Press **Yes**.  Once done, the `Client.csproj` file will look like this:
 
-``` xml
+{% highlight xml %}
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
@@ -251,11 +251,11 @@ Press **Yes**.  Once done, the `Client.csproj` file will look like this:
   </ItemGroup>
 
 </Project>
-```
+{% endhighlight %}
 
 Note the addition of the `<PackageReference Include="BuildWebCompiler2022" Version="1.14.8" />` - this enables the build step.  If you are on a Linux or Mac system, you can add this to your `.csproj` file for the same effect.  Once you've done this change, delete the CSS files that were created in `wwwroot` and use **Ctrl+B** to build the client.  Take a look at the output:
 
-``` text
+{% highlight text %}
 2>------ Rebuild All started: Project: cloudmud.Client, Configuration: Debug Any CPU ------
 2>
 2>WebCompiler: Begin cleaning output of compilerconfig.json
@@ -267,7 +267,7 @@ Note the addition of the `<PackageReference Include="BuildWebCompiler2022" Versi
 2>WebCompiler: Done compiling compilerconfig.json
 2>cloudmud.Client -> D:\GitHub\cloudmud\Client\bin\Debug\net6.0\cloudmud.Client.dll
 2>cloudmud.Client (Blazor output) -> D:\GitHub\cloudmud\Client\bin\Debug\net6.0\wwwroot
-```
+{% endhighlight %}
 
 This shows the two files being built and they will appear back in the `wwwroot` directory.  The same thing will happen when you build the project through a CI/CD pipeline, so now you don't actually need Web Compiler installed to take advantage of the automatic build.
 

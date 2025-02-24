@@ -20,7 +20,7 @@ To support this, I'm going to create a `ClientConfiguration` model with the info
 
 Let's look at the model first.  I've created this in `Models/ClientConfiguration.cs` within the server project:
 
-``` csharp
+{% highlight csharp %}
 using System.Text.Json.Serialization;
 
 namespace cloudmud.Server.Models
@@ -44,13 +44,13 @@ namespace cloudmud.Server.Models
 
   }
 }
-```
+{% endhighlight %}
 
 If you take a look at the `appsettings.json` file that you created in the client project, then you will see that the structure of `ClientConfiguration` is exactly the same.  The idea is that when the service sends this object encoded as JSON, it looks exactly like the `appsettings.json` file.  I've included the `JsonPropertyName` on each property because the JSON serializer lower-cases every property name normally and I need the capitalized property name.
 
 I can actually construct most of the client configuration from the existing settings that I have set in the server-side `appsettings.json` file.  The only extra thing I need is the client application ID.  That is added as follows:
 
-``` csharp
+{% highlight csharp %}
 {
   "AzureAd": {
     "Instance": "https://login.microsoftonline.com",
@@ -72,13 +72,13 @@ I can actually construct most of the client configuration from the existing sett
   },
   "AllowedHosts": "*"
 }
-```
+{% endhighlight %}
 
 As I did in [part 1]({% post_url 2022/2022-09-01-blazor-wasm-aad-auth-part-1 %}), I can use the secrets manager to store the actual client ID.  I've used "Common" as a special tag.  I'm also going to allow the user to use a query string - something like `/appsettings.json?client=Android` to get different configurations.  If no query string is present, then I'll use the "Common" set.  
 
 The next step is to create the client configuration manager.  This is just a class that is injected (via dependency injection) into the `AppSettingsController` that returns the right data for the application settings.  First, create an interface that you will implement:
 
-``` csharp
+{% highlight csharp %}
 using cloudmud.Server.Models;
 
 namespace cloudmud.Server.Services
@@ -88,11 +88,11 @@ namespace cloudmud.Server.Services
         ClientConfiguration GetClientConfiguration(string? clientType);
     }
 }
-```
+{% endhighlight %}
 
 Then create a concrete implementation:
 
-``` csharp
+{% highlight csharp %}
 using cloudmud.Server.Models;
 
 namespace cloudmud.Server.Services
@@ -145,7 +145,7 @@ namespace cloudmud.Server.Services
         }
     }
 }
-```
+{% endhighlight %}
 
 The constructor builds a map of all the client configuration types that I have specified in the application settings.  In this case, I have one entry in the map once it is constructed.  The `GetClientConfiguration()` method is from the interface and just reads the map.  Finally, the class at the end is a mirror image of the configuration section.
 
@@ -153,14 +153,14 @@ You might wonder (given the relative complexity) why I am building a configurati
 
 Now that I have the client configuration manager, I need to inject it into the services of the app so I can actually use it.  This is a single line in the `Program.cs` (right below the `AddHttpContextAccessor` call):
 
-``` csharp
+{% highlight csharp %}
 builder.Services
   .AddSingleton<IClientConfigurationManager>(new ClientConfigurationManager(builder.Configuration));
-```
+{% endhighlight %}
 
 Finally, let's add a controller:
 
-``` csharp
+{% highlight csharp %}
 using cloudmud.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -187,7 +187,7 @@ namespace cloudmud.Server.Controllers
         }
     }
 }
-```
+{% endhighlight %}
 
 Move your client side `appsettings.json` file out of the way, and you are done? Now, before you get all excited that you are done, I'm going to warn you this won't work. You can use [Postman](https://getpostman.com) to check the output of your controller.  Make sure it matches the content of your manually created `appsettings.json` file.
 
@@ -195,7 +195,7 @@ Now, why didn't it work.  The configuration module within a Blazor WASM app read
 
 Add the following code in the client `Program.cs` (right above where you add the scoped HttpClient):
 
-``` csharp
+{% highlight csharp %}
 /*
 ** Load the clientconfiguration.json from the service.
 */
@@ -206,7 +206,7 @@ using var http = new HttpClient()
 using var response = await http.GetAsync("clientconfiguration.json");
 using var stream = await response.Content.ReadAsStreamAsync();
 builder.Configuration.AddJsonStream(stream);
-```
+{% endhighlight %}
 
 If you run your app now, it should authenticate - despite no client configuration.  The configuration is read from the server as your app starts.
 
@@ -247,15 +247,15 @@ I'm not going to cover the first three items as there are many ways to do it, mo
 
 To add the secrets into the key vault, use the following:
 
-``` powershell
+{% highlight powershell %}
 az keyvault secret set --vault-name {KEY VAULT NAME} --name "AzureAd--Domain" --value "{value}"
-```
+{% endhighlight %}
 
 Repeat for the other values you need to set, replacing the colon or double-underscore with double-dash.  You will also need to set an environment variable on your hosting provider for the key vault name - so you don't get away without environment variables here either.  The bonus is that you can set it in the CI/CD pipeline and it doesn't change (unlike the values of the secrets).
 
 Now you can add the following to your servers `Program.cs` (right under the call to `CreateBuilder(args)`):
 
-``` csharp
+{% highlight csharp %}
 var keyVaultName = builder.Configuration["KeyVaultName"];
 if (!string.IsNullOrEmpty(keyVaultName)) 
 {
@@ -264,7 +264,7 @@ if (!string.IsNullOrEmpty(keyVaultName))
     new DefaultAzureCredential()
   );
 }
-```
+{% endhighlight %}
 
 The `DefaultAzureCredential` class comes from `Azure.Identity`, and the `AddAzureKeyVault()` method comes from `Microsoft.Extensions.Configuration.AzureKeyVault` - both are available on NuGet.  
 
@@ -278,21 +278,21 @@ The same steps to link an App Configuration instance to your hosting platform ar
 
 To create the key, use something like the following:
 
-``` powershell
+{% highlight powershell %}
 az appconfig kv set --name {App Config instance} --key "AzureAd:Domain" --value "{DOMAIN}"
-```
+{% endhighlight %}
 
 One of the cool things I like about App Configuration is that if you have some values that you have to store in Key Vault (because they really need to be stored securely or they are common to a bunch of apps) but most of the configuration is separate, then you can link the two together.  Let's say the AzureAd:ClientId was one of those secrets.  You could do this:
 
-``` powershell
+{% highlight powershell %}
 az appconfig ky set-keyvault --name {App Config instance} --key "AzureAd:ClientId" --secret-identifier "AzureAd--ClientId"
-```
+{% endhighlight %}
 
 That secret is now exposed via App Configuration but stored in Key Vault.  This allows you to mix and match as you see fit.  
 
 For the code, I can use something similar to Key Vault:
 
-``` csharp
+{% highlight csharp %}
 var appConfigurationConnectionString = builder.Configuration.GetConnectionString("AppConfiguration");
 if (!string.IsNullOrEmpty(appConfigurationConnectionString))
 {
@@ -302,7 +302,7 @@ if (!string.IsNullOrEmpty(appConfigurationConnectionString))
     options.Credential = new DefaultAzureCredential()
   });
 }
-```
+{% endhighlight %}
 
 The code is remarkably similar, and the effect is the same - the App Configuration settings get merged into the configuration set and made available to you.
 

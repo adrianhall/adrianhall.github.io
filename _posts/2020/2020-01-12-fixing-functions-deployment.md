@@ -8,24 +8,24 @@ tags:
 
 I'm doing some Azure Functions development in JavaScript at the moment, using the new `azure-functions-core-tools`.  One of the features it has is command line publication, like this:
 
-```bash
+{% highlight bash %}
 $ func azure functionapp publish my-function-app
-```
+{% endhighlight %}
 
 I have a single function right now (called ping).  Running the publish step creates a ZIP file:
 
-```bash
+{% highlight bash %}
 $ npx func azure functionapp publish my-function-app               
 Getting site publishing info...
 Creating archive for current directory...
 Uploading 187.62 MB [##---------------------------------------------------------------------]
-```
+{% endhighlight %}
 
 That's a big file.  Wow!  It creates a ZIP file of the whole directory!!!!  My function isn't that big!
 
 Looking at the directories, it's obvious which ones are the culprit:
 
-```bash
+{% highlight bash %}
 $ du -ks */.           
 462952  node_modules/.
 8       ping/.
@@ -49,17 +49,17 @@ du -ks node_modules/*/. | sort -rn
 88      node_modules/es-to-primitive/.
 80      node_modules/semver/.
 # ...
-```
+{% endhighlight %}
 
 Getting rid of `azure-functions-core-tools` from the published source would reduce the file size considerably.  Fortunately, the tooling provides `.funcignore` for precisely this problem.  Just add `node_modules/azure-functions-core-tools` to your `.funcignore` file.  Now, the publication looks like this:
 
-```bash
+{% highlight bash %}
 $ npx func azure functionapp publish my-function-app
 Getting site publishing info...
 Creating archive for current directory...
 Uploading 1.7 MB [##########################################################################]
 Upload completed successfully.
-```
+{% endhighlight %}
 
 It knocked about 4 minutes from my publication time, and reduced the file size down to under 2MB.
 

@@ -103,21 +103,21 @@ export { Stack } from './Stack';
 
 Of course, I have some tests to go along with it. For unit testing, I use a combination of [mocha](https://mochajs.org/) and [chai](http://www.chaijs.com/). Let’s start by installing these in the project:
 
-```
+{% highlight bash %}
 npm install --save-dev mocha chai
-```
+{% endhighlight %}
 
 However, mocha does not run TypeScript tests all by itself. It needs help:
 
-```
+{% highlight bash %}
 npm install --save-dev ts-node typescript
-```
+{% endhighlight %}
 
 In addition, I am using Visual Studio Code and it will be really good if the editor understood the typings so that I can get Intellisense when writing tests:
 
-```
+{% highlight bash %}
 npm install --save-dev @types/chai @types/mocha
-```
+{% endhighlight %}
 
 Now, let’s add a script entry into our package.json file so that we can run the tests:
 
@@ -181,9 +181,9 @@ describe('Stack', () => {
 
 Finally, let's run the tests:
 
-```
+{% highlight bash %}
 npm run tests
-```
+{% endhighlight %}
 
 You can run this in the integrated terminal window of Visual Studio Code (just use **View** > **Integrated Terminal** to bring it up). You should be rewarded with nine successful tests:
 

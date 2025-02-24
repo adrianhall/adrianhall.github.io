@@ -34,12 +34,12 @@ Let's take an example.  I am going to be using the MaterialDesignIcons font in t
 
 Ensure you have set the **Build Action** appropriately.  Right-click on the font, then select **Properties**.  Android requires the build action to be _AndroidAsset_, and iOS requires it to be _BundleResource_.  Finally, you will also need to add the font to the `Info.plist` file in the iOS project.  The `Info.plist` file is in XML.  You need to add the following entry:
 
-``` xml
+{% highlight xml %}
     <key>UIAppFonts</key>
     <array>
             <string>materialdesignicons-webfont.ttf</string>
     </array>
-```
+{% endhighlight %}
 
 Add this to the bottom, just above the final `</dict>`.  You will also need to know the name of the font.  On Windows, this can be found by double-clicking on the TTF file:
 
@@ -47,7 +47,7 @@ Add this to the bottom, just above the final `</dict>`.  You will also need to k
 
 In this case, the name is _Material Design Icons_.  Now, let's define the font in the shared project `App.xaml` file:
 
-```xml
+{% highlight xml %}
 <?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -63,7 +63,7 @@ In this case, the name is _Material Design Icons_.  Now, let's define the font i
         </ResourceDictionary>
     </Application.Resources>
 </Application>
-```
+{% endhighlight %}
 
 You can see that each platform requires a different value for the font family.
 
@@ -77,15 +77,15 @@ When defining an icon, you need to know it's ID.  All icon fonts are based on th
 
 Your first step is to find the icon you want.  Once you have the icon, look it up within the CSS or the cheatsheet.  You are looking for a four or five hex-digit number.  For example, from CSS:
 
-```css
+{% highlight css %}
 .mdi-access-point-check::before {
   content: "\F1538";
 }
-```
+{% endhighlight %}
 
 The digits you are looking for are `F1538` here.  The cheatsheets have the same number.  I define the icons I am going to use as resources in `App.xaml`:
 
-```xml
+{% highlight xml %}
 <?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -105,7 +105,7 @@ The digits you are looking for are `F1538` here.  The cheatsheets have the same 
         </ResourceDictionary>
     </Application.Resources>
 </Application>
-```
+{% endhighlight %}
 
 The number you got for the icon ID is just a hexadecimal character entity and is used as an index to locate the correct character.  You get to do all the normal things here - for instance, you can easily use different icons on iOS and Android.
 
@@ -117,7 +117,7 @@ The number you got for the icon ID is just a hexadecimal character entity and is
 
 Using the icons is as easy as using a [FontImageSource](https://docs.microsoft.com/dotnet/api/xamarin.forms.fontimagesource?view=xamarin-forms) with the color, size, font family, and glyph defined.  Let's take a look at some examples:
 
-```xml
+{% highlight xml %}
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -148,6 +148,6 @@ Using the icons is as easy as using a [FontImageSource](https://docs.microsoft.c
         </ImageButton>
     </Grid>
 </ContentPage>
-```
+{% endhighlight %}
 
 Since it's a font, you can also put the icons in other places, like labels.  It's really up to you.

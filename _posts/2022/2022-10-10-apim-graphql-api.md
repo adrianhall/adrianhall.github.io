@@ -13,7 +13,7 @@ When I build a service in the cloud, I describe the infrastructure as a blob of 
 
 I split my work into two pieces.  First, I have the settings for the Azure API Management instance.  I don't create the APIM service repeatedly, so why should I check it all the time?  It's just extra time in the CI/CD process I can spend elsewhere.  As a result, I have a separate file for the APIM service.  Here is what the `apim-service.bicep` file looks like:
 
-``` js
+{% highlight js %}
 @description('The name of the API Management service instance')
 param apiManagementServiceName string = 'apim${uniqueString(resourceGroup().id)}'
 
@@ -53,11 +53,11 @@ resource apiManagementService 'Microsoft.ApiManagement/service@2021-08-01' = {
     publisherName: publisherName
   }
 }
-```
+{% endhighlight %}
 
 The top part of the file describes all the parameters I can set on it.  However, they are all defaulted to my standard stuff.  Basically, I always will default things to the "developer" settings.  Then I have a parameters file that sets things up for "production".  That way I'm not affecting production unless I have to.  An example `apim-service-parameters.json` file looks like this:
 
-``` json
+{% highlight json %}
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -69,16 +69,16 @@ The top part of the file describes all the parameters I can set on it.  However,
     "skuCount": 1
   }
 }
-```
+{% endhighlight %}
 
 If your service runs inside a VNET, you can set up the entire private networking setup using Bicep as well.  Similarly, this is where you will set up custom domains, notification sender emails, private endpoints, and any other service wide settings.  You can find all the settings that you can set on the service in the [REST API Reference](https://learn.microsoft.com/en-us/rest/api/apimanagement/current-ga/api-management-service/create-or-update).
 
 On to deploying - I do this with an Azure CLI:
 
-``` bash
+{% highlight bash %}
 az group create --name dev-myservice-ahall --location westus
 az deployment group create --resource-group dev-myservice-ahall --template-file ./apim-service.bicep
-```
+{% endhighlight %}
 
 I just need to add `--template-parameter-file .\apim-service-parameters.json` to the end of the deployment command to set it up for production.  Again - the idea is make setting up a developer instance easy; make it harder to mess with production.
 
@@ -86,7 +86,7 @@ I just need to add `--template-parameter-file .\apim-service-parameters.json` to
 
 A GraphQL API is comprised of three parts: an API definition, a GraphQL schema, and a policy file.  For this demonstration, I'm going to use three distinct files.  First, the policy file, which I call `policy.xml`:
 
-``` xml
+{% highlight xml %}
 <policies>
     <inbound>
         <base/>
@@ -98,21 +98,21 @@ A GraphQL API is comprised of three parts: an API definition, a GraphQL schema, 
         <base/>
     </outbound>
 </policies>
-```
+{% endhighlight %}
 
 Yep - it's an empty policy file.  It's really here so I can manage the policies later on.  If you install the [Visual Studio Code extension for Azure API Management](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-apimanagement), you get syntax highlighting as well!  On to the `graphql.schema` file:
 
-``` graphql
+{% highlight graphql %}
 type Query {
   info: String!
 }
-```
+{% endhighlight %}
 
 Again - nothing to it.  In reality, the `policy.xml` and `graphql.schema` file are going to be the ones you are editing most often.  Once the API is configured, you likely won't edit the bicep file too much, but you will edit the policies and schemas.
 
 Talking of the `api.bicep` file, we need to set up two resources - the first is the API definition itself, and the second is the policy resource.
 
-``` js
+{% highlight js %}
 @description('The name of the API Management service instance')
 param apiManagementServiceName string = 'apim${uniqueString(resourceGroup().id)}'
 
@@ -169,7 +169,7 @@ resource graphqlPolicy 'Microsoft.ApiManagement/service/apis/policies@2021-12-01
   }
 }
 
-```
+{% endhighlight %}
 
 The first note to make here is that we need to specify the existing API Management service.  The `uniqueString()` function generates a repeatable string based on a seed - in this case, the resource group name.  As a result, the same service name will be used in both the original bicep (that I used to create the service) and the API creation bicep file.  
 
@@ -185,8 +185,8 @@ You now have a Bicep file that **just** deploys the API.  Deploying a single API
 
 Deploying the API is simple:
 
-``` bash
+{% highlight bash %}
 az deployment group create --resource-group dev-myservice-ahall --template-file ./graphql-api.bicep
-```
+{% endhighlight %}
 
 Building APIs with policies and schemas is easy with Bicep.  I hope you'll give it a try!

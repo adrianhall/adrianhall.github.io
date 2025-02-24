@@ -142,7 +142,7 @@ In this case, a Scan is appropriate because we want to search all the items for 
 
 When a GraphQL service sends a record back, there is an accompanying type stored in a field called `__typename`. Since we have an interface, AWS AppSync cannot determine the concrete type, hence it produces an error. We have to use the response resolver to add the appropriate type. Fortunately, each record has a `typename` field within the database that gives the appropriate type. We can iterate through the items and add the appropriate type before returning the final object. This is my response resolver:
 
-```
+{% highlight text %}
 {
   "nextToken":$util.toJson($ctx.result.nextToken),
   "items": [
@@ -152,7 +152,7 @@ When a GraphQL service sends a record back, there is an accompanying type stored
     #end
   ]
 }
-```
+{% endhighlight %}
 
 Normally, we would just convert the response to JSON. Here, we are constructing the JSON output by iterating through the items, adjusting them for our requirements as we move through the items.
 

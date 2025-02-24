@@ -9,7 +9,7 @@ tags:
 
 One of the persistent questions I get asked about Azure Mobile Apps is how to support older tables.  Let's say you have an older application that was never designed for mobile applications.  It likely has a model like this:
 
-```csharp
+{% highlight csharp %}
 public class Movie
 {
     /// <summary>
@@ -48,7 +48,7 @@ public class Movie
     /// </summary>
     public int Year { get; set; }
 }
-```
+{% endhighlight %}
 
 This is actually the model I used when learning ASP.NET6 MVC and Razor back in the day.  I recently recreated the application and you can find it [at the `before` tag on my GitHub repository](https://github.com/adrianhall/zumo-intid-server/releases/tag/before) that I set up for this blog post.  The application is runnable.  After you run it, click on the "Movies App" at the top to get into the list and you can follow along as I modify this application to have a mobile ready API.
 
@@ -73,7 +73,7 @@ Part of the plan here is to have two views into the same database model.  In the
 
 Next, I created a `MovieViewModel`:
 
-```csharp
+{% highlight csharp %}
 public class MovieViewModel : IMovie
 {
     public MovieViewModel()
@@ -147,7 +147,7 @@ public class MovieViewModel : IMovie
     /// </summary>
     public int Year { get; set; }
 }
-```
+{% endhighlight %}
 
 I'm not a big fan of Automapper, so I'm using explicit conversions in this project.  For my purposes, this means adding a constructor that takes a `Movie` database model, and adding a `.ToMovie()` method to convert the view model back into the database model.  I then updated all the views to use the `MovieViewModel`.  Finally, I updated the `MoviesController` to convert to/from the view model when retrieving or storing data in the database.
 
@@ -164,7 +164,7 @@ The mobile requirements for a model are codified in the [`ITableData`](https://g
 
 Since I have the web side (and, potentially, other clients) updating the database and they have no understanding of the mobile requirements, I need the database itself to manage these values.  The first thing I did was to add these fields to the database model:
 
-```csharp
+{% highlight csharp %}
 public string MobileId { get; set; } = Guid.NewGuid().ToString("N");
 
 [Timestamp]
@@ -173,11 +173,11 @@ public byte[] Version { get; set; } = [];
 public DateTimeOffset? UpdatedAt { get; set; }
 
 public bool Deleted { get; set; }
-```
+{% endhighlight %}
 
 I also need to add indices on the MobileId, Deleted, and UpdatedAt properties. This is done in the `OnModelCreating()` method of the database context.  
 
-```csharp
+{% highlight csharp %}
   modelBuilder.Entity<Movie>().Property(m => m.MobileId)
       .HasDefaultValueSql("NEWID()");
   modelBuilder.Entity<Movie>().Property(m => m.UpdatedAt)
@@ -188,11 +188,11 @@ I also need to add indices on the MobileId, Deleted, and UpdatedAt properties. T
       .HasIndex(m => m.UpdatedAt);
   modelBuilder.Entity<Movie>()
       .HasIndex(m => m.Deleted);
-```
+{% endhighlight %}
 
 Next I use `Add-Migration Stage2` to create a migration, but don't apply it yet.  I'm going to make some adjustments.  The first thing I have to do is to remove the calls to `.UpdateData()` that update the records that I seeded.  I'm going to bulk update the records with a single bit of SQL later on.  However, the first change I need to make is to ensure that the `UpdatedAt` field is correctly updated irrespective of how the change to the row is made.  I do this with a trigger:
 
-```csharp
+{% highlight csharp %}
   migrationBuilder.Sql(@"
       CREATE TRIGGER [trg_Movie_Mobile] ON [Movies]
       AFTER UPDATE AS
@@ -200,11 +200,11 @@ Next I use `Add-Migration Stage2` to create a migration, but don't apply it yet.
           SET [UpdatedAt] = GETUTCDATE()
           WHERE ID IN (SELECT [Id] FROM Inserted)
   ");
-```
+{% endhighlight %}
 
 The default value of the `UpdatedAt` property is already set to `GETUTCDATE()` when a record is inserted, so I only need to adjust the value if the row has been updated. The second change (and it must follow the trigger) is to update all the rows to ensure that the mobile properties are set.  Since `UpdatedAt` is nullable, I can assume that any field that has a null `UpdatedAt` has not been adjusted.
 
-```csharp
+{% highlight csharp %}
   migrationBuilder.Sql(@"
       UPDATE [Movie]
       SET
@@ -212,7 +212,7 @@ The default value of the `UpdatedAt` property is already set to `GETUTCDATE()` w
           [UpdatedAt] = GETUTCDATE()
       WHERE [UpdatedAt] IS NULL
   ");
-```
+{% endhighlight %}
 
 This makes the migration much smaller (and much faster as well).
 
@@ -243,7 +243,7 @@ Now that I have a database with a mobile-compatible table, I can work on creatin
 
 If you've used Azure Mobile Apps before, this should be familiar.  I'm not going to go through updating the web project since the documentation covers that pretty well.  My mobile model looks like this:
 
-```csharp
+{% highlight csharp %}
 public class MobileMovie : ITableData, IMovie
 {
     public MobileMovie()
@@ -330,7 +330,7 @@ public class MobileMovie : ITableData, IMovie
     public bool Equals(ITableData? other)
         => other != null && Id == other.Id && Version.SequenceEqual(other.Version);
 }
-```
+{% endhighlight %}
 
 This model has all the data properties from the original database model plus the properties needed to implement the `ITableData` interface.  In addition, I've decorated the properties with the same data annotations for data validation that I used in the web view model.  Finally, I added a constructor and the `.ToMovie()` method that explicitly converts between database model and the mobile model, including the conversion from `MobileId` to `Id`.  
 
@@ -346,7 +346,7 @@ In this case:
 
 First off, let's take a look at the head of the new repository:
 
-```csharp
+{% highlight csharp %}
 
 /// <summary>
 /// Create a new <see cref="EntityTableRepository{TEntity}"/> for accessing the database.
@@ -367,7 +367,7 @@ public class MovieRepository(MvcMovieContext context) : IRepository<MobileMovie>
 
     // ... Rest of the class
 }
-```
+{% endhighlight %}
 
 I'm using one of my favorite new features of C# - the primary constructor.  It makes single constructor classes that just assign variables so much more compact.  I'm setting up the context and the dataset, and I've removed the generic arguments in this case.
 
@@ -376,7 +376,7 @@ I'm using one of my favorite new features of C# - the primary constructor.  It m
 
 Reading is relatively simple:
 
-```csharp
+{% highlight csharp %}
   public IQueryable<MobileMovie> AsQueryable() => DataSet.Select(m => new MobileMovie(m)).AsQueryable();
 
   public Task<IQueryable<MobileMovie>> AsQueryableAsync() => Task.FromResult(AsQueryable());
@@ -391,13 +391,13 @@ Reading is relatively simple:
       ?? throw new NotFoundException();
     return new MobileMovie(movie);
   }
-```
+{% endhighlight %}
 
 One of the notes about writing repositories is that entities must be "disconnected from the store."  This means that if I change the object that is returned after returning from a repository method, it should not change the underlying store.  I accomplish this as part of creating the `MobileMovie`.  The data is automatically disconnected since I copy it into a new object.
 
 I'm not going to show off all three of the write operations (Create, Delete, Replace).  Instead, I'm going to focus on one of them.  You can go check out [the source code](https://github.com/adrianhall/zumo-intid-server/releases/tag/stage3) to see the changes I made to the other two.  Let's focus on the create operation:
 
-```csharp
+{% highlight csharp %}
   public async Task CreateAsync(MobileMovie entity, CancellationToken token = default)
   {
       ArgumentNullException.ThrowIfNull(entity);
@@ -417,7 +417,7 @@ I'm not going to show off all three of the write operations (Create, Delete, Rep
           throw new RepositoryException(ex.Message, ex);
       }
   }
-```
+{% endhighlight %}
 
 As far a code goes, this is pretty simple stuff!  The database takes care of setting the `Id` when adding a record here.  One particular note is that I can't use `FindAsync()` any more to grab a copy of the entity.  The `FindAsync()` method uses the primary key and `MobileId` is not the primary key.  Instead, I have to use `FirstAsync()` or `FirstOrDefaultAsync()` method to grab the record.
 
@@ -428,7 +428,7 @@ Finally, I can create a completely normal `MobileMovieController` which is based
 
 Here is my controller:
 
-```csharp
+{% highlight csharp %}
 [Route("api/mobile/movie")]
 public class MobileMovieController : TableController<MobileMovie>
 {
@@ -437,7 +437,7 @@ public class MobileMovieController : TableController<MobileMovie>
         Repository = new MovieRepository(context);
     }
 }
-```
+{% endhighlight %}
 
 You can add access control, options, and do anything else you would normally do to a table controller.  It works just the same way.  The best way to test this is with a REST API tester like [Postman](https://getpostman.com).  For instance, I ran the `GET /api/mobile/movie` to see what came up:
 

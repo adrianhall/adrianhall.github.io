@@ -15,7 +15,7 @@ These days, it's much simpler.  Today I want to show you how I leverage data ann
 
 Let's take you back to the beginning of time.  How did I start doing argument validation?  I wrote something like this:
 
-```csharp
+{% highlight csharp %}
 public void MyMethod(string arg)
 {
   if (arg == null)
@@ -27,7 +27,7 @@ public void MyMethod(string arg)
     throw new ArgumentException("Argument is empty", nameof(arg));
   }
 }
-```
+{% endhighlight %}
 
 This is an incredibly naive way of writing a method for a number of reasons.  The main one, however, is that you have to test all these conditions individually for every single method you write. This leads to an explosion of tests and your development energy is better spent elsewhere. As the number of arguments (and validations) increases, the code also becomes unreadable.
 
@@ -35,7 +35,7 @@ This is an incredibly naive way of writing a method for a number of reasons.  Th
 
 Eventually, I switched to a static class:
 
-```csharp
+{% highlight csharp %}
 public static class Arguments
 {
   public static IsNotNullOrEmpty(string arg, string paramName)
@@ -50,22 +50,22 @@ public static class Arguments
     }
   }
 }
-```
+{% endhighlight %}
 
 Centralizing the argument handling makes the code much more readable.  It also means I can write unit tests for the central arguments class and ignore testing individual methods, resulting in a smaller unit test footprint and more time spent writing the code that matters.  In fact, the core team noticed that there were some common validations, like null checks, and they built them into the exception classes:
 
-```csharp
+{% highlight csharp %}
 public void myMethod(string arg)
 {
   ArgumentNullException.ThrowIfNullOrEmpty(arg);
 }
-```
+{% endhighlight %}
 
 ## Best practices for parameter validation
 
 Putting the checker for the arguments with the `ArgumentException` makes a whole lot of sense!  Unfortunately, `ArgumentException` is a core class, so I can't extend it with a new static method. It's relatively easy to create new exception classes.  Here is one I use a lot:
 
-```csharp
+{% highlight csharp %}
 using System.ComponentModel.DataAnnotations;
 
 public class ArgumentValidationException : ArgumentException
@@ -91,11 +91,11 @@ public class ArgumentValidationException : ArgumentException
     }
   }
 }
-```
+{% endhighlight %}
 
 I use data annotations a lot - even outside ASP.NET Core.  This exception is designed to be thrown when an input variable with data annotations isn't valid. Let's say I have a model where each value has a range of valid values.  I might write this model class like this:
 
-```csharp
+{% highlight csharp %}
 public class PaginationRequest
 {
   private int _skip = 0, _take = Constants.MaxPageSize;
@@ -121,13 +121,13 @@ public class PaginationRequest
     }
   }
 }
-```
+{% endhighlight %}
 
 The use of a backing variable just for range checking doesn't seem right to me, and I need to write two model classes - one for doing data validation in the ASP.NET Core application that doesn't throw, and one for using in the rest of the system that does throw an exception.
 
 So if this is bad, what's the alternative?  I use data annotations:
 
-```csharp
+{% highlight csharp %}
 public class PaginationRequest
 {
   [GreaterThanOrEqual(0, ErrorMessage = "The Skip value must be positive")]
@@ -136,11 +136,11 @@ public class PaginationRequest
   [Range(0, Constants.MaxPageSize, ErrorMessage = "The Take value must be between 0 and the maximum page size")]
   public long Take { get; set; } = Constants.MaxPageSize;
 }
-```
+{% endhighlight %}
 
 Firstly, can we appreciate how much easier to read this code is.  I can easily discern the range of valid values and the default value without jumping away.  Consider a model that is much larger and you will start to see the benefits. What is not so obvious is that I can use the same model class for both a controller and a service.  In a controller, bad input is a fairly common occurence and it's considered bad form to throw exceptions for normal situations.  I can write my controller like this:
 
-```csharp
+{% highlight csharp %}
 public async Task<IActionResult> GetModelsAsync([FromQuery] PaginationRequest request, CancellationToken ct = default)
 {
   // Good version
@@ -149,17 +149,17 @@ public async Task<IActionResult> GetModelsAsync([FromQuery] PaginationRequest re
     return BadRequest(ModelState)
   }
 }
-```
+{% endhighlight %}
 
 In a service, I want to throw an exception on a validation error.  I can use the `ArgumentValidationException` I developed earlier:
 
-```csharp
+{% highlight csharp %}
 public async Task<IEnumerable<Model>> GetModelsAsync(PaginationRequest request, CancellationToken ct = default)
 {
   ArgumentValidationException.ThrowIfNotValid(request, nameof(request));
   // Rest of my method goes here
 }
-```
+{% endhighlight %}
 
 Because the `ArgumentValidationException` is also an `ArgumentException`, tests that use this (including try/catch blocks elsewhere in the app) will happily understand that an argument was at fault.  If one of my methods actually needs to know the validation errors, then I can see the validation errors in the exception object through the debugger.
 
@@ -169,7 +169,7 @@ Because the `ArgumentValidationException` is also an `ArgumentException`, tests 
 
 Using data annotations and my validation exception allows me to avoid using backing variables for my models, yet still allow for throwing or validation checks in the right way.  This leads me to my final extension method - the validator:
 
-```csharp
+{% highlight csharp %}
 public static ValidatorExtensions
 {
   public static bool IsValid(this object value, [NotNullWhen(false)] out IList<ValidationResult>? validationErrors)
@@ -183,11 +183,11 @@ public static ValidatorExtensions
     return true;
   }
 }
-```
+{% endhighlight %}
 
 I think this is what `.TryValidateObject()` should look like.  Most of the time, this is the code I want to run when I am validating an object.  I can easily validate three different ways now, depending on my needs:
 
-```csharp
+{% highlight csharp %}
 // Throw if not valid
 ArgumentValidationException.ThrowIfNotValid(request, nameof(request));
 
@@ -202,7 +202,7 @@ if (!ModelState.IsValid)
 {
   // Handle validation errors here
 }
-```
+{% endhighlight %}
 
 Each form is testable without an explosion of tests that are there just to test validation logic.  The validation logic is also well-known (use data annotations) which makes the code very readable.
 

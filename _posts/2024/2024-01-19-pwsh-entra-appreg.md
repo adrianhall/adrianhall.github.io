@@ -18,13 +18,13 @@ Since this is part of a deployment, I'm going to assume the user has already con
 
 However, I want to use the Microsoft Graph cmdlets for this.  I'm assuming that the Microsoft Graph cmdlets are better since they are created from the REST API.  How do I do that?
 
-```powershell
+{% highlight powershell %}
 $token = (Get-AzAccessToken -ResourceTypeName MSGraph -ErrorAction Stop).token
 if ((Get-Help Connect-MgGraph -Parameter accesstoken).type.name -eq "securestring") {
   $token = ConvertTo-SecureString $token -AsPlainText -Force
 }
 $null = Connect-MgGraph -AccessToken $token -ErrorAction Stop
-```
+{% endhighlight %}
 
 There is a little magic here.  Earlier versions of the `Connect-MgGraph` took a plain text token, but newer versions require this to be a secure string.  We have to convert, but only if necessary.  It's annoying.
 
@@ -32,7 +32,7 @@ There is a little magic here.  Earlier versions of the `Connect-MgGraph` took a 
 
 Next, I need to create a list of App Roles.  However, I want to only create the app roles that are new.  If I am running the script for a second time (maybe to add new roles that have not yet been defined), then I need to merge the existing app roles with the new roles.  The following function creates the array of objects that I need:
 
-```powershell
+{% highlight powershell %}
 <#
 .SYNOPSIS
     Gets the list of application roles that should be created.
@@ -73,19 +73,19 @@ function Get-AppRoles {
     Write-Verbose "New App Roles: $($result | ConvertTo-Json -Compress)"
     return $result
 }
-```
+{% endhighlight %}
 
 I can create the necessary role names using an array - e.g.
 
-```powershell
+{% highlight powershell %}
 $MyRoleNames = "Role1", "Role2", "Role3"
-```
+{% endhighlight %}
 
 ## Create or update the app registration
 
 This is the big long function that I use to create or update the app registration.  It's an all-in-one "create an app registration and the app roles and the associated enterprise application".
 
-```powershell
+{% highlight powershell %}
 function New-EntraAppRegistration {
     param(
         [Parameter(Mandatory=$true)] [string] $ApplicationName,
@@ -127,7 +127,7 @@ function New-EntraAppRegistration {
     $updatedApp = Get-MgApplication -Filter "displayName eq '$($ApplicationName)'" -Top 1
     return $updatedApp
 }
-```
+{% endhighlight %}
 
 The first thing I do in this function is to try and get the existing app registration.  I do this by matching the display name.  Since display names can be duplicated (something you should not do), you may want to use some other filter here.
 
@@ -141,7 +141,7 @@ Finally, to ensure I have the latest information no matter which route I took, I
 
 My aim here is to configure an ASP.NET Core web application.  That requires a block to be placed in the `appsettings.json` file in a specific form.  So, how do I do that?
 
-```powershell
+{% highlight powershell %}
 # Create or update the app registration.
 $appRegistration = New-EntraAppRegistration -ApplicationName $ApplicationName `
   -BaseUrl $BaseUrl `
@@ -162,7 +162,7 @@ $settings = @{
 
 Write-Host "`nPlace the following in your appsettings.json or secrets.json file:`n"
 $settings | ConvertTo-Json | Write-Host
-```
+{% endhighlight %}
 
 Obviously, I need to provide the information the `New-EntraAppRegistration` function requires.  I do this with script parameters.  However, the result is that I can cut and paste the displayed settings into my `appsettings.json` (or, more normally, my `secrets.json` file).
 

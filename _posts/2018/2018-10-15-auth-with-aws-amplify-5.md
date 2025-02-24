@@ -40,9 +40,9 @@ All authentication providers require you to register with them. This is the proc
 * Click **Settings**. Make a note of the **Domain** and **Client ID**. You will need these later.
 * Add the following string to the **Allowed Callback URLs**, then click **Save Changes**:
 
-  ```
+  {% highlight text %}
   https://DOMAIN.auth0.com/android/PACKAGE/callback
-  ```
+  {% endhighlight %}
 
 Here **DOMAIN** is the Domain of your application (you just made a note of it) and **PACKAGE** is the root package for your app. You can find **PACKAGE** as the `android.applicationId` within the app-level `build.gradle` or the `package` parameter on the `application` node within the `AndroidManifest.xml` file.
 
@@ -228,9 +228,9 @@ The final edit is to add the new OIDC provider to the identity pool:
 
 The additional line is line 24, and references the section we added immediately prior. Now, deploy this backend:
 
-```bash
+{% highlight bash %}
 amplify push
-```
+{% endhighlight %}
 
 If you have not added Google (or another OIDC provider that is supported), you need to add a lot more boilerplate to the CloudFormation template. I'd recommend adding Google, Twitter or another provider, and then making the edits so you aren't typing a lot of boiler plate.
 
@@ -252,19 +252,19 @@ You can also remove the existing thumbprint (which is all zeros). It isn't requi
 
 Given that we are using the same process as for both the Facebook and Google authentication providers, this should be familiar now. First, add a federation method to the `IndentityRepository` interface:
 
-```kotlin
+{% highlight kotlin %}
 /**
  * Federate with OIDC Providers
  */
 fun federateWithOIDC(token: String, issuer: String)
-```
+{% endhighlight %}
 
 Now, add a call to the `AuthenticatorViewModel` class:
 
-```kotlin
+{% highlight kotlin %}
 fun federateWithOIDC(token: String, issuer: String)
   = identityRepository.federateWithOIDC(token, issuer)
-```
+{% endhighlight %}
 
 Also, add a concrete implementation to the `AWSIdentityRepository` class:
 

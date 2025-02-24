@@ -10,7 +10,7 @@ I am currently developing a "reviews" app, written in React Native and using a s
 
 First, let's take a look at the problem. I have a query that is submitted like this:
 
-```graphql
+{% highlight graphql %}
 {
   me {
     id
@@ -20,7 +20,7 @@ First, let's take a look at the problem. I have a query that is submitted like t
     favorites { totalCount }
   }
 }
-```
+{% endhighlight %}
 
 The query is used to generate a header on a "My Information" page. Eventually, I'll add other things to this query, but this is representative of the problem. Most of the items within this query are easily achieved. The ID comes from the Amazon Cognito authentication; the name comes from an Amazon DynamoDB lookup, and the counts of locations and reviews comes from an ElasticSearch query.
 
@@ -28,7 +28,7 @@ The favorites resolver is a little different. It is actually a combination of tw
 
 The function in question (`getLocationForList`) has a request mapping template:
 
-```
+{% highlight text %}
 #set($keys = [])
 #foreach($id in ${ctx.prev.result.ids})
     #set($key = {})
@@ -46,11 +46,11 @@ The function in question (`getLocationForList`) has a request mapping template:
         }
     }
 }
-```
+{% endhighlight %}
 
 Here, `$ctx.prev.result` is the result of the prior step of the pipeline resolver. Here is the associated response mapping template:
 
-```
+{% highlight text %}
 ## Raise a GraphQL field error in case of a datasource invocation error
 #if($ctx.error)
     $util.error($ctx.error.message, $ctx.error.type)
@@ -61,7 +61,7 @@ $util.qr($result.put("totalCount", $ctx.prev.result.totalCount))
 $util.qr($result.put("nextToken",$ctx.prev.result.nextToken))
 $util.qr($result.put("items", $ctx.result.data.devRestaurantReviews))
 $util.toJson($result)
-```
+{% endhighlight %}
 
 Again, `$ctx.prev.result` is the results from the prior step in the pipeline resolver (the one that gets the paged response), and `$ctx.result` is the results of the current step in the pipeline resolver (the one that resolves the list of IDs into complete objects).
 
@@ -69,7 +69,7 @@ Again, `$ctx.prev.result` is the results from the prior step in the pipeline res
 
 The problem comes when a user first enters the app. They don't have any favorites in the list. As a result, `$ctx.prev.result.ids` is zero length. When the resolver tries to do `BatchGetItem`, the following error will be generated:
 
-```
+{% highlight text %}
 Object {
   "data": null,
   "errorInfo": null,
@@ -87,7 +87,7 @@ Object {
     "favorites",
   ],
 },
-```
+{% endhighlight %}
 
 The error is pretty clear. The list of IDs we are feeding into the BatchGetItem is empty, and it isn't allowed to be empty.
 
@@ -99,7 +99,7 @@ Using `#return` in a mapping template of a function will return that data from t
 
 My fix, then, is to alter the request mapping template such that it uses #return when the number of IDs is zero. Since VTL is based within Java and I am using an array, I can use the Java Array methods to find out information about the array. In this case, I can use `.size()` to determine the size of the array:
 
-```
+{% highlight text %}
 #if($ctx.prev.result.ids.size() == 0) 
   #set($result = {})
   $util.qr($result.put("totalCount", $ctx.prev.result.totalCount))
@@ -125,7 +125,7 @@ My fix, then, is to alter the request mapping template such that it uses #return
         }
     }
 }
-```
+{% endhighlight %}
 
 Note that I did not have to adjust the schema to accommodate this change in behavior. The front end can and should be isolated from the concerns of the backend data plane. Also, unlike most "responses", I don't convert to JSON - I just return the object that I want to return as the result.
 

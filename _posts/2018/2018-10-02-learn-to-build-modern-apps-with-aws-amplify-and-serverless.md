@@ -30,17 +30,17 @@ To get started with a simple example, let’s say we have a GitHub repository wi
 
 To deploy, we just type:
 
-```
+{% highlight bash %}
 (cd backend && sls deploy -v)
-```
+{% endhighlight %}
 
 Then we’ll build each of the clients, maybe deploying the web like this:
 
-```
+{% highlight bash %}
 (cd android && ./gradlew build)
 (cd ios && ./build.sh)
 (cd backend && sls clinet deploy -v)
-```
+{% endhighlight %}
 
 It’s a fairly normal build cycle. Now, let’s update the project to include the `aws-amplify-serverless-plugin`. First, we’ll need to install the plugin:
 

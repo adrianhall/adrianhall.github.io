@@ -34,7 +34,7 @@ The way I produce this code is to have two parts linked by an event emitter.  Th
 
 The LogManager handles configuration and management of the logging system:
 
-```js
+{% highlight js %}
 import { EventEmitter } from 'events';
 
 export class LogManager extends EventEmitter {
@@ -86,25 +86,25 @@ export interface LogOptions {
 }
 
 export const logging = new LogManager();
-```
+{% endhighlight %}
 
 I'll come on to the details of a logger and log listener in a bit.  First, let's dissect this small amount of code, because it does a lot.  Firstly, let's talk about modules.  This is a hierarchical string that describes where you are in your code.  I use it by swapping the slashes for periods.  Thus, if I am in file `lib/my-class` within `MyClass`, I will use `lib.my-class.MyClass` as the module name.
 
 The `getLogger()` method returns a logger that you can use.  Part of the process here is to work out what the minLevel is for this module.  I have a hierarchy of minLevels.  For instance, I might configure the log manager like this:
 
-```js
+{% highlight js %}
 logManager.configure({ minLevels: {
   '': 'error',
   'lib': 'info',
   'lib.my-class': 'debug'
 }});
-```
+{% endhighlight %}
 
 The most specific module wins.  For my hypothetical `MyClass` class, I'd have a minLevel of debug.  However, if I registered `lib.other-class`, then that would have a minLevel of info.  This allows me to nicely control the amount that I log on a per logger basis.
 
 Let's take a look at the Logger next:
 
-```js
+{% highlight js %}
 export class Logger {
     private logManager: EventEmitter;
     private minLevel: number;
@@ -168,13 +168,13 @@ export class Logger {
     public warn(message: string): void  { this.log('warn', message); }
     public error(message: string): void { this.log('error', message); }
 }
-```
+{% endhighlight %}
 
 The main function here is the `log()` method.  This constructs a `LogEntry` and emits it to the event emitter to be gathered by whatever listeners you have defined.  Note the curious code within the center.  It tries to find a location for the log message by constructing an Error object.  The Error object usually contains a stack trace that can be used to determine the location in your code.
 
 Let's see how your code will call this.  At the entrypoint to your application, set up logging.  If you just want the defaults, nothing need be done.  However, you usually want to set up a log destination.  I provide a console log driver in my example code:
 
-```js
+{% highlight js %}
     public registerConsoleLogger(): LogManager {
         if (this.consoleLoggerRegistered) return this;
 
@@ -204,13 +204,13 @@ Let's see how your code will call this.  At the entrypoint to your application, 
         this.consoleLoggerRegistered = true;
         return this;
     }
-```
+{% endhighlight %}
 
 You can see how to register a new log driver from this code.  The important thing to note here is that you are already in an async context from your main code, so the activities on the log driver don't affect your code.  The code, once transpiled and minified, is less than 8K, most of which is the EventEmitter code.
 
 Back to setting up the code:
 
-```js
+{% highlight js %}
 import { logging, LogEntry } from './lib/logging';
 
 logging
@@ -221,18 +221,18 @@ logging
     }
   })
   .registerConsoleLogger();
-```
+{% endhighlight %}
 
 You can do this at the entrypoint.  Then, in each file that you want to log:
 
-```js
+{% highlight js %}
 import { logging } from './lib/logging';
 
 const logger = logging.getLogger('core.module-name');
 
 // Later on
 logger.info(`This is my log message`);
-```
+{% endhighlight %}
 
 The log message will get dumped to the console.  By writing my own, I can also enforce semantic logging (where you structure the text output so it is easily parsed - for example, by using key=value pairs) or even structured logging (where you record the data as JSON for even easier parsing).
 

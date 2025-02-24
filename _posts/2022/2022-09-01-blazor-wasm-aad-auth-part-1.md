@@ -76,7 +76,7 @@ Now that I have the information I need to configure the service, let's put it so
 
 First, update the `appsettings.json` file so that the form of the settings is recorded.  This is the literal text of my `appsettings.json` file at this point:
 
-``` json
+{% highlight json %}
 {
   "AzureAd": {
     "Instance": "https://login.microsoftonline.com",
@@ -93,23 +93,23 @@ First, update the `appsettings.json` file so that the form of the settings is re
   },
   "AllowedHosts": "*"
 }
-```
+{% endhighlight %}
 
 Note that I've included three fields that show what information I need in those fields.  Those remind me to fill those in somewhere else.  Now, where do I store the real values?  There are two basic places - environment variables or the [secrets manager](https://docs.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-6.0).  
 
 If you choose environment variables, you set `AzureAd__Domain`, `AzureAd__TenantId`, and `AzureAd__ClientId` to the appropriate values.  For example, with PowerShell (using the GUIDs in the documentation):
 
-``` powershell
+{% highlight powershell %}
 $env:AzureAd__Domain = "contoso.onmicrosoft.com"
 $env:AzureAd__TenantId = "e86c78e2-8bb4-4c41-aefd-918e0565a45e"
 $env:AzureAd__ClientId = "41451fa7-82d9-4673-8fa5-69eff5a761fd"
-```
+{% endhighlight %}
 
 This is painful because you have to set these either through the launch profiles (which get checked in sometimes), or within your account.  You can easily forget to set them or set them in the wrong place (for example, reset them in a PowerShell terminal, but then they aren't passed into Visual Studio).  For this reason, I prefer the secret manager, even if it does require a little more setup.
 
 The secret manager tool hides implementation details, such as where and how the values are stored.  On a Windows box, they are stored in `%APPDATA%`, which is outside of your repository.  This is definitely a good thing.  You can manage secrets right in Visual Studio.  Right-click on the `cloudmud.Server` project and select **Manage User Secrets**.  This will open a `secrets.json` file for you to edit.  You can then set the values using a copy of the `appsettings.json` file:
 
-``` json
+{% highlight json %}
 {
   "AzureAd": {
     "Domain": "contoso.onmicrosoft.com",
@@ -117,7 +117,7 @@ The secret manager tool hides implementation details, such as where and how the 
     "ClientId": "41451fa7-82d9-4673-8fa5-69eff5a761fd"
   }
 }
-```
+{% endhighlight %}
 
 The secrets overwrite the values in `appsettings.json` when the service is run (assuming the environment is development).  When you press F5 in Visual Studio (or press the run button), you are running using the development environment.
 
@@ -127,18 +127,18 @@ The Azure Active Directory folks have made it super-easy to integrate the Micros
 
 To enable the platform, open the `Program.cs` file in your `cloudmud.Server` project.  Add the following code right above the `builder.Services.AddControllersWithViews()` line:
 
-``` csharp
+{% highlight csharp %}
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
-```
+{% endhighlight %}
 
 This loads the `AzureAd` configuration (which is combined from the `appsettings.json` and the secrets manager) and then adds authentication services to the backend service.  To actually use this, I need to add authentication and authorization support in the web request pipeline.  Still in `Program.cs`, add the following right below the `app.UseRouting()` line:
 
-``` csharp
+{% highlight csharp %}
 app.UseAuthentication();
 app.UseAuthorization();
-```
+{% endhighlight %}
 
 > Note that you must put the `UseAuthorization()` line BELOW `UseRouting()`.
 
@@ -146,19 +146,19 @@ app.UseAuthorization();
 
 While I have done enough to enable authentication and authorization, I won't be able to see who is logged in when I create the controllers and the rest of the application.  The "who" that is logged in is stored in the `HttpContext`.  However, `HttpContext` is not thread-safe, so I need to inject a service that can provide the `HttpContext` in a thread-safe manner.  This is the job of the `HttpContextAccessor`.  The code is a one-liner.  In `Program.cs` (right below the code you added `builder.Services.AddAuthentication()...` line), add the following:
 
-``` csharp
+{% highlight csharp %}
 builder.Services.AddHttpContextAccessor();
-```
+{% endhighlight %}
 
 > I normally simplify the Program.cs as much as possible with the use of extension methods.  In this case, I would wrap all
 > the authentication logic in two extension methods - one that operates on `IServiceCollection`:
-> ``` csharp
+> {% highlight csharp %}
 > builder.AddAuthenticationServices();
-> ```
+> {% endhighlight %}
 > Then another that adds the services to the request pipeline:
-> ``` csharp
+> {% highlight csharp %}
 > app.UseAuthenticationServices();
-> ```
+> {% endhighlight %}
 > This makes reading the Program.cs a lot easier when the code gets more complex.
 
 ## Step 6: Update controllers to authorize users
@@ -167,7 +167,7 @@ There are two attributes that you can assign to controllers: `[Authorize]` and `
 
 For now, I'm just going to add an `[Authorize]`  attribute to my `WeatherForecaseController`:
 
-``` csharp
+{% highlight csharp %}
 [ApiController]
 [Authorize]
 [Route("[controller]")]
@@ -175,7 +175,7 @@ public class WeatherForecastController : ControllerBase
 {
   // rest of the controller here...
 }
-```
+{% endhighlight %}
 
 ## Next steps
 

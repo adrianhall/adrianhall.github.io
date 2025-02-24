@@ -18,7 +18,7 @@ The resource groups are last and will delete the rest of the resources for you. 
 
 So, how do I do it?  With a little bit of love from PowerShell.  I have a script that I can run (imaginatively called `cleanup.ps1`).  To start, I provide a list of resource groups that I want to clean up:
 
-```powershell
+{% highlight powershell %}
 <#
 .SYNOPSIS
   Cleans up the resources in a set of resource groups.
@@ -33,13 +33,13 @@ $resourceGroups = [System.Collection.ArrayList]@()
 Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like $Prefix } | Foreach-Object {
   $resourceGroups.Add($_.ResourceGroupName) | Out-Null
 }
-``````
+{% endhighlight %}
 
 ## Deleting private endpoints, diagnostic settings, and budgets
 
 Now that I have the list of resource groups, I can go through my ordering and start deleting things.  Here is the code for private endpoints:
 
-```powershell
+{% highlight powershell %}
 function Remove-ConsumptionBudgetForResourceGroup($resourceGroupName) {
     Get-AzConsumptionBudget -ResourceGroupName $resourceGroupName
     | Foreach-Object {
@@ -82,7 +82,7 @@ foreach ($resourceGroupName in $resourceGroups) {
 foreach ($resourceGroupName in $resourceGroups) {
     Remove-DiagnosticSettingsForResourceGroup -ResourceGroupName $resourceGroupName
 }
-```
+{% endhighlight %}
 
 This pattern is repeated quite often.  I get a list of the private endpoints within a resource group, then remove each one.  You can do some more work to send the output to the verbose channel (together with all the other work for making this a verbose module), but I find I always want the output, so I just write it out.
 
@@ -90,7 +90,7 @@ This pattern is repeated quite often.  I get a list of the private endpoints wit
 
 Once all the dependent services are done, I can remove the resource groups:
 
-```powershell
+{% highlight powershell %}
 function Remove-ResourceGroupFromAzure($resourceGroupName, $asJob) {
     if (Test-ResourceGroupExists -ResourceGroupName $resourceGroupName) {
         "`tRemoving $resourceGroupName" | Write-Output
@@ -106,7 +106,7 @@ function Remove-ResourceGroupFromAzure($resourceGroupName, $asJob) {
 foreach ($resourceGroupName in $resourceGroups) {
     Remove-ResourceGroupFromAzure -ResourceGroupName $resourceGroupName -AsJob:$AsJob
 }
-```
+{% endhighlight %}
 
 Be careful to understand your dependencies though.  For example, let's say you have an App Service that is VNET integrated, and the App Service is in a different resource group to the virtual network.  You cannot delete the virtual network until the App Service is deleted.  Since they are in different resource groups, you will likely bump into a timing issue that is not easily resolved.  Sometimes, it will work, and other times it won't work. Fix this by ensuring you delete the resource group with the App Service first.
 

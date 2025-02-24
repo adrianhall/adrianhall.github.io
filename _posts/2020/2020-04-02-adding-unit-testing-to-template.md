@@ -37,7 +37,7 @@ There are three assertion libraries that you should be aware of:
 
 There are many implementations of the three styles.  Let's say you want to check that a variable (`x`) is actually a specific string.  You can see all three styles here:
 
-```javascript
+{% highlight js %}
 // Assert
 assert.equal(x, 'foo');
 
@@ -46,7 +46,7 @@ expect(x).to.equal('foo');
 
 // Should
 x.should.equal('foo');
-```
+{% endhighlight %}
 
 These are all equivalent.  My personal favorite is [chai](https://chaijs.com), which has been around for a long time.  It allows me the flexibility of choosing a test style depending on what reads the best.  However, you do have to use the Chai spies, which doesn't read well when you use it in a TypeScript test suite.  Also, note that both Jest and Jasmine have their own assertion libraries built in, which you would be over-riding.
 
@@ -64,7 +64,7 @@ My own experience inevitably led me back to [Jest](https://jestjs.io/) for the t
 
 To start with, let's write some functions that need testing.  I've created a 'tests' folder that contains `example.ts` with the following content:
 
-```typescript
+{% highlight typescript %}
 export function testSyncFunction(): number {
   return 42;
 }
@@ -84,11 +84,11 @@ export function testExceptionFunction(): void {
 export function testCallbackFunction(callback: (value: number) => void): void {
   callback(42);
 }
-```
+{% endhighlight %}
 
 These four functions allow me to see what the test suite will look like.  I'll create an `example.test.ts` file along side it for the tests:
 
-```typescript
+{% highlight typescript %}
 /* eslint-env jest */
 import * as examples from './example';
 
@@ -119,7 +119,7 @@ describe('examples', () => {
     }).toThrowError();
   });
 });
-```
+{% endhighlight %}
 
 It's a bit light on everything, most notably matchers.  However, I can expand my `example.ts` and `example.test.ts` to ensure myself that everything in the testing environment is working.
 
@@ -127,27 +127,27 @@ It's a bit light on everything, most notably matchers.  However, I can expand my
 
 Let's get started with the installation:
 
-```bash
+{% highlight bash %}
 $> npm i -D jest
-```
+{% endhighlight %}
 
 Then add the following scripts to the `package.json`:
 
-```json
+{% highlight json %}
 "script": {
   ... other scripts
   "test": "jest",
   "test:watch": "jest --watchAll",
   "test:coverage": "jest --collect-coverage"
 }
-```
+{% endhighlight %}
 
 Use `npm run test`, and watch it fail.  That's because Jest doesn't know anything about TypeScript.  There are a bunch of ways around this, including compiling the code into JavaScript separately.  However, I like to "test in place" without generating extra artifacts that clutter the project directory.  Fortunately, there is an easy way to fix this, using `ts-jest`:
 
-```bash
+{% highlight bash %}
 $> npm i -D ts-jest @types/jest
 $> npx ts-jest config:init
-```
+{% endhighlight %}
 
 This generates a base `jest.config.js` file which integrates `ts-jest` into your testing.  Now, when you run `npm run test`, you will get something akin to the following:
 
@@ -159,7 +159,7 @@ All the tests pass.  I've also got a base configuration file from which I can ex
 
 This is obviously wrong.  It isn't taking into account the `src` directory where my code is stored.  I can fix this with the addition of a `collectCoverageFrom` entry in the config.  However, I don't want to include the test files or the stories in the coverage report.  Here is my updated configuration:
 
-```javascript
+{% highlight js %}
 module.exports = {
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}'
@@ -172,7 +172,7 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
 };
-```
+{% endhighlight %}
 
 This produces a better result for the `npm run test:coverage` command:
 
@@ -186,7 +186,7 @@ Now that I can handle basic tests, let's move on to the problem of testing React
 
 What's the test plan?  Something like this:
 
-```typescript
+{% highlight typescript %}
 /* eslint-env jest */
 
 describe('BusySpinner', () => {
@@ -198,29 +198,29 @@ describe('BusySpinner', () => {
 
   });
 });
-```
+{% endhighlight %}
 
 Just by writing this down, you are thinking about how the component works and all the edge conditions.  This is a fairly simple component, but most components are much more complex.
 
 Start by installing Enzyme in your project:
 
-```bash
+{% highlight bash %}
 $> npm i -D enzyme enzyme-adapter-react-16 enzyme-to-json identity-obj-proxy
 $> npm i -D @types/enzyme @types/enzyme-adapter-react-16
-```
+{% endhighlight %}
 
 There are different adapters for each version of React, so make sure you use the right one. The `enzyme-to-json` library allows you to serialize components into JSON, which allows you to snapshot them (more on that later), and `identity-obj-proxy` allows you to deal with embedded CSS and SCSS files. You also need to have a test setup that configures the adapter.  I place mine in `enzyme.config.ts`:
 
-```javascript
+{% highlight js %}
 import Enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 
 configure({ adapter: new Adapter() });
-```
+{% endhighlight %}
 
 Finally, add this to the Jest configuration:
 
-```javascript
+{% highlight js %}
 module.exports = {
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}'
@@ -242,7 +242,7 @@ module.exports = {
   ],
   testEnvironment: 'node',
 };
-```
+{% endhighlight %}
 
 You should be able to run the test-suite at this point with `npm run test:coverage` and see the new tests being run.  Now, let's fill them in with the two main options for testing components.
 
@@ -250,7 +250,7 @@ You should be able to run the test-suite at this point with `npm run test:covera
 
 The first mechanism is snapshot testing, and it is perhaps the easiest.  When the test is first run, a snapshot of the component is taken.  This is then used in subsequent runs to determine whether the component has changed or not.
 
-```typescript
+{% highlight typescript %}
 /* eslint-env jest */
 import { shallow } from 'enzyme';
 import React from 'react';
@@ -270,7 +270,7 @@ describe('BusySpinner', () => {
 
   });
 });
-```
+{% endhighlight %}
 
 ![]({{site.base_url}}/assets/images/2020/2020-04-02-image4.png)
 
@@ -280,7 +280,7 @@ Note how it says "1 snapshot written".  Take a look at your source code tree, an
 
 The other mechanism that is commonly used is DOM testing.  DOM testing checks the rendering and injects events as required.  If your component is interactive, you should be using DOM testing.  Let's take a look at what that looks like with the other test I have to write:
 
-```typescript
+{% highlight typescript %}
   it('displays the content when isBusy is false', () => {
     const actual = render(
       <BusySpinner>
@@ -290,18 +290,18 @@ The other mechanism that is commonly used is DOM testing.  DOM testing checks th
     const content = actual.find('[data-id="test-data"]');
     expect(content).toBeDefined();
   });
-```
+{% endhighlight %}
 
 With this mechanism, you can also fire events into the DOM.  My example doesn't have events, but you could do something like the following if it did:
 
-```typescript
+{% highlight typescript %}
   it('responds to click events', () => {
     const onClick = jest.fn();
     const wrapper = shallow(<ClickableComponent onClick={onClick} />);
     wrapper.find('button').simulate('click');
     expect(onClick).toHaveBeenCalledTimes(1);
   });
-```
+{% endhighlight %}
 
 Combine snapshot testing with DOM testing for the best results.  Once you have covered all the paths, the code coverage should read 100% across the board.  However, that doesn't mean you've covered all the possible values.  It just means the tests have exercised all of your code in some way.  You should expand your tests to cover edge cases, like wierd inputs that you don't expect (letters instead of numbers, or mal-formed SQL type injection attacks) and async problems (like a network going down).
 

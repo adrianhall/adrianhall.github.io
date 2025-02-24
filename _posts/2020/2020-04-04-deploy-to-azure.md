@@ -25,7 +25,7 @@ Although I use Terraform for deployment, I run it via `npm`.  This allows me to 
 
 Take a look at the script section of my `package.json` file:
 
-```json
+{% highlight json %}
 {
   "name": "parcel-typescript-template-infrastructure",
   "version": "1.0.0",
@@ -41,7 +41,7 @@ Take a look at the script section of my `package.json` file:
     "postinstall": "terraform init"
   }
 }
-```
+{% endhighlight %}
 
 It isn't very big, and comes down to three command:
 
@@ -51,7 +51,7 @@ It isn't very big, and comes down to three command:
 
 There is one other file we need - `resources.tf` is the explanation of the resources to deploy.  You can split the resources into many files if you like.  My backends tend to be small enough that I like to keep them in one file.  Here is my basic configuration:
 
-```terraform
+{% highlight terraform %}
 ######################################################################
 ###
 ###       INPUT VARIABLES
@@ -151,7 +151,7 @@ output "AZURE_STORAGE_CONNECTION_STRING" {
 output "WEBSITE" {
   value = azurerm_storage_account.storage.primary_web_endpoint
 }
-```
+{% endhighlight %}
 
 This creates a resource group (a container for multiple related resources) and a storage account.  By configuring the `static_website`, a container called `$web` is created as well.
 
@@ -163,15 +163,15 @@ You can go ahead and run `npm install` followed by `npm run deploy` in the `infr
 
 Moving over to the web application, it needs to be copied to the storage service I have just created.  There is no cross-platform way of doing this that uses the output file from Terraform, but the script isn't that hard to write.  First, I need some libraries.  Change directory to the `webapp`, then run:
 
-```bash
+{% highlight bash %}
 $> npm i -D readdirp mime-types @azure/storage-blob
-```
+{% endhighlight %}
 
 The `readdirp` is a recursive version of `readdir`, which reads directory contents.  The `mime-types` package converts a file into the appropriate MIME type based on extension, thus allowing me to set the content type within Azure Storage when I upload it.  The `@azure/storage-blob` package is the Azure SDK for Azure Storage, which we will use to upload the files to Azure Storage.
 
 Now for the script.  I place scripts in a handy `scripts` directory, since this is unlikely to be the last script.  Here is `deploy_to_azure.js`:
 
-```javascript
+{% highlight js %}
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
@@ -221,19 +221,19 @@ readdirp(sourcedir)
   .on('warn', (warning) => console.warn('[WARNING] ', warning))
   .on('error', (error) => console.error('[ERROR]', error))
   .on('end', () => console.info('[DONE]'));
-```
+{% endhighlight %}
 
 The script is relatively easy to understand.  First, I create a client for sending data to Azure Storage using the connection string within the `configuration.json` file that is generated when I run the `terraform output` command.  Then I loop through each file in the `dist` directory (recursively), uploading each one in turn.  The only thing I have to be aware of is to set the MIME type so that it can be downloaded correctly.
 
 Hooking this into the `package.json` is simple enough:
 
-```json
+{% highlight json %}
 "scripts": {
   // ... rest of scripts
   "predeploy": "run-s build",
   "deploy": "node ./scripts/deploy_to_azure.js",
 },
-```
+{% endhighlight %}
 
 Each time I run `npm run deploy` within the `webapp` directory, it will do a build, then copy the build up to Azure.  I've got a pre-deploy step that also runs clean, lint, and test scripts so that the uploaded code is as clean as possible.
 
@@ -241,7 +241,7 @@ Each time I run `npm run deploy` within the `webapp` directory, it will do a bui
 
 I don't really want to have to remember the ordering.  The best deployment scripts "just work".  Let's add some scripts at the top level of the git repository.  Here is the `package.json` file:
 
-```json
+{% highlight json %}
 {
   "name": "parcel-typescript-template",
   "version": "1.0.0",
@@ -277,7 +277,7 @@ I don't really want to have to remember the ordering.  The best deployment scrip
     "npm-run-all": "^4.1.5"
   }
 }
-```
+{% endhighlight %}
 
 Take a look at the scripts.  If I run `npm install`, it will do the install locally, then run the install in both the `infrastructure` and `webapp` directories.  The same happens if I run `npm run deploy` - first the `infrastructure` version is run, then the webapp version is run.  If there is an error along the way, the rest of the deployment is stopped.
 

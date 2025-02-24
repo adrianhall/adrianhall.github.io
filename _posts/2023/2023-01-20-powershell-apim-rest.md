@@ -14,16 +14,16 @@ There is a REST API for it, though.  That means you can write nice PowerShell fu
 
 The first task is to get an access token:
 
-```powershell
+{% highlight powershell %}
 $azContext = Get-AzContext
 $azProfile = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile
 $profileClient = New-Object -TypeName Microsoft.Azure.Commands.ResourceManager.Common.RMProfileClient -ArgumentList ($azProfile)
 $token = $profileClient.AcquireAccessToken($azContext.Subscription.TenantId)
-```
+{% endhighlight %}
 
 This is a common enough method that I want to re-use it.  I've got a file called `AzApiMgmtExtras.psm1` in my `~/Documents/WindowsPowerShell/Scripts` directory.  It contains (thus far) the following:
 
-```powershell
+{% highlight powershell %}
 <#
  .Synopsis
  Retrieves an access token for using the Azure REST APIs with the current subscription.
@@ -38,11 +38,11 @@ function Get-AzAccessToken
 }
 
 Export-ModuleMember -Function Get-AzAccessToken
-```
+{% endhighlight %}
 
 You can import this module with `Import-Module <path-to-psm1-file>` and the function will now be available:
 
-```powershell
+{% highlight powershell %}
 PS1> Get-AzAccessToken
 
 AccessToken        : eyJ0{A really long string which I'm not going to repeat}
@@ -52,13 +52,13 @@ LoginType          : User
 HomeAccountId      : {pair-of-guids separated by a period}
 ExtendedProperties : {}
 ExpiresOn          : {some date/time about an hour from now}
-```
+{% endhighlight %}
 
 ## Add a List command
 
 Let's look at the first REST API command I want to produce - listing the deleted services.  According to [the documentation](https://learn.microsoft.com/rest/api/apimanagement/current-preview/deleted-services/list-by-subscription?tabs=HTTP), I need to do a GET of a big long URL, but with authentication.  Something like the following:
 
-```powershell
+{% highlight powershell %}
 function List-AzApiManagementDeletedServices {
     $azContext = Get-AzContext
     $token = Get-AzAccessToken
@@ -75,7 +75,7 @@ function List-AzApiManagementDeletedServices {
 }
 
 Export-ModuleMember -Function List-AzApiManagementDeletedServices
-```
+{% endhighlight %}
 
 Yes, I know List is not an approved verb - these are my PowerShell scripts, so I can name them whatever I want!  So, what's it doing?  First, it gets the information it needs to build the REST API call.  The `AzContext` is needed because it contains the subscription ID and that is part of the URL to execute.  The access token is required for authorization.
 
@@ -85,7 +85,7 @@ Then I execute the `Invoke-RestMethod` to get the result. If your REST API call 
 
 What does the output look like?
 
-```powershell
+{% highlight powershell %}
 PS1> List-AzApiManagementDeletedServices
 
 id         : /subscriptions/removed/providers/Microsoft.ApiManagement/locations/southcentralus/deleteds 
@@ -95,13 +95,13 @@ type       : Microsoft.ApiManagement/deletedservices
 location   : South Central US
 properties : @{serviceId=/subscriptions/removed/resourceGroups/rg-test1/providers/Microsoft 
              .ApiManagement/service/apim-fvtyoremoved; scheduledPurgeDate=1/22/2023 6:43:33 PM; deletionDate=1/20/2023 6:44:06 PM}  
-```
+{% endhighlight %}
 
 ### Add a Purge command
 
 What about the equivalent purge command?  After all, I want this service totally gone!  This is just another PowerShell function, this time following the purge documentation.  For this operation, I need a location and name.  Even though the location in the results is "South Central US", I need the short version "southcentralus", so I have to do that adjustment (left for an exercise for you).  Something like the following:
 
-```powershell
+{% highlight powershell %}
 function Purge-AzApiManagementDeletedService {
     param(
         [string] $name,
@@ -121,13 +121,13 @@ function Purge-AzApiManagementDeletedService {
 }
 
 Export-ModuleMember -Function Get-AzApiManagementDeletedService
-```
+{% endhighlight %}
 
 Everything from the `Get-AzContext` to the `$apiVersion` assignment is the same as the previous example.  Now, I can use the command:
 
-```powershell
+{% highlight powershell %}
 PS1> Purge-AzApiManagementDeletedService -Location southcentralus -Name apim-fvtyoremoved
-```
+{% endhighlight %}
 
 The API Management service will be purged immediately, allowing me to progress with re-creating it from scratch. (This is super useful right now as I am developing Azure Developer CLI scripts).
 
@@ -135,9 +135,9 @@ The API Management service will be purged immediately, allowing me to progress w
 
 A final note about development.  If you import the module, then change it, make sure you re-import it with the -Force flag:
 
-```powershell
+{% highlight powershell %}
 PS1> Import-Module .\Scripts\AzApiMgmtExtra.psm1 -Force
-```
+{% endhighlight %}
 
 This will overwrite the functions that you have previously defined.
 

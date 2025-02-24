@@ -25,7 +25,7 @@ When a request comes into API Management, I want to route the request to one of 
 
 I've already got a `<check-header/>` policy, and the new policy will appear directly below that.  This time, I'm going to add a conditional policy statement that tests the value of the header:
 
-``` xml
+{% highlight xml %}
 <inbound>
     <base />
     <check-header name="ZUMO-API-VERSION" failed-check-httpcode="400" failed-check-error-message="Invalid ZUMO-API-VERSION Header" ignore-case="true">
@@ -41,7 +41,7 @@ I've already got a `<check-header/>` policy, and the new policy will appear dire
         </when>
     </choose>
 </inbound>
-```
+{% endhighlight %}
 
 Here, the `<check-header/>` makes sure we have a valid value, then that value is tested and the backend service is set accordingly.  The per-operation policies do not set the backend service.  If you had set a policy on an operation that set the backend, you would need to remove it.
 

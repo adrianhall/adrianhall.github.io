@@ -17,7 +17,7 @@ So, if the happy path doesn't lead to happiness, how should you do it?
 
 One of the best things you can do is to consolidate your common project settings into a common props file.  Let's say you have all your projects in the `src` directory, and they all use the same target framework, but you also want to ensure that nullables are enabled everywhere, you are using implicit using statements, and that all your projects share a common UserSecretsId so that you can consolidate the development configuration for all projects in one place.  You can place a `Directory.Build.props` file in the `src` directory, then fill it with the following information:
 
-```xml
+{% highlight xml %}
 <Project>
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -26,7 +26,7 @@ One of the best things you can do is to consolidate your common project settings
     <UserSecretsId>1880ee15-3d6a-4399-91bc-3f314c8199ab</UserSecretsId>
   </PropertyGroup>
 </Project>
-```
+{% endhighlight %}
 
 Any common settings in a property group or item group can be placed in this file.  You can then remove the same settings from your `.csproj` files as they will be incorporated automatically.  Technically, you don't need to do this step.  However, if you are consolidating these things, you might as well do it right.
 
@@ -40,7 +40,7 @@ This file is where the magic happens.  There are three sections to this file:
 
 Let's take a look:
 
-```xml
+{% highlight xml %}
 <Project>
   <!-- Enable centralized package versioning -->
   <PropertyGroup>
@@ -74,7 +74,7 @@ Let's take a look:
     <PackageVersion Include="Automapper" Version="13.0.1" />
   </ItemGroup>
 </Project>
-```
+{% endhighlight %}
 
 You can add as many variable versions to the common versions section as you want, and you can add as many PackageVersion references as you want.  This also has the advantage of centralizing all the known packages that you are using in one handy place.
 

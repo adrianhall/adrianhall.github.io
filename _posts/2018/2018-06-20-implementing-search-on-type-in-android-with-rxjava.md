@@ -36,19 +36,19 @@ override fun onCreateOptionsMenu(menu: Menu?): Boolean {
 
 If I am doing “search-on-type”, then whenever the `onQueryTextChange()` event handler fires, I will kick off an API call to return the first set of results. The log looks like this:
 
-```
+{% highlight text %}
 D/MainActivity: onQueryTextChange: T
 D/MainActivity: onQueryTextChange: TE
 D/MainActivity: onQueryTextChange: TES
 D/MainActivity: onQueryTextChange: TEST
 D/MainActivity: onQueryTextSubmit: TEST
-```
+{% endhighlight %}
 
 Even though I’m just typing, I would kick off five API calls, each of which would do a search. In the serverless cloud, you pay for executions — i.e. API calls. If I am just pressing buttons to complete my search term, I want to de-bounce this and only do one API call.
 
 Now let’s say I want to search for something else. I delete the TEST and type something else:
 
-```
+{% highlight text %}
 D/MainActivity: onQueryTextChange: TES
 D/MainActivity: onQueryTextChange: TE
 D/MainActivity: onQueryTextChange: T
@@ -69,7 +69,7 @@ D/MainActivity: onQueryTextChange: SOMETHING ELS
 D/MainActivity: onQueryTextChange: SOMETHING ELSE
 D/MainActivity: onQueryTextChange: SOMETHING ELSE
 D/MainActivity: onQueryTextSubmit: SOMETHING ELSE
-```
+{% endhighlight %}
 
 20 API calls! Most of these will get taken care of by the “de-bounce”. I also want to de-duplicate so that the trimmed text does not cause duplicate submissions. Also, this is a search page, so I probably want to filter out some items. For example, do I want to allow blank searches? How about short searches (one letter)?
 
@@ -126,13 +126,13 @@ override fun onCreateOptionsMenu(menu: Menu?): Boolean {
 
 This code does exactly the same thing as the old code — the log looks like this:
 
-```
+{% highlight text %}
 D/MainActivity: subscriber: T
 D/MainActivity: subscriber: TE
 D/MainActivity: subscriber: TES
 D/MainActivity: subscriber: TEST
 D/MainActivity: subscriber: TEST
-```
+{% endhighlight %}
 
 However, the major difference is that we have a reactive stream to play with. The stream is an `Observable`. The text handler (or in this case the query handler) submits elements into the stream using `onNext()`. The observable has subscribers that consume those elements (after whatever pipeline we have deemed appropriate has been cleared).
 
@@ -153,13 +153,13 @@ Observable
 
 I’ve shortened the methods to show just the relevant bit. Now the same log looks like this:
 
-```
+{% highlight text %}
 D/MainActivity: subscriber: t
 D/MainActivity: subscriber: te
 D/MainActivity: subscriber: tes
 D/MainActivity: subscriber: test
 D/MainActivity: subscriber: test
-```
+{% endhighlight %}
 
 Next, let’s de-bounce the stream by waiting for more content for up to 250ms:
 

@@ -31,15 +31,15 @@ It looks like a horse race between `react-native init` and `expo-cli`! After exp
 
 When you install the development environment for React Native, you probably installed this:
 
-```bash
+{% highlight bash %}
 $ [sudo] npm install -g react-native-cli
-```
+{% endhighlight %}
 
 That's it for setup. Now, how about bootstrapping?
 
-```bash
+{% highlight bash %}
 $ react-native init RNIApp
-```
+{% endhighlight %}
 
 Here, `RNIApp` is the name of the directory (and the app) that I am developing. When done, here is what the layout looks like:
 
@@ -72,15 +72,15 @@ My next one to try was the `expo-cli`. This is the replacement for `create-react
 
 Installing the `expo-cli` is as easy as all the others:
 
-```bash
+{% highlight bash %}
 $ [sudo] npm install -g expo-cli
-```
+{% endhighlight %}
 
 Then you can easily initialize a project:
 
-```bash
+{% highlight bash %}
 $ expo init ExpoApp
-```
+{% endhighlight %}
 
 This gives you a choice. Do you want a minimal setup (which is much like the CRNA option) or a better setup with tabs and react-navigation. I opted for the minimal setup to see what that looks like first:
 
@@ -125,15 +125,15 @@ In terms of "time" that will be saved in bootstrapping, the tabs template will s
 
 New (to me) is [ignite by Infinite Red](https://infinite.red/ignite). Installing this is as easy as the others:
 
-```bash
+{% highlight bash %}
 $ [sudo] npm install -g ignite-cli
-```
+{% endhighlight %}
 
 Then initialize the app:
 
-```bash
+{% highlight bash %}
 ignite new IgniteApp
-```
+{% endhighlight %}
 
 Gone is the minimal look - you get **Andross** (which includes React Navigation, Redux, and Redux Saga) or **Bowser** (which includes React Navigation, MobX State Tree and TypeScript). The ignite process for Bowser crashed. In addition, there were some quirks in the ignition process. I selected Andross because of these problems (even though I wanted the TypeScript support).
 

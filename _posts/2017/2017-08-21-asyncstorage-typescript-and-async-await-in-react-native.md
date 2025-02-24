@@ -111,9 +111,9 @@ This introduces a new concept for JavaScript: async and await. These are basical
 
 There is a flip side to this, which is to make the calling method use await, like this:
 
-```typescript
+{% highlight typescript %}
 const note = await localStorage.getItem(noteId);
-```
+{% endhighlight %}
 
 You can only use await inside of an async method, so the promise bubbles up to the top. I’ve got three items – `getItem()`, `deleteItem()` and `saveItem()` to do the normal CRUD elements. I’ve also got a `getAllItems()` that fetches all the notes from the store. I go to some lengths to ensure that only JSON objects for notes end up in the notes table, and I don’t deal with exceptions (I should do this!).
 
@@ -157,12 +157,12 @@ Note that I don’t deal with the promise – it just stores the data asynchrono
 
 The store now stores the notes to local storage, but I don’t have anything to read the local storage on startup. I do have the `initializeNotes()` method that cleans out the notes array and replaces it with another notes array. Note that I edit the array in-situ rather than creating a new array. I’m honestly not sure this is worth it in the observable world, but it can’t hurt anything. My notes initialization is done at the bottom of the `notesStore.ts` file:
 
-```typescript
+{% highlight typescript %}
 const observableNoteStore = new NoteStore();
 localStorage
     .getAllItems()
     .then(items => observableNoteStore.initializeNotes(items));
-```
+{% endhighlight %}
 
 This is a standard promise pattern. The `getAllItems()` method resolves to the list of notes from the local storage, and I use that to populate the notes in my in-memory store.
 

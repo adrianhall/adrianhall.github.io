@@ -63,12 +63,12 @@ You can also choose to notify your users. This is done via email configured via 
 
 In order to effectively use adaptive authentication, you need to submit a device fingerprint when authenticating the user. Here, there is some good news. There is no additional code. You just have to include the library in your `build.gradle` file:
 
-```gradle
+{% highlight gradle %}
 implementation("com.amazonaws:aws-android-sdk-auth-userpools:2.6.+@aar") {
     transitive = true
 }
 implementation "com.amazonaws:aws-android-sdk-cognitoidentityprovider-asf:1.0.0"
-```
+{% endhighlight %}
 
 Note that you must include `transitive = true` on the userpools SDK and include the ASF (Adaptive Security Fingerprinting) library to include device fingerprinting.
 

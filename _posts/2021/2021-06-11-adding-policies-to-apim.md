@@ -20,7 +20,7 @@ These are all done within the definition of the API in API Management through th
 
 When you click on any of these links, you will see the following code:
 
-``` xml
+{% highlight xml %}
 <policies>
     <inbound>
         <base />
@@ -36,7 +36,7 @@ When you click on any of these links, you will see the following code:
         <base />
     </on-error>
 </policies>
-```
+{% endhighlight %}
 
 There isn't much there. In fact, the only "policy" is the one that sets the backend service that will handle requests.  You can implement policies at multiple levels - at the "product" level (a collection of APIs), the API level, and the operation level. Let's implement some policies!
 
@@ -111,7 +111,7 @@ You can test the caching as follows:
 
 You will see the response from the service, but you can also see information about how the request was processed in the **Trace** tab.  Specifically, notice the following at the bottom of the Inbound section:
 
-``` text
+{% highlight text %}
 cache-lookup (7.182 ms)
     "Using cache 'southcentralus'."
 cache-lookup (52.576 ms)
@@ -125,11 +125,11 @@ cache-lookup (52.576 ms)
         }
     ]
 }
-```
+{% endhighlight %}
 
 In my case, the backend request took 292ms, and the whole request took 699ms.  This is a "cache-miss".  Now, send the request again.  This time, I can see the following:
 
-``` text
+{% highlight text %}
 cache-lookup (0.014 ms)
     "Using cache 'southcentralus'."
 cache-lookup (27.083 ms)
@@ -137,7 +137,7 @@ cache-lookup (27.083 ms)
     "message": "Cache lookup resulted in a hit! Cached response will be used. Processing will continue from the step in the response pipeline that is after the corresponding `cache-store`.",
     "cacheKey": "3_aspnetcorezumomfaq6nmtaz8c0ursdsytypli23iqyibyhfw.411294_movies;rev=1.411420_retrieve-a-movie_4_https_aspnetcore-zumo.azurewebsites.net_443_/tables/movies/id-000&::Accept=*%2F*"
 }
-```
+{% endhighlight %}
 
 In addition, there is no backend request.  The response latency is 28ms, which is a fraction of the time taken to do the database query.  Although your specific scenario may vary, a cache + database is cheaper to run than the database alone because you can use a much cheaper database to handle the requests.
 
@@ -147,7 +147,7 @@ You can enable caching for queries using the same process\, but you have to add 
 
 When I do a query against the service, I get a `nextLink` field. For example:
 
-``` http
+{% highlight http %}
 GET https://aspnetcore-zumo.azure-api.net/tables/movies?$top=2&$select=id,title HTTP/1.1
 ZUMO-API-VERSION: 3.0.0
 Accept: application/json
@@ -162,7 +162,7 @@ Accept: application/json
     }],
     "nextLink": "https://aspnetcore-zumo.azurewebsites.net/tables/movies?$select=id,title&$skip=2&$top=2"
 }
-```
+{% endhighlight %}
 
 This helps with paging in this case.  However, you will note that the host name is the name of the backend server.  I want all requests to go through the API Management service, which means that I need to rename this link.  I don't want to change the backend service to output the right thing.  After all, it's producing the right thing and I still need it to work during development.  The policy cannot be set up with a simple form, but it's easy enough to add.
 
@@ -176,7 +176,7 @@ This helps with paging in this case.  However, you will note that the host name 
 
 Your policy document should look like this:
 
-``` xml
+{% highlight xml %}
 <policies>
     <inbound>
         <base />
@@ -192,13 +192,13 @@ Your policy document should look like this:
         <base />
     </on-error>
 </policies>
-```
+{% endhighlight %}
 
 I'm doing this on all operations because other operations may leak the backend Uri as well.
 
 When I re-do the test now, I see the following:
 
-``` http
+{% highlight http %}
 GET https://aspnetcore-zumo.azure-api.net/tables/movies?$top=2&$select=id,title HTTP/1.1
 ZUMO-API-VERSION: 3.0.0
 Accept: application/json
@@ -213,13 +213,13 @@ Accept: application/json
     }],
     "nextLink": "https://aspnetcore-zumo.azure-api.net/tables/movies?$select=id,title&$skip=2&$top=2"
 }
-```
+{% endhighlight %}
 
 The `nextLink` value has been updated. Note that the value has to match exactly.  If, for example, your content adds the port number (e.g. the nextLink is `https://aspnetcore-zumo.azurewebsites.net:443` when it comes back), then the replacement won't work. You can add an additional policy to handle this case:
 
-``` xml
+{% highlight xml %}
 <find-and-replace from="https://aspnetcore-zumo.azurewebsites.net:443/tables/movies" to="https://aspnetcore-zumo.azure-api.net/tables/movies" />
-```
+{% endhighlight %}
 
 Use the policy editor to add this in the same place as the `<redirect-content-uris />` policy.  It's also a good idea to put these in front of the `<cache-store/>` policy if there.  This way the right external values are stored in the cache, resulting in even less processing in the case of a cache-hit.
 
@@ -227,7 +227,7 @@ Use the policy editor to add this in the same place as the `<redirect-content-ur
 
 My API service requires a `ZUMO-API-VERSION` header, and it must be `2.0.0` or `3.0.0`.  No other values are supported.  I'd like to have a policy that ensures the `ZUMO-API-VERSION` is one of these values.  I can put a policy statement in the inbound section to check this:
 
-``` xml
+{% highlight xml %}
     <inbound>
         <base />
         <check-header name="ZUMO-API-VERSION" failed-check-httpcode="400" failed-check-error-message="Invalid ZUMO-API-VERSION Header" ignore-case="true">
@@ -235,7 +235,7 @@ My API service requires a `ZUMO-API-VERSION` header, and it must be `2.0.0` or `
             <value>3.0.0</value>
         </check-header>
     </inbound>
-```
+{% endhighlight %}
 
 I can put this in the **All operations** policy document so that it applies to all operations.  
 

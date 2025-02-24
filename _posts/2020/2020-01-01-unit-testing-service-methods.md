@@ -22,13 +22,13 @@ Doing this requires an understanding of three steps:
 
 My library always connects to the same URL and uses the context to grab the API key.  I'm expecting my users to call something like:
 
-```kotlin
+{% highlight kotlin %}
 val client = NetworkClient(context)
-```
+{% endhighlight %}
 
 This is not testing friendly because I cannot mock everything - including the server.  However, I can provide a public constructor that calls an internal constructor, like this:
 
-```kotlin
+{% highlight kotlin %}
 class NetworkClient internal constructor(
     context: Context,
     apiKey: String? = null,
@@ -45,13 +45,13 @@ class NetworkClient internal constructor(
 
     // ...
 }
-```
+{% endhighlight %}
 
 The user will call the secondary constructor.  If they are relying on Intellisense within Android Studio, then that is the only constructor that they will see.  In the mean time, my tests are in the same package as the class under test, so the tests can use the internal constructor.  This allows me to adjust the `serviceUri` according to needs.
 
 You should make all your internal properties "internal" as well.  This allows you to ensure that they are set properly.  For example, let's say you have mocked the context.  You can do the following test:
 
-```kotlin
+{% highlight kotlin %}
 @Test
 fun test_context_constructor() {
     val apiKey = "whatever-your-api-key-is"
@@ -59,7 +59,7 @@ fun test_context_constructor() {
     val client = NetworkClient(context)
     assertEquals(apiKey, client.internalApiKey)
 }
-```
+{% endhighlight %}
 
 Now that you know your client construction is good, you don't need to test that part of it later on.
 
@@ -67,15 +67,15 @@ Now that you know your client construction is good, you don't need to test that 
 
 This gets to the code for using that `serviceUri` parameter to mock the server.  First, add the `mockwebserver` package as a test dependency:
 
-```gradle
+{% highlight gradle %}
 dependencies {
     testImplementation "com.squareup.okhttp3:mockwebserver:4.2.1"
 }
-```
+{% endhighlight %}
 
 Then, add a method to create an appropriate web service locally.  I have a "response.json" file that contains a valid response.  Here is my method for creating a custom web service:
 
-```kotlin
+{% highlight kotlin %}
 private fun createServerAndEnqueue(path: String: MockWebServer {
     val server = MockWebServer()
     val response = MockResponse()
@@ -85,13 +85,13 @@ private fun createServerAndEnqueue(path: String: MockWebServer {
 
     return server
 }
-```
+{% endhighlight %}
 
 When you connect to the server and send it a request, it will respond with the queued response - in this case, a 200 OK with a JSON body.  It doesn't matter what request you send to the service - you will always get the same thing.
 
 Now you can use this in a test:
 
-```kotlin
+{% highlight kotlin %}
 @Test
 fun test_network_request_with_callback() {
     val server = createServerAndEnqueue()
@@ -111,7 +111,7 @@ fun test_network_request_with_callback() {
         // Do other checks as neccessary here
     }
 }
-```
+{% endhighlight %}
 
 What other checks?  That depends on the requirements of your library.  My library ensures that the options I pass in are encoded properly, and that the request is turned into the appropriate URL.  The `requestUrl` is a `HttpUrl` object, which is part of the okhttp3 library.
 
@@ -123,9 +123,9 @@ JUnit tests generally run synchronously.  How do you ensure that your test runs 
 
 I have a method in my client class with the following signature:
 
-```kotlin
+{% highlight kotlin %}
 fun doNetworkRequest(options: OptionsBag, callback: (ClientResponse) -> Unit)
-```
+{% endhighlight %}
 
 I call the `doNetworkRequest` method, and it calls my callback when it is completed.  This is done on a background thread so my method carries on executing in the background.
 
@@ -133,32 +133,32 @@ Tests are run synchronously.
 
 The easiest mechanism to support testing is to use a wrapper to place the request into a suspending coroutine:
 
-```kotlin
+{% highlight kotlin %}
 suspend fun doNetworkRequestSync(client: NetworkClient, options: OptionsBag): ClientResponse
     = suspendCoroutine { cont -> client.doNetworkRequest(options) { cont.resume(it) } }
-```
+{% endhighlight %}
 
 You can put this in your test class so it doesn't pollute the namespace of your network client class.  Similarly, if your network request returns a `LiveData<T>`, you can observe the `LiveData` and then call `cont.resume` when you have a response:
 
-```kotlin
+{% highlight kotlin %}
 suspend fun doNetworkRequestSync(client: NetworkClient, options: OptionsBag): ClientResponse
     = suspendCoroutine { cont ->
         val observable = client.doNetworkRequest(options)
         observable.observeForever { cont.resume(it) }
     }
-```
+{% endhighlight %}
 
 This is the "simple" version.  However, you may run into problems when you have many tests.  Each observable is observed forever, which isn't what you want.  You want to detach the observer when the response has been received.
 
 To run a test, you need to create a coroutine launcher.  Fortunately, there is a package for this, so add the following to your dependencies:
 
-```gradle
+{% highlight gradle %}
 testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0'
-```
+{% endhighlight %}
 
 What does a test look like?
 
-```kotlin
+{% highlight kotlin %}
 @Test
 fun client_location_options_callback() {
     val server = createServerAndEnqueue()
@@ -182,6 +182,6 @@ fun client_location_options_callback() {
 
 suspend fun doNetworkRequestSync(client: NetworkClient, location: Location): NetworkResponse
     = suspendCoroutine { cont -> client.doNetworkRequest(location) { cont.resume(it) }}
-```
+{% endhighlight %}
 
 With these notes, I can now finish off the tests for my network client and appropriately test failure and success conditions with a real HTTP request.

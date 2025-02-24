@@ -9,7 +9,7 @@ In my [last article]({% post_url 2020/2020-03-29-parcel-typescript-react %}), I 
 
 Let's write a simple component to get started with testing.  The component takes an "isBusy" flag.  If it is true, then one icon is displayed.  If false, a different icon is displayed.  I'll use text nodes in this version.
 
-```typescript
+{% highlight typescript %}
 import React from 'react';
 
 /**
@@ -41,7 +41,7 @@ const BusySpinner: React.SFC<Props>
   };
 
 export default BusySpinner;
-```
+{% endhighlight %}
 
 I keep my components organized into two directories:
 
@@ -60,22 +60,22 @@ Now, back to the problem for the day:
 
 To start, you need to configure Storybook:
 
-```bash
+{% highlight bash %}
 $> npx -p @storybook/cli sb init
-```
+{% endhighlight %}
 
 This will detect that you have a React app and integrate itself into your app.  It adds the right modules to your `package.json`, sets up a script to allow you to run the Storybook UI, and adds a simple configuration file in `.storybook/main.js`.  It also creates a couple of default stories, which I promptly delete.
 
 To start with, you can't write Typescript stories out of the box.  We're also using SASS as our language of choice.  It doesn't deal with that either.  Fortunately, these are available as preset options:
 
-```bash
+{% highlight bash %}
 $> npm i -D @storybook/preset-typescript @storybook/preset-scss
 $> npm i -D css-loader sass-loader style-loader
-```
+{% endhighlight %}
 
 Then update the `.storybook/main.js` to include the plugins and to alter where Storybook looks for the stories:
 
-```javascript
+{% highlight js %}
 module.exports = {
   stories: [
     '../src/**/*.stories.tsx'
@@ -87,11 +87,11 @@ module.exports = {
     '@storybook/addon-links'
   ],
 };
-```
+{% endhighlight %}
 
 Now, let's write a set of stories for the component.  I place these alongside the component itself, in a file called `BusySpinner.stories.tsx`:
 
-```typescript
+{% highlight typescript %}
 import React from 'react';
 import BusySpinner from '.';
 
@@ -122,11 +122,11 @@ export const notBusy: React.SFC<{}> = () => (
     </BusySpinner>
   </div>
 );
-```
+{% endhighlight %}
 
 When you run the Storybook with `npm run storybook`, you can see the heirarchy of components (of which there is one right now).  Under that component is the two stories that have been defined.  You can move between them with just a click.  I've wrapped the component in a div with some styling so I can see the component "in context".  I could also do this with a decorator function:
 
-```typescript
+{% highlight typescript %}
 import React from 'react';
 import { addDecorator } from '@storybook/react';
 import BusySpinner from '.';
@@ -155,7 +155,7 @@ export const notBusy: React.SFC<{}> = () => (
     <p>This is the real content</p>
   </BusySpinner>
 );
-```
+{% endhighlight %}
 
 This format is good if you have a lot of stories and they all have the same wrapper.  I tend to use decorators when I'm doing a component that belongs in a toolbar, for example.
 
@@ -163,13 +163,13 @@ This format is good if you have a lot of stories and they all have the same wrap
 
 You can also use the Storybook as a central documentation for your components.  First, add the docs addon to the solution.  Install the library:
 
-```bash
+{% highlight bash %}
 $> npm i -D @storybook/addon-docs
-```
+{% endhighlight %}
 
 Then add it to the configuration file in `.storybook/main.js`:
 
-```javascript
+{% highlight js %}
 module.exports = {
   stories: [
     '../src/**/*.stories.tsx'
@@ -181,16 +181,16 @@ module.exports = {
     '@storybook/addon-docs'
   ],
 };
-```
+{% endhighlight %}
 
 Then run your storybook.  Even out of the box, you get something basic.  However, you can go further.  By adding a single entry to the default export of the stories file (the `component`), you can create additional documentation.  Here is the updated default export for my story:
 
-```javascript
+{% highlight js %}
 export default {
   title: 'lib/components/BusySpinner',
   component: BusySpinner
 };
-```
+{% endhighlight %}
 
 And this is what it generates:
 
@@ -202,13 +202,13 @@ It's added a `Docs` tab filled with information on the component.  It is a tad m
 
 Another thing we can do rather easily is to introduce "knobs".  In our simple case, the only difference between the two stories is the `isBusy` flag.  If we could tweak that flag, we wouldn't need the second story.  We could handle it with just one.  Well, there is an addon called `addon-kobs` for that.  You install it via npm:
 
-```bash
+{% highlight bash %}
 $> npm i -D @storybook/addon-knobs`
-```
+{% endhighlight %}
 
 And enable it in the same way as other addons:
 
-```javascript
+{% highlight js %}
 module.exports = {
   stories: [
     '../src/**/*.stories.tsx'
@@ -221,11 +221,11 @@ module.exports = {
     '@storybook/addon-knobs'
   ],
 };
-```
+{% endhighlight %}
 
 Now, I can add the knobs to the story:
 
-```typescript
+{% highlight typescript %}
 import React from 'react';
 import { addDecorator } from '@storybook/react';
 import { withKnobs, boolean } from '@storybook/addon-knobs';
@@ -250,7 +250,7 @@ export const normal: React.SFC<{}> = () => (
     This is some content
   </BusySpinner>
 );
-```
+{% endhighlight %}
 
 The knobs are included in two places:
 
@@ -269,7 +269,7 @@ Most components I write have some sort of user interactivity.  They report their
 
 I've adjusted my sample so that if you click on the "busy" text, it will call an `onClick` event handler with the sending event.  Let's adjust the story to show the actions:
 
-```typescript
+{% highlight typescript %}
 import React from 'react';
 import { addDecorator } from '@storybook/react';
 import { withKnobs, boolean } from '@storybook/addon-knobs';
@@ -295,7 +295,7 @@ export const normal: React.SFC<{}> = () => (
     This is some content
   </BusySpinner>
 );
-```
+{% endhighlight %}
 
 When you run the storybook now, set the component to busy, and click on the words,
 you can see the event:

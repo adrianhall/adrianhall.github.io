@@ -21,7 +21,7 @@ Let's look at the options:
 
 The first version of the query utilizes the `API.graphql()` method from the [AWS Amplify library](https://aws-amplify.github.io/docs/js/api#amplify-graphql-client). You can execute queries, mutations, and subscriptions from this form. It's an async network call, so expect to deal with promises and errors. Here is the canonical form of a simple query:
 
-```js
+{% highlight js %}
     public async componentWillMount() {
         try {
             const result = await API.graphql(graphqlOperation('{ me { id name } }'));
@@ -31,7 +31,7 @@ The first version of the query utilizes the `API.graphql()` method from the [AWS
             this.setState({ loading: false, errors: [ err.message ] });
         }
     }
-```
+{% endhighlight %}
 
 There are a couple of notes here:
 
@@ -39,7 +39,7 @@ There are a couple of notes here:
 2. I must use try/catch so that I can catch network and authentication errors.
 3. The result has a data block with the fields that I requested:
 
-    ```js
+    {% highlight js %}
     result = Object {
       "data": Object {
         "me": Object {
@@ -48,7 +48,7 @@ There are a couple of notes here:
         }
       }
     }
-    ```
+    {% endhighlight %}
 
 All the fields you requested are returned, but the value may be null if no data is available.  If I've got a component that has to get data from the network or I am using a library to do all the calls (and mocking those calls for testability), this is a great way to do it. However, if I decide to incorporate the call within a component, I have to worry about how I am going to test that component. I'd more likely place the call within a library and swap out the library with a mocked call at that point.
 
@@ -68,13 +68,13 @@ Cons:
 
 The next step is to use the [`<Connect>` component](https://aws-amplify.github.io/docs/js/api#amplify-graphql-client) to wrap my component. The `<Connect>` component will give you loading and error conditions, so you can use those to handle network conditions. Let's say I have a component that is normally used like this:
 
-```js
+{% highlight js %}
 <UserBlock name={"Adrian Hall"}/>
-```
+{% endhighlight %}
 
 I want to use the [`<Connect>` query](https://aws-amplify.github.io/docs/js/api#connect) to connect this to the me query that I was using before. I might do this:
 
-```js
+{% highlight js %}
 const UserBlockFunction = () => {
     return (
         <Connect query={graphqlOperation('{ me { id name } }')}>
@@ -92,7 +92,7 @@ const UserBlockFunction = () => {
 };
 
 export default UserBlockFunction;
-```
+{% endhighlight %}
 
 In this version, I've got three cases:
 1. The query is loading (loading == true)
@@ -116,7 +116,7 @@ The final method is to bring in a heavyweight client like the Apollo Client. It 
 
 In this method, you create an AWS AppSync Client, then use that to configure the Apollo Client. Then wrap your entire app within the Apollo Client. Your connected components now have full knowledge of the Apollo Client, but your lower level components can remain oblivious (just like the `<Connect>` component I discussed above). Let's look at the same functionality as before. First, configure the client within your main app code:
 
-```js
+{% highlight js %}
 import gql from 'graphql-tag';
 import AWSAppSyncClient, { AUTH_TYPE } from 'aws-appsync';
 import aws_config from './aws-exports';
@@ -140,11 +140,11 @@ const WithProvider = () => (
 );
 
 export default WithProvider;
-```
+{% endhighlight %}
 
 Then create the connected component:
 
-```js
+{% highlight js %}
 import gql from 'graphql-tag';
 import { graphql } from 'react-apollo';
 import * as React from 'react';
@@ -178,7 +178,7 @@ export default graphql(query, {
     name: props.data.me.name || 'undefined'
   })
 })(UserBlock);
-```
+{% endhighlight %}
 
 More power, but more complexity and more places for things to go wrong.
 

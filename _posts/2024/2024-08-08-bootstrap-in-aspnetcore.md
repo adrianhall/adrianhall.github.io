@@ -14,21 +14,21 @@ I'm building a new web application with ASP.NET Core, and I'm using [Visual Stud
 
 Visual Studio has a handy "Add Client Library..." gesture that allows you to add client libraries to your application.  It's based on a command line tool called [libman]. You don't need Visual Studio to use libman, however. You just have to install the libman tool globally:
 
-```bash
+{% highlight bash %}
 dotnet tool install -g Microsoft.Web.LibraryManager.Cli
-```
+{% endhighlight %}
 
 This installs the tool in [your normal location for global tools][globaltools].  It's a good idea to add this directory to your PATH permanently.
 
 Next, create a `libman.json` file in your frontend ASP.NET Core web project.  The easiest way to do this is to change directory to your frontend web project and run `libman init` and it will prompt you for the information it needs.  You can also just create the file.  It looks like this:
 
-```json
+{% highlight json %}
 {
   "version": "1.0",
   "defaultProvider": "unpkg",
   "libraries": []
 }
-```
+{% endhighlight %}
 
 To add a library, either run `libman install`, or edit the `libman.json` file then run `libman restore`.
 
@@ -40,11 +40,11 @@ The `unpkg` provider refers to `unpkg.com` - a mirror of the npm package reposit
 
 I used the following:
 
-```bash
+{% highlight bash %}
 libman install jquery
 libman install bootstrap
 libman install bootstrap-icons
-```
+{% endhighlight %}
 
 You'll see them get installed into the `wwwroot/lib` directory as you run the commands.
 
@@ -58,7 +58,7 @@ I'm not done yet, because the whole point of this is to create an SCSS pipeline 
 
 Add the following packages to my project:
 
-```xml
+{% highlight xml %}
   <PackageReference Include="JavaScriptEngineSwitcher.Extensions.MsDependencyInjection" Version="3.24.1" />
   <PackageReference Include="JavaScriptEngineSwitcher.V8" Version="3.24.2" />
   <PackageReference Include="LigerShark.WebOptimizer.Core" Version="3.0.422" />
@@ -71,7 +71,7 @@ Add the following packages to my project:
   <PackageReference Include="Microsoft.ClearScript.V8.Native.win-arm64" Version="7.4.5" />
   <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x64" Version="7.4.5" />
   <PackageReference Include="Microsoft.ClearScript.V8.Native.win-x86" Version="7.4.5" />
-```
+{% endhighlight %}
 
 The main packages here are the `LigerShark` packages.  The rest are support for the V8 JavaScript runtime on each platform.
 
@@ -79,7 +79,7 @@ The main packages here are the `LigerShark` packages.  The rest are support for 
 
 Your `Program.cs` (or `Startup.cs,` if you are using that form) is split up into two parts.  The first is the services section and the second is the middleware section.  In the services section, add the following:
 
-```csharp
+{% highlight csharp %}
 // Web Optimizer
 builder.Services.AddJsEngineSwitcher(options =>
 {
@@ -90,11 +90,11 @@ builder.Services.AddJsEngineSwitcher(options =>
 builder.Services.AddWebOptimizer(pipeline => {
     pipeline.AddScssBundle("/css/site.css", "/css/site.scss");
 });
-```
+{% endhighlight %}
 
 This configures the SCSS pipeline to build `wwwroot/css/site.css` by compiling the `wwwroot/css/site.scss` file.  We'll get onto what goes into the SCSS file in a little bit.  The pipeline allows you to adjust what happens during the build process. For example, I can minify my CSS file in production:
 
-```csharp
+{% highlight csharp %}
 builder.Services.AddWebOptimizer(pipeline => {
   pipeline.AddScssBundle("/css/site.css", "/css/site.scss");
   if (!builder.Environment.IsDevelopment())
@@ -103,15 +103,15 @@ builder.Services.AddWebOptimizer(pipeline => {
     pipeline.AddFiles("text/css", "/css/*");
   }
 })
-```
+{% endhighlight %}
 
 In the middleware section, add the following:
 
-```csharp
+{% highlight csharp %}
 app.UseWebOptimizer();
 app.UseStaticFiles();
 app.UseRouting();
-```
+{% endhighlight %}
 
 You likely already have `.UseStaticFiles()` and `.UseRouting()`.  You need to ensure that the `.UseWebOptimizer()` is added before these two.  If you are using response compression, then the `.UseWebOptimizer()` needs to come AFTER that.
 
@@ -123,10 +123,10 @@ You likely already have `.UseStaticFiles()` and `.UseRouting()`.  You need to en
 
 In your `_ViewImports.cshtml` file, add the following line:
 
-```csharp
+{% highlight csharp %}
 @addTagHelper *, WebOptimizer.Core
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-```
+{% endhighlight %}
 
 The WebOptimizer.Core tag helper is added before the standard tag helper.
 
@@ -134,7 +134,7 @@ The WebOptimizer.Core tag helper is added before the standard tag helper.
 
 You can control the pipeline within the `appsettings.json` file.  I have the following in my `appsettings.json` file:
 
-```json
+{% highlight json %}
   "webOptimizer": {
     "enableCaching": true,
     "enableMemoryCache": true,
@@ -142,18 +142,18 @@ You can control the pipeline within the `appsettings.json` file.  I have the fol
     "enableTagHelperBundling": true,
     "allowEmptyBundle": true
   }
-```
+{% endhighlight %}
 
 ... and the following in my `appsettings.Development.json` file:
 
-```json
+{% highlight json %}
   "webOptimizer": {
     "enableCaching": false,
     "enableMemoryCache": false,
     "enableTagHelperBundling": false,
     "allowEmptyBundle": false
   }
-```
+{% endhighlight %}
 
 This ensures that my CSS file is cached by the server in-memory (with a backing disk cache) when running in production. However, caching (and cache-busting) is turned off during development so that I only need to reload my page to pick up the CSS changes when I am rapidly working. There is also support for CDN URL prefixing if needed.
 
@@ -161,7 +161,7 @@ This ensures that my CSS file is cached by the server in-memory (with a backing 
 
 Create the file `wwwroot/css/site.scss` file with the following contents:
 
-```scss
+{% highlight scss %}
 // Bootstrap: Core
 @import "../lib/bootstrap/scss/functions";
 
@@ -210,7 +210,7 @@ Create the file `wwwroot/css/site.scss` file with the following contents:
 // Bootstrap: Helpers & utilities
 @import "../lib/bootstrap/scss/helpers";
 @import "../lib/bootstrap/scss/utilities/api";
-```
+{% endhighlight %}
 
 This is the basic version with the entire Bootstrap in it.  You can comment out imports for features you are not using to make your CSS leaner.  You can also add your own customizations in and add your own imports easily.  I normally add a file `_overrides.scss` to the same directory, then use `@import "overrides";` where I've added the comment about overriding bootstrap variables.  This allows me to see which customizations I've done.
 
@@ -218,10 +218,10 @@ This is the basic version with the entire Bootstrap in it.  You can comment out 
 
 You can add the link to your CSS file just like you normally would:
 
-```html
+{% highlight html %}
 <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.css">
 <link rel="stylesheet" href="~/css/site.css">
-```
+{% endhighlight %}
 
 I've put both a link to a library (in this case, the Bootstrap Icons font) and a link to my generated stylesheet. 
 

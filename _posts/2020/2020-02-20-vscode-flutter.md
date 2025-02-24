@@ -16,7 +16,7 @@ Here is my basic flow:
 
 Here is my `package.json` file as an example:
 
-```json
+{% highlight json %}
 {
   "name": "My App - Build",
   "version": "1.0.0",
@@ -29,11 +29,11 @@ Here is my `package.json` file as an example:
   "author": "Adrian Hall <photoadrian@outlook.com>",
   "license": "MIT"
 }
-```
+{% endhighlight %}
 
 It's nice and simple.  Now, I have a requirement for a pre-build step.  I need to copy some JSON configuration files from my backend to my front end so that the code knows where to look.  I can easily add it to the `package.json`:
 
-```json
+{% highlight json %}
 {
   "name": "My App - Build",
   "version": "1.0.0",
@@ -53,7 +53,7 @@ It's nice and simple.  Now, I have a requirement for a pre-build step.  I need t
     "npm-run-all": "^4.1.5"
   }
 }
-```
+{% endhighlight %}
 
 There are lots of CLI utilities you can use for handling the pre-build steps you want (or you can build your own). The `cpy-cli` package copies files into a directory (cross-platform, so it works on both Mac and Windows), and the `npm-run-all` package gives me the `run-s` command for running NPM tasks sequentially (and thus allowing me to attach the pre-build task to multiple other tasks).
 
@@ -63,7 +63,7 @@ Now when I run `npm start`, the configuration files are first copied over, and t
 
 I don't actually develop on the command line, however.  When developing using Flutter, I use Visual Studio Code.  This has a flutter debugger which I find useful.  To run flutter from the debugger, you add a launch configuration.  It looks like this:
 
-```json
+{% highlight json %}
 {
     "version": "0.2.0",
     "configurations": [
@@ -74,11 +74,11 @@ I don't actually develop on the command line, however.  When developing using Fl
         }
     ]
 }
-```
+{% endhighlight %}
 
 The problem with this is that it bypasses my nice build system.  However, Visual Studio Code can also execute tasks right before launching the debugger.  First, define a task.  Press Ctrl-Shift-P to bring up the command palette, and select **Tasks: Configure Task**.  You should be able to go through the cofniguration to add the `npm: copyClientConfiguration` task.  In your `.vscode/tasks.json` file, this is defined thusly:
 
-```json
+{% highlight json %}
 {
     "version": "2.0.0",
     "tasks": [
@@ -89,11 +89,11 @@ The problem with this is that it bypasses my nice build system.  However, Visual
         }
     ]
 }
-```
+{% endhighlight %}
 
 You can now go back to the launch configuration (stored in `.vscode/launch.json`), and add it as a `preLaunchTask`:
 
-```json
+{% highlight json %}
 {
     "version": "0.2.0",
     "configurations": [
@@ -105,6 +105,6 @@ You can now go back to the launch configuration (stored in `.vscode/launch.json`
         }
     ]
 }
-```
+{% endhighlight %}
 
 When you launch the flutter application from the debug menu, it will first copy your configuration files into the project before building and launching your app.  This duplicates the effect that I have configured with the command line build.

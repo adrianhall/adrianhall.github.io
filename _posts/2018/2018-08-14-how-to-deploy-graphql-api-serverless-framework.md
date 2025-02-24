@@ -82,9 +82,9 @@ I haven’t covered these here since I covered them in my prior article and they
 
 There is a little complexity here, however. When I was doing a CloudFormation template, I could use operations like `!Join` and `!GetAtt`. These are not available with Serverless Framework. Instead, you have to use the JSON versions — mostly because Serverless Framework translates the configuration into a JSON CloudFormation file. That means using arrays and objects and the `Fn::` versions of the functions. As an example, the resource definition for the `AppSyncDynamoDBPolicy` became a bit cumbersome:
 
-```
+{% highlight json %}
 { Fn::Join: [ '', [ { Fn::GetAtt: [ NotesTable, Arn ] }, '/*' ] ] }
-```
+{% endhighlight %}
 
 This is bit incoherent and I hope that the Serverless Framework folks improve this so we can do something a little easier.
 
@@ -122,9 +122,9 @@ type Schema {
 
 Similarly, the mapping files must be located in a directory called `mapping-templates` relative to the `serverless.yml` file. Again, you can rename this directory, but why would you. The nice thing about this approach is that you can duplicate the mapping templates. For example, most of us have multiple response mapping templates that look like this:
 
-```
+{% highlight text %}
 $util.toJson($ctx.result)
-```
+{% endhighlight %}
 
 That can become `common-response.vtl`. I like using the `.vtl` as an extension as it can enable some extra highlighting in editors. Visual Studio Code has a couple of potential syntax highlighters for VTL code. As with the resources, I’m not going to duplicate each and every mapping template here.
 

@@ -62,9 +62,9 @@ Click **OK**.
 
 Carrying on from our previous step, you should be at the Credentials page on the Google developers console for your project. We will now create a client ID for the Android app. Before you get started, you need to obtain the SHA1 fingerprint for your app. When you created the Facebook login, you created a key store for your app. Obtain the SHA1 fingerprint from the key store with the following command:
 
-```bash
+{% highlight bash %}
 keytool -exportcert -keystore ~/.android/debug.keystore -list -v
-```
+{% endhighlight %}
 
 The output will be similar to the following:
 
@@ -85,23 +85,23 @@ As before, you will get a Client ID (but no client secret this time as your key 
 
 Since we are using [AWS Amplify] CLI for our backend configuration, this becomes easily accomplished:
 
-```bash
+{% highlight bash %}
 amplify update auth
-```
+{% endhighlight %}
 
 The answers to the questions are the same, except for this one:
 
-```bash
+{% highlight bash %}
 ? Do you want to enable 3rd party authentication providers in your identity pool (Use arrow keys)
-```
+{% endhighlight %}
 
 Answer **Yes** here. Then select **Google**. AWS Amplify CLI will ask you for both client IDs. You can copy/paste these into the form. The rest of the configuration remains the same, so just press Enter to move past the question.
 
 Once complete, push the configuration to deploy the resources:
 
-```bash
+{% highlight bash %}
 amplify push
-```
+{% endhighlight %}
 
 ## Step 4: Integrate Google authentication
 
