@@ -125,6 +125,7 @@ kramdown:
 sass:
   sass_dir: _sass
   style: compressed
+  silence_deprecations: [ import, color-functions, global-builtin, mixed-decls, slash-div ]
 
 permalink: pretty
 paginate: 5 # amount of posts to show
