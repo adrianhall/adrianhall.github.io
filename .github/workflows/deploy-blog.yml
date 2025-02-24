@@ -1,0 +1,72 @@
+# Workflow for building and deploying a Jekyll site to GitHub Pages
+name: Deploy Jekyll site to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v3
+
+        - name: Setup Ruby
+          uses: ruby/setup-ruby@v1
+          with:
+            ruby-version: "3.1"
+            bundler-cache: true
+
+        - name: Version info
+          run: |
+            ruby --version
+            gem --version
+            bundle --version
+
+        - name: Setup Pages
+          id: pages
+          uses: actions/configure-pages@v1
+
+        - name: Check Jekyll configuration
+          run: |
+            bundle exec jekyll doctor
+
+        - name: Build with Jekyll
+          run: bundle exec jekyll build --baseurl ${{ steps.pages.outputs.base_path }} --profile --trace
+          env:
+            JEKYLL_ENV: production
+
+        - name: Upload site to artifacts
+          uses: actions/upload-pages-artifact@v1
+          if: ${{ success() && github.ref == 'refs/heads/main' }}
+          with:
+            path: ./_site/
+
+  # Deployment job
+  deploy:
+    name: deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.ref == 'refs/heads/main' }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+        if: ${{ success() }}
