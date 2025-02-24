@@ -51,10 +51,7 @@ author:
   links:
     - label: "Website"
       icon: "fas fa-fw fa-link"
-      url: "https://adrianhall.github.io"
-    - label: "Reddit"
-      icon: "fab fa-fw fa-square-reddit"
-      url: "https://www.reddit.com/user/photoadrian/submitted/"
+      url: *url
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/adrianhall"
@@ -67,9 +64,6 @@ footer:
     - label: "Website"
       icon: "fas fa-fw fa-link"
       url: *url
-    - label: "Reddit"
-      icon: "fab fa-fw fa-square-reddit"
-      url: "https://www.reddit.com/user/photoadrian/submitted/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/adrianhall"
