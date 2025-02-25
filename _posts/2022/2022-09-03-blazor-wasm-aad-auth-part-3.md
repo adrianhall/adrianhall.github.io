@@ -1,7 +1,7 @@
 ---
 title: "Azure Active Directory Authentication for Blazor WASM (Part 3: Production)"
 categories:
-  - ASP.NET
+  - "ASP.NET Core"
 tags:
   - Blazor
 ---

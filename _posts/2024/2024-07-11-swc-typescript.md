@@ -1,7 +1,8 @@
 ---
 title:  "Building TypeScript projects with the swc compiler"
 date:   2024-07-11
-categories: Devtools
+categories:
+    - Devtools
 tags:
     - TypeScript
     - Tips

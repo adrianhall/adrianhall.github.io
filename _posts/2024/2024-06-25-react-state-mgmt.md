@@ -1,7 +1,8 @@
 ---
 title:  "The State of React state management in 2024"
 date:   2024-06-25
-categories: React
+categories:
+  - React
 tags:
   - JavaScript
   - Comparison

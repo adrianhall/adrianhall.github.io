@@ -1,7 +1,8 @@
 ---
 title:  "Centrally managing dependencies in your C# solutions"
 date:   2024-08-15
-categories: ASP.NET Core
+categories:
+  - dotNET
 tags:
   - Tips
   - C#

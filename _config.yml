@@ -1,8 +1,9 @@
+theme                    : "minimal-mistakes-jekyll"
 minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Because Developers are Awesome"
+title                    : &title "Because Developers are Awesome"
 title_separator          : "-"
 name                     : &name "Adrian Hall"
 description              : &description "Musings about cloud development."
@@ -10,37 +11,36 @@ url                      : &url "https://adrianhall.github.io"
 baseurl                  : ""
 repository               : "adrianhall/adrianhall.github.io"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
+masthead_title           : *title
 breadcrumbs              : true
 words_per_minute         : 200
+enable_copy_code-button  : true
+copyright                : *name
+copyright_url            : *url
+
 analytics:
   provider               : "clarity"
   clarity:
     project_id           : "er6rxn3sjb"
+
 comments:
   provider               : "disqus"
   disqus:
     shortname            : "adrianhall-github-io"
+
 atom_feed:
   path                   : # blank (default) uses feed.xml
+
+# Search Provider settings
 search                   : true
 search_full_content      : true
 search_provider          : lunr
-algolia:
-  application_id         : # YOUR_APPLICATION_ID
-  index_name             : # YOUR_INDEX_NAME
-  search_only_api_key    : # YOUR_SEARCH_ONLY_API_KEY
-  powered_by             : # true (default), false
-google:
-  search_engine_id       : # YOUR_SEARCH_ENGINE_ID
-  instant_search         : # false (default), true
+
 # SEO Related
 google_site_verification :
 bing_site_verification   : "D01FF6B3623A96D5126B51DC35788807"
 yandex_site_verification :
 naver_site_verification  :
-
-twitter:
-  username               : &twitter FizzyInTheHall
 
 author:
   name             : *name
@@ -68,10 +68,149 @@ footer:
       icon: "fab fa-fw fa-github"
       url: "https://github.com/adrianhall"
 
+encoding: "UTF-8"
+markdown_ext: "md"
+
+markdown: kramdown
+highlighter: rouge
+lsi: false
+excerpt_separator: "\n\n"
+incremental: false
+
+kramdown:
+  input: GFM
+  hard_wrap: false
+  auto_ids: true
+  footnote_nr: 1
+  entity_output: as_char
+  toc_levels: 1..6
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  enable_coderay: false
+
+sass:
+  sass_dir: _sass
+  style: compressed
+  sourcemap: development
+  verbose: true
+  silence_deprecations: [ import, color-functions, global-builtin, mixed-decls, slash-div ]
+
+permalink: /:categories/:year/:year-:month-:day-:title:output_ext
+timezone: "US/Pacific"
+
+# Pagination with jekyll-paginate-v2
+# See https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#site-configuration
+#   for configuration details
+pagination:
+  enabled: true
+  debug: false
+  collection: 'posts'
+  per_page: 10
+  permalink: '/page/:num/'
+  title: ':title - page :num'
+  limit: 0
+  sort_field: 'date'
+  sort_reverse: true
+  category: 'posts'
+  tag: ''
+  locale: ''
+  trail:
+    before: 2
+    after: 2
+
+plugins:
+  - jekyll-archives
+  - jekyll-feed
+  - jekyll-gist
+  - jekyll-include-cache
+  - jekyll-optional-front-matter
+  - jekyll-paginate-v2
+  - jekyll-relative-links
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-titles-from-headings
+  - jekyll-toc
+  - jemoji
+
+whitelist:
+  - jekyll-archives
+  - jekyll-feed
+  - jekyll-gist
+  - jekyll-include-cache
+  - jekyll-optional-front-matter
+  - jekyll-paginate-v2
+  - jekyll-relative-links
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-titles-from-headings
+  - jekyll-toc
+  - jemoji
+
+category_archive:
+  type: liquid
+  path: /categories/
+tag_archive:
+  type: liquid
+  path: /tags/
+jekyll-archives:
+  enabled:
+    - categories
+    - tags
+  layouts:
+    category: archive-taxonomy
+    tag: archive-taxonomy
+  permalinks:
+    category: /categories/:name/
+    tag: /tags/:name/
+
+compress_html:
+  clippings: all
+  ignore:
+    envs: development
+
+feed:
+  tags: true
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      excerpt_separator: <!--more-->
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: true
+      share: true
+      related: true
+      toc: true
+  # _pages
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: single
+      author_profile: false
+      read_time: true
+      comments: false
+      share: true
+      related: false
+
 include:
-  - .htaccess
+  - _data
+  - _includes
+  - _layouts
   - _pages
+  - _posts
+  - _sass
+  - assets
+  - _config.yml
 exclude:
+  - .devcontainer
+  - .editorconfig
+  - .gitattributes
+  - .gitignore
+  - .github
+  - .jekyll-cache
   - "*.sublime-project"
   - "*.sublime-workspace"
   - vendor
@@ -98,69 +237,3 @@ exclude:
 keep_files:
   - .git
   - .svn
-encoding: "UTF-8"
-markdown_ext: "md"
-
-markdown: kramdown
-highlighter: rouge
-lsi: false
-excerpt_separator: "\n\n"
-incremental: false
-
-kramdown:
-  input: GFM
-  hard_wrap: false
-  auto_ids: true
-  footnote_nr: 1
-  entity_output: as_char
-  toc_levels: 1..6
-  smart_quotes: lsquo,rsquo,ldquo,rdquo
-
-sass:
-  sass_dir: _sass
-  style: compressed
-  silence_deprecations: [ import, color-functions, global-builtin, mixed-decls, slash-div ]
-
-permalink: pretty
-paginate: 5 # amount of posts to show
-paginate_path: /page:num/
-timezone: "US/Pacific"
-
-plugins:
-  - jekyll-paginate
-  - jekyll-sitemap
-  - jekyll-gist
-  - jekyll-feed
-  - jemoji
-
-whitelist:
-  - jekyll-paginate
-  - jekyll-sitemap
-  - jekyll-gist
-  - jekyll-feed
-  - jemoji
-
-category_archive:
-  type: liquid
-  path: /categories/
-tag_archive:
-  type: liquid
-  path: /tags/
-
-compress_html:
-  clippings: all
-  ignore:
-    envs: development
-
-defaults:
-  - scope:
-      path: ""
-      type: posts
-    values:
-      layout: single
-      author_profile: true
-      read_time: true
-      toc: true
-      comments: true
-      share: true
-      related: true

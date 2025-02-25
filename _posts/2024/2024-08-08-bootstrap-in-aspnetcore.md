@@ -1,7 +1,8 @@
 ---
 title:  "Building Bootstrap apps from SASS with ASP.NET Core"
 date:   2024-08-08
-categories: ASP.NET Core
+categories:
+  - "ASP.NET Core"
 tags:
   - ASP.NET Core
   - SCSS

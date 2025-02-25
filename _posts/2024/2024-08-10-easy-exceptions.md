@@ -1,7 +1,8 @@
 ---
 title:  "Better data validation exceptions with C#"
 date:   2024-08-10
-categories: ASP.NET Core
+categories:
+  - dotNET
 tags:
   - Tips
   - C#

@@ -1,10 +1,11 @@
 ---
 title:  "Converting a TypeScript project from CommonJS to ESM"
 date:   2024-07-06
-categories: TypeScript
+categories:
+  - TypeScript
 tags:
-    - TypeScript
-    - Tips
+  - TypeScript
+  - Tips
 ---
 
 I haven't made much progress on my own projects recently because of a project at work.  Specifically, I am currently maintaining a CLI tool written in TypeScript about five years ago.  It hasn't really been looked after on a consistent basis, but some of the libraries that it uses (specifically, [update-notifier](https://www.npmjs.com/package/update-notifier) and [wait-on](https://www.npmjs.com/package/wait-on)) have some security issues.  Now, this is a development CLI tool, so the actual vulnerabilities don't affect production code.  Still, many people don't like to use tools that are flagged for high risk vulnerabilities (and I can't say I blame them).  The CLI tool is transpiled into JavaScript using the [CommonJS](https://en.wikipedia.org/wiki/CommonJS) module system.

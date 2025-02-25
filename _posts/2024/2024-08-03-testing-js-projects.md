@@ -1,7 +1,8 @@
 ---
 title:  "The State of JavaScript Testing Frameworks 2024"
 date:   2024-08-03
-categories: Devtools
+categories:
+  - Devtools
 tags:
   - JavaScript
   - TypeScript

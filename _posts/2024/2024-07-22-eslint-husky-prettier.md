@@ -1,10 +1,11 @@
 ---
 title:  "Enforcing code style with eslint, prettier, and husky"
 date:   2024-07-22
-categories: Devtools
+categories:
+  - Devtools
 tags:
-    - TypeScript
-    - Tips
+  - TypeScript
+  - Tips
 ---
 
 You may have noticed that I am developing a new project from my last couple of articles:

@@ -1,7 +1,8 @@
 ---
 title:  "The State of React UI libraries in 2024"
 date:   2024-06-27
-categories: React
+categories:
+  - React
 tags:
   - JavaScript
   - Comparison

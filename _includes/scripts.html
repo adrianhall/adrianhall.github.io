@@ -26,3 +26,10 @@
 
 {% include analytics.html %}
 {% include /comments-providers/scripts.html %}
+{% include mermaid.html %}
+
+{% if site.after_footer_scripts %}
+  {% for script in site.after_footer_scripts %}
+    <script src="{{ script | relative_url }}"></script>
+  {% endfor %}
+{% endif %}

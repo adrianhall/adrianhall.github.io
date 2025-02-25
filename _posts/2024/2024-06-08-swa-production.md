@@ -1,12 +1,13 @@
 ---
 title:  "Build a Blog: Going to production with Azure Static Web Apps"
 date:   2024-06-08
-categories: Azure
+categories:
+  - Azure
 tags:
-    - Bicep
-    - "Azure Developer CLI"
-    - "Azure Static Web Apps"
-    - "Azure DNS"
+  - Bicep
+  - "Azure Developer CLI"
+  - "Azure Static Web Apps"
+  - "Azure DNS"
 ---
 
 I'm almost ready to take my Static Web App to production and make it public.  However, there are a few things that I want to make sure I do before going to production.  This is true of any application hosted in the cloud, so it;s a good reminder of things to think about.

@@ -1,7 +1,8 @@
 ---
 title:  "Organizing service injection in ASP.NET Core Minimal APIs"
 date:   2024-08-07
-categories: ASP.NET Core
+categories:
+  - "ASP.NET Core"
 tags:
   - Dependency Injection
 ---
