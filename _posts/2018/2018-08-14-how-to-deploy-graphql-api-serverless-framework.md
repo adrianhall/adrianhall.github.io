@@ -3,9 +3,9 @@ title: "How to deploy a GraphQL API on AWS with the Serverless Framework"
 categories:
   - Cloud
 tags:
-  - GraphQL
-  - "Serverless Framework"
-  - Deployment
+  - aws_appsync
+  - graphql
+  - serverless
 ---
 
 In previous posts, we’ve explored how to deploy a GraphQL service based on [AWS AppSync] and Amazon DynamoDB using [AWS CloudFormation]. The articles reinforce how automatic and repeatable deployments are central to moving towards a DevOps mindset.

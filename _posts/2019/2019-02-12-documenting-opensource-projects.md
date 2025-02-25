@@ -1,7 +1,9 @@
 ---
 title: "Documenting open-source projects"
 categories:
-  - Documentation
+  - Tips
+tags:
+  - documentation
 ---
 
 Over the last 25 years, I've contributed to and written a lot of technical documentation, whether it is in the form of official documentation, blogs, tutorials, or books. Tech writers, who have nothing but access to engineers to work with, turn conversations into a guide that is equally suitable for a complete beginner and an expert. If you are an engineer, you definitely need to institute a "Tech Writer Appreciation Day".

@@ -4,8 +4,7 @@ date:   2024-07-22
 categories:
   - Devtools
 tags:
-  - TypeScript
-  - Tips
+  - typescript
 ---
 
 You may have noticed that I am developing a new project from my last couple of articles:

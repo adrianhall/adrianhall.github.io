@@ -1,10 +1,10 @@
 ---
 title: "Introducing Azure Mobile Apps for ASP.NET 6"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - ASP.NET Core
-  - Azure Mobile Apps
+  - aspnetcore
+  - azure_mobile_apps
 ---
 
 It's release day for .NET 6, and I couldn't be happier to introduce Azure Mobile Apps for ASP.NET 6 being released on the same day.  When I started developing the new code-base, I had several aims:

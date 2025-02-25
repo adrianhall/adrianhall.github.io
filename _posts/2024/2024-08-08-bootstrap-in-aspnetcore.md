@@ -2,11 +2,11 @@
 title:  "Building Bootstrap apps from SASS with ASP.NET Core"
 date:   2024-08-08
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - ASP.NET Core
-  - SCSS
-  - Bootstrap
+  - aspnetcore
+  - scss
+  - bootstrap
 ---
 
 I'm building a new web application with ASP.NET Core, and I'm using [Visual Studio Code][vscode] with the [C# Dev Kit][devkit] so that I can really dive deep into the benefits and problems of using VS Code as a Visual Studio replacement. A frontend project is a good one to start with since I can check out the ways that the solution is presented while still having all the goodness of the VS Code development experience for JavaScript and TypeScript.  As part of the application, I wanted to build a lean Bootstrap CSS file with some of my customizations in there. Along the way, I learned a couple of new things about building an SCSS pipeline right inside the ASP.NET Core pipeline.  So, how did I do it?

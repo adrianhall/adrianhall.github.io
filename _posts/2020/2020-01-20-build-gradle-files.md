@@ -1,7 +1,9 @@
 ---
 title: "Adding a pre-build step to Android Studio builds"
 categories:
-  - Android
+  - Mobile
+tags:
+  - android
 ---
 
 I'm currently writing a cloud-native app with an Android (and iOS) front end.  I've got my backend configuration written using [Terraform](https://terraform.io), and it outputs a file called `infrastructure.json` that describes the backend in a JSON format.  Now, the question becomes "how do I get that `infrastructure.json` file into my front end code?"  

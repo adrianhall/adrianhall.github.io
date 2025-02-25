@@ -1,9 +1,10 @@
 ---
 title: "Unit testing asynchronous Android network libraries"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 I'm writing a network library for Android at the moment, and specifically looking at unit tests.  In [my last article]({% post_url 2019/2019-12-24-unit-testing-android-libraries %}), I looking at mocking the Android context and other Android specific libraries.  Since I am writing a network client library, I need to go a step further and deal with the network connection itself.  

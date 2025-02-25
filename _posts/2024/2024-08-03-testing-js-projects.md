@@ -4,9 +4,9 @@ date:   2024-08-03
 categories:
   - Devtools
 tags:
-  - JavaScript
-  - TypeScript
-  - Comparison
+  - testing
+  - typescript
+  - comparison
 ---
 
 This week, I am adding a test framework to my ESM module template. I use a testing framework for both [unit testing](https://www.geeksforgeeks.org/unit-testing-software-testing/) and [integration testing](https://www.geeksforgeeks.org/software-engineering-integration-testing/). Like everything, test frameworks have evolved, and no test framework is suitable for all situations.  However, it is one of those things you have to do if your project is destined to be long-lived.  You should get into the habit of adding tests even if your project is not going to be long-lived.  It's a good habit.

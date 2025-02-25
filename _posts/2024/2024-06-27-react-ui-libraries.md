@@ -2,10 +2,11 @@
 title:  "The State of React UI libraries in 2024"
 date:   2024-06-27
 categories:
-  - React
+  - Web
 tags:
-  - JavaScript
-  - Comparison
+  - react
+  - javascript
+  - comparison
 ---
 
 As I mentioned in my [last post]({% post_url 2024/2024-06-25-react-state-mgmt %}), I've been away from React development for a while, and I'm intending on writing a web application. I'm comparing the various libraries that I can use for my application.  In this post, I'm going to be comparing UI component libraries.

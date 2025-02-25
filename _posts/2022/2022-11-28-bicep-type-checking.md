@@ -1,9 +1,9 @@
 ---
 title: "Type-checking Bicep arrays and objects"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - Bicep
+  - bicep
 ---
 
 As you may have guessed by now, I'm delving heavily into the world of [Bicep](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview) right now, mostly in order to describe the infrastructure for my personal projects in a readable way.  JSON and YAML (used by ARM) is most definitely not readable for the average consumer.  Part of that work was learning about [bicep modules](https://learn.microsoft.com/azure/azure-resource-manager/bicep/modules), which I love for modularizing my code.  However, there is one distinctive problem with this.

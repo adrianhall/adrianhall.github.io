@@ -2,9 +2,10 @@
 title:  "Organizing service injection in ASP.NET Core Minimal APIs"
 date:   2024-08-07
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - Dependency Injection
+  - aspnetcore
+  - minimal_apis
 ---
 
 For the longest time, the Controller was the only way to introduce an API into your application.  With the latest versions of ASP.NET Core, [Minimal APIs](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis/overview) became available.  These offered the potential to write less code and be more efficient since they didn't carry the baggage of the controller with them.  That does come with some drawbacks, however. For me, one of the main ones is that it is so much easier to write unreadable code. WIth some basic practices, however, you can use minimal APIs yet still have the power of dependency injection AND readable code.

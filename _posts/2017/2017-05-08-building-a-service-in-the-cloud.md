@@ -3,7 +3,7 @@ title: "Building a service in the Cloud"
 categories:
   - Cloud
 tags:
-  - Serverless
+  - serverless
 ---
 
 I’ve been thinking about providing services in the cloud for a few years now.    A common question I see time and time again is this:  “What pieces of the cloud do I need to build my solution?”  The answer is always “it depends.”  This post is about those options.

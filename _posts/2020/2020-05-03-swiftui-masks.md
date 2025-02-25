@@ -1,9 +1,10 @@
 ---
 title: "Rounded corner panels and masks in SwiftUI"
 categories:
-  - Swift
+  - Mobile
 tags:
-  - SwiftUI
+  - swift
+  - swiftui
 ---
 
 I've been working on my UI developer skills recently (and I've done a few other posts about this as well).  If you look at any of the recent design trends on [Dribbble](https://dribbble.com) or [UPLabs](https://www.uplabs.com/ios), you will see plenty of rounded corners.  SwiftUI makes it simple to create rounded corners on all the corners - just add `.cornerRadius(radius)` as a modifier to the view.

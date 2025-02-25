@@ -1,9 +1,10 @@
 ---
 title: "Handle location and geocoding with SwiftUI"
 categories:
-  - Swift
+  - Mobile
 tags:
-  - SwiftUI
+  - swift
+  - swiftui
 ---
 
 I'm continuing on my Weather app research in SwiftUI.  My next problem is this: 

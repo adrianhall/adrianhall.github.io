@@ -1,9 +1,12 @@
 ---
 title: "Azure Active Directory Authentication for Blazor WASM (Part 1: The Server)"
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - Blazor
+  - aspnetcore
+  - blazor
+  - azure_active_directory
+  - microsoft_entra
 ---
 
 Continuing my foray into Blazor WASM, I decided to tackle authentication.  The Microsoft documentation has [an excellent article](https://docs.microsoft.com/aspnet/core/blazor/security/webassembly/hosted-with-azure-active-directory?view=aspnetcore-6.0) on how to do this using the built-in tooling to create an AAD-enabled Blazor WASM application.  However, I'm beyond the tooling at this point.  My Blazor app is created.  I need to augment the solution with the right code to enable authentication.  I also want to make sure that I am not leaking secrets and the same code will work from development, through staging, to production.  There is a little more to the story than the basic details provided by the documentation.

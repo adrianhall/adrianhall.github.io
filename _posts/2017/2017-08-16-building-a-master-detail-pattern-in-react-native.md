@@ -1,9 +1,10 @@
 ---
 title: "Building a Master-Detail Pattern in React Native"
 categories:
-  - "React Native"
+  - Mobile
 tags:
-  - TypeScript
+  - react_native
+  - typescript
 ---
 
 I’m in the middle of writing a simple Notes app in React Native. Thus far, I’ve:

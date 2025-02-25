@@ -1,9 +1,10 @@
 ---
 title: "Easy EditText content validation with Kotlin"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 One of the things that I always deal with in my apps is the need to validate the input fields of a form. I can easily do this with this sample fragment of code (for example, for a length check):

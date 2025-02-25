@@ -2,10 +2,9 @@
 title:  "Building TypeScript projects with the swc compiler"
 date:   2024-07-11
 categories:
-    - Devtools
+  - Devtools
 tags:
-    - TypeScript
-    - Tips
+  - typescript
 ---
 
 In my [last article]({% post_url 2024/2024-07-10-esm-typescript %}), I set up a small project that I'm going to use for TypeScript development using ES modules that are "root-relative" - i.e. I don't have to provide a relative path.  I can use a path like `#root/relative/path.js` instead so that the code doesn't change if I decide to move the source file I'm working on.

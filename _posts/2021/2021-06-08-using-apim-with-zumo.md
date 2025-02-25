@@ -1,10 +1,10 @@
 ---
 title: "Using API Management with Azure Mobile Apps"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - Azure API Management
-  - Azure Mobile Apps
+  - azure_apim
+  - azure_mobile_apps
 ---
 
 Over the years, I've been asked for several features within Azure Mobile Apps that I've been reluctant to support out of the box.  Azure Mobile Apps provides a toolkit in the context of the Node.js and ASP.NET Framework environments, so you can - theoretically - provide a lot of this functionality yourself.  You can also use external services to provide that functionality.

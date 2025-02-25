@@ -1,7 +1,10 @@
 ---
 title: "Pre-build steps for Flutter using Visual Studio Code"
 categories:
-  - Flutter
+  - Mobile
+tags:
+  - flutter
+  - vscode
 ---
 
 Flutter is not a build system.

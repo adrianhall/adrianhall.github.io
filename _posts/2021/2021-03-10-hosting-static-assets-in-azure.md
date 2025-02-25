@@ -1,7 +1,12 @@
 ---
 title: "Choosing a hosting option for your web app in Azure"
 categories:
-  - Azure
+  - Cloud
+tags:
+  - comparison
+  - azure_swa
+  - azure_appservice
+  - azure_storage
 ---
 
 Azure, like all the other clouds, has a plethora of mechanisms for getting your web site published.  You have [Static Web Apps](https://azure.microsoft.com/services/app-service/static/), [Azure App Service](https://azure.microsoft.com/services/app-service/), [Azure Blob Storage](https://docs.microsoft.com/azure/storage/blobs/storage-blob-static-website), [Web Apps for Containers](https://azure.microsoft.com/services/app-service/containers/), and then there are the compute ones like virtual machines, and Azure Functions.  It can be a little overwhelming.  For this analysis, I'm going to assume you want to deploy a stand alone web site - either straight HTML, CSS, and JavaScript or a React, Angular, Vue, or similar app.  I'm going to break it down based on how you deploy your site, how you scale your site, the basic cost structure (including the minimum cost, but excluding networking costs, which are additional but minimal in each case), and any restrictions you may have in running your site.

@@ -1,10 +1,10 @@
 ---
 title: "Building repositories for Azure Mobile Apps with ASP.NET 6"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - ASP.NET Core
-  - Azure Mobile Apps
+  - aspnetcore
+  - azure_mobile_apps
 ---
 
 Over the last four days, I've delved into how to build a data sync service using Azure Mobile Apps on ASP.NET Core 6.  I've covered [the template]({% post_url 2021/2021-11-08-azure-mobile-apps-intro %}), [authentication]({% post_url 2021/2021-11-09-adding-auth-to-zumo %}), [authorization]({% post_url 2021/2021-11-10-complex-zumo-auth %}), and [logging]({% post_url 2021/2021-11-11-logging-with-zumo %}).  The basic setup is really good when you have a 1:1 relationship between the table and the DTO and you don't need to do anything special, like support a non-EF Core ORM, or integrate real-time alerting.  There are all sorts of reasons you don't want to use the standard repository.

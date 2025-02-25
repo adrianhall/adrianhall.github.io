@@ -3,7 +3,7 @@ title: "Building an efficient Logger in TypeScript"
 categories:
   - Cloud
 tags:
-  - TypeScript
+  - typescript
 ---
 
 Just about every project needs a logging system.  In the early days of development, you need to output data to the console so you aren't setting breakpoints in your code all over the place (or you are running the code in the browser, where breakpoints are more difficult).  Later on, you want logging to let you know where people are spending their time, or how much usage a particular feature gets.  It also helps with diagnosing problems early so that you can get ahead of the issues.

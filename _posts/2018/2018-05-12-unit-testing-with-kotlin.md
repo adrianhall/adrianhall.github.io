@@ -1,10 +1,11 @@
 ---
 title: "Unit Testing in Android Studio with Kotlin"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
-  - Testing
+  - android
+  - kotlin
+  - testing
 ---
 
 I made myself a promise a couple of months ago. My next app would be fully unit tested for the non-UI components and fully instrument-tested for the UI components. That’s a tall order, especially since I’m using the latest and greatest Android Studio Canary. I ran into a few problems. Some can’t be solved and some can.

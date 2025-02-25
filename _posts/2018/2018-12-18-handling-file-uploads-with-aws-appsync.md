@@ -3,7 +3,8 @@ title: "Handling File Uploads with AWS AppSync"
 categories:
   - Cloud
 tags:
-  - GraphQL
+  - aws_appsync
+  - graphql
 ---
 
 GraphQL does not handle files.

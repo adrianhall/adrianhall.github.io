@@ -1,8 +1,10 @@
 ---
 title: "Building a React app with Parcel, Typescript, SASS, and ESLint"
 categories:
-  - JavaScript
-  - React
+  - Web
+tags:
+  - react
+  - javascript
 ---
 
 `create-react-app` (CRA) is great for getting started super-fast.  It has just about everything you need for building all but the most demanding apps.  It is, however, opinionated in how things get set up, and I've been chafing at the limitations for a while.

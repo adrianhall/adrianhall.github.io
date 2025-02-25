@@ -1,10 +1,10 @@
 ---
 title: "Adding an API Key to Azure Mobile Apps with API Management"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - Azure API Management
-  - Azure Mobile Apps
+  - azure_apim
+  - azure_mobile_apps
 ---
 
 I've written in the past that API keys are not security.  They do not authenticate the app or user and they are easily interceptable (or extracted from distributed mobile apps).  Despite that, that are good for a bunch of things, including figuring out which version of the app is being run, and ensuring that a certain version of the app you are running is using a specific backend or a specific set of policies.  API keys are useful.  I'm continually asked to support API keys.  

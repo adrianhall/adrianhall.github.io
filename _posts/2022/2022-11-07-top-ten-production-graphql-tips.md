@@ -3,7 +3,7 @@ title: "Top Ten things to consider when taking your GraphQL service into product
 categories:
     - Cloud
 tags:
-    - GraphQL
+    - graphql
 ---
 
 It's a somewhat well-known facet of development that we don't consider production problems until it is too late in the development cycle.  When we look at taking a Web API into production, we use API management solutions to provide protection, control, and visibility into our APIs so that we ensure we don't get woken up by a production outage. The things we need to consider are well understood in APIs in general, but what about GraphQL?  

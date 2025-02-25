@@ -2,10 +2,10 @@
 title:  "ASP.NET Identity deep dive - Part 3 (Authentication)"
 date:   2024-09-14
 categories:
-    - "ASP.NET Core"
+  - Web
 tags:
-    - "ASP.NET Core"
-    - "ASP.NET Identity"
+  - aspnetcore
+  - aspnet_identity
 mermaid: true
 ---
 

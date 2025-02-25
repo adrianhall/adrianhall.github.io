@@ -1,9 +1,12 @@
 ---
 title: "Azure Active Directory Authentication for Blazor WASM (Part 3: Production)"
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - Blazor
+  - aspnetcore
+  - blazor
+  - azure_active_directory
+  - microsoft_entra
 ---
 
 Recently, I've been working on integrating authentication with Azure Active Directory into my Blazor app.  I've covered [the server side]({% post_url 2022/2022-09-01-blazor-wasm-aad-auth-part-1 %}) and [the client side]({% post_url 2022/2022-09-02-blazor-wasm-aad-auth-part-2 %}), so what's left?  Well, firstly, I left "secrets" in my client app in the form of an `appsettings.json` file.  They aren't exactly secret values, but having specific values in there means I can't have different values for different environments.  Similarly, I can't change those values over time - I have to re-build the app in order to change them.  Secondly, I've got my app running in development (with secrets manager storage for my app settings), but there is nothing similar when I publish my app to the cloud, so I want to sort that out as well.

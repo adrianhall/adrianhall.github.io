@@ -3,7 +3,7 @@ title: "Testing Mobile Apps: A Primer"
 categories:
   - Mobile
 tags:
-  - Testing
+  - testing
 ---
 
 Why should you test your mobile app? A [recent study](http://info.localytics.com/blog/23-of-users-abandon-an-app-after-one-use) showed that almost a quarter of users only use a mobile app once, and a shocking 95% abandon an app within the first month. Some of the reasons that users abandon an app are due to content and engagement. The biggest non-content reasons for abandonment are application crashes and security concerns. No one can prevent all application crashes. The mobile ecosystem is too broad and unpredictable to provide a 100% guarantee. However, testing ensures that your mobile app has been stressed on as many devices as possible , which enables you to identify and fix bugs early.

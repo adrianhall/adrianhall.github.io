@@ -1,11 +1,12 @@
 ---
 title:  "Build a Blog: Deploy Azure Infrastructure three ways"
 date:   2024-06-05
-categories: Azure
+categories:
+  - Cloud
 tags:
-    - Bicep
-    - "Azure Developer CLI"
-    - "Azure Static Web Apps"
+  - bicep
+  - azd
+  - azure_swa
 ---
 
 For most developers, dealing with the infrastructure part of the job is hard.  I like to say "give me a database and a web site" and prefer not to get into the other requirements like DNS, security, and multi-region reliability.  My web sites and other cloud projects (including this one) are pretty open. So, what's the minimum I need to know to deploy stuff on Azure?  How can I get my project deployed on Azure for development with the minimum of hassle?

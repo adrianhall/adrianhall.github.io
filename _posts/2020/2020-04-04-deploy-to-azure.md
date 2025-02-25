@@ -1,9 +1,11 @@
 ---
 title: "Deploy your React app to Azure"
 categories:
-  - JavaScript
-  - React
-  - Azure
+  - Cloud
+tags:
+  - javascript
+  - terraform
+  - azure_storage
 ---
 
 I've got to the point with my template where I am thinking about deployment options.  There is already a great option (the `gh-pages` module) for deploying to a github.io site.  However, I am going to be running most of my services on Microsoft Azure.  I want to deploy my service automatically and copy the web application to a web site on Azure.

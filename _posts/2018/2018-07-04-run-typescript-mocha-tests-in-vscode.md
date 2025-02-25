@@ -3,8 +3,8 @@ title: "Run TypeScript Mocha Tests in Visual Studio Code"
 categories:
   - Web
 tags:
-  - Testing
-  - TypeScript
+  - testing
+  - typescript
 ---
 
 I’m spending my July 4th getting back to basics and learning some data structures and algorithms. I’ve decided to do my stuff in [TypeScript](https://typescriptlang.org/) since it’s been a while since I’ve played with TypeScript and I wanted to see what has changed at the same time.

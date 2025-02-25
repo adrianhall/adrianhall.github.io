@@ -1,9 +1,10 @@
 ---
 title: "Create a bubble background in SwiftUI"
 categories:
-  - Swift
+  - Mobile
 tags:
-  - SwiftUI
+  - swift
+  - swiftui
 ---
 
 I'm continuing to explore SwiftUI, trying to recreate user interfaces that I see on design labs.  The latest one is a task list app, found on [Uplabs](https://www.uplabs.com/posts/to-do-list-app-freebie-kit), and created by [Rudi Hartano](https://dribbble.com/iamruha).  I liked the design so I decided to replicate it from the Adobe XD file that he provided.  One of the pieces he uses is a bubble background:

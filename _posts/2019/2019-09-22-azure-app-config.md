@@ -1,10 +1,11 @@
 ---
 title: "Using Azure App Configuration for Remote Config with Android"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
-  - "Azure App Configuration"
+  - android
+  - kotlin
+  - azure_appconfig
 ---
 
 I've been playing with a new app recently.  I decided I needed some support from the cloud around feature flags (turning on and off features for specific people so I can test things) and for remote configuration.  Fortunately, Azure has a service in preview - [App Configuration](https://azure.microsoft.com/en-us/services/app-configuration/) - and it does both of these things.  There are preview libraries to go along with it for .NET, Java 8, JavaScript, and Python.

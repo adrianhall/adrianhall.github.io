@@ -1,7 +1,9 @@
 ---
 title: "Native Android Development with AWS Amplify"
 categories:
-  - Android
+  - Mobile
+tags:
+  - android
 ---
 
 Up until this point, the experience for developing native iOS and Android apps with AWS has been a bit fragmented. There was AWS Mobile Hub; a web console that makes it easy to provision serverless cloud resources and get a configuration file back that describe the endpoints your app needs to communicate with. But because it is a web-based console, it requires the developer to switch back and forth between their local development machine and the browser. There is also the awsmobile CLI, but that is targeted at JavaScript developers. It provisioned the same AWS Mobile Hub resources, but generates a JavaScript based configuration file — not the appropriate format for iOS and Android developers.

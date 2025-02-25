@@ -1,7 +1,9 @@
 ---
 title: "Implementing swipe-right on a React Native FlatList"
 categories:
-  - "React Native"
+  - Mobile
+tags:
+  - react_native
 ---
 
 I’m progressing on my “master-detail” pattern for a react-native app. The actual implementation of master-detail is shockingly simple (more on that later). However, I bumped into some specific issues when I was implementing it. The first of these was covered last time – [how to detect orientation changes in React Native]({% post_url 2017/2017-07-26-handling-orientation-changes-in-react-native %}). The next is this. How do I implement swipe-right so that I can add a swipe-to-delete function to a FlatList.

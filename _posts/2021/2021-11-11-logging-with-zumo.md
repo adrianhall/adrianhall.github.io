@@ -1,10 +1,10 @@
 ---
 title: "Logging and Options for Azure Mobile Apps with ASP.NET 6"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - ASP.NET Core
-  - Azure Mobile Apps
+  - aspnetcore
+  - azure_mobile_apps
 ---
 
 Over the past three articles, I've covered a lot of the ins and outs of a typical Azure Mobile Apps service.  I've covered [scaffolding]({% post_url 2021/2021-11-08-azure-mobile-apps-intro %}), [authentication]({% post_url 2021/2021-11-09-adding-auth-to-zumo %}), and [complex authorization]({% post_url 2021/2021-11-10-complex-zumo-auth %}).  There are just a few more topics to cover on the basic cases.

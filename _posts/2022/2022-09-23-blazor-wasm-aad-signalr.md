@@ -1,9 +1,13 @@
 ---
 title: "Azure Active Directory Authentication for Blazor WASM (Part 4: SignalR)"
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - Blazor
+  - aspnetcore
+  - blazor
+  - azure_active_directory
+  - microsoft_entra
+  - signalr
 ---
 
 I really thought I was through with Azure Active Directory!  Honest!  However, another key piece came up.  My CloudMud is a real-time pub/sub application that uses SignalR.  How do I authenticate to the SignalR connection?  Well, like most things, there is a recipe.  So let's get to it.

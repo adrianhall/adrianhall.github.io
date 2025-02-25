@@ -1,9 +1,10 @@
 ---
 title: "Two tips for unit testing Android libraries"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 I'm busy writing a networking library for one of my Android apps.  The question today is "how do I properly test the library?"  There are a few problem areas, and I'll cover two of them today.

@@ -2,10 +2,10 @@
 title:  "Better data validation exceptions with C#"
 date:   2024-08-10
 categories:
-  - dotNET
-tags:
   - Tips
-  - C#
+tags:
+  - csharp
+  - data_validation
 ---
 
 There are times when I look at code I have written and think to myself "there has to be a better way."  When I start thinking like this, I start by looking at the documentation - the .NET official documentation is incredibly well written and simple to digest, and the fundamentals section is something I believe every language documentation should aspire to.  Take exceptions, for example.  When I started my career in software development, methods were written with a block of validations at the top.  I couldn't be certain if bad data was going to creep in somewhere, so I checked all arguments religiously.  Then I added tests for each of those validations.

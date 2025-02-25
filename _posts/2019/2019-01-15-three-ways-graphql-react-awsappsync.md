@@ -1,9 +1,10 @@
-e--
+---
 title: "The three ways to execute a GraphQL query from React with AWS AppSync (and how to choose)"
 categories:
   - Cloud
 tags:
-  - GraphQL
+  - aws_appsync
+  - graphql
 ---
 
 [AWS AppSync] is a managed [GraphQL] service that can (and probably should) act as the data layer for your app. I want to take a look at how you can send a query to AWS AppSync from your React (or React Native) app.

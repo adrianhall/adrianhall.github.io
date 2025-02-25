@@ -1,11 +1,13 @@
 ---
 title: "Add unit testing to your React app"
 categories:
-  - JavaScript
-  - React
+  - Web
+tags:
+  - testing
+  - javascript
 ---
 
-Thus far, in my journey to produce a customized toolchain for my React development, I've covered a lot of ground.  See [part 1]({% post_url 2020/2020-03-29-parcel-typescript-react %}) and [part 2](% post_url 2020/2020-03-31-adding-storybook-to-template %}) for that coverage.  I've come to the point where I need to discuss testing, which is a complex area.
+Thus far, in my journey to produce a customized toolchain for my React development, I've covered a lot of ground.  See [part 1]({% post_url 2020/2020-03-29-parcel-typescript-react %}) and [part 2]({% post_url 2020/2020-03-31-adding-storybook-to-template %}) for that coverage.  I've come to the point where I need to discuss testing, which is a complex area.
 
 First, there are at least four types of testing you need to do:
 

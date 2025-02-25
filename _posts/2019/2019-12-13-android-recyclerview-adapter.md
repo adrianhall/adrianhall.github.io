@@ -1,9 +1,10 @@
 ---
 title: "Build a better RecyclerView Adapter"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 Many of my Android apps end up including listst, which are implemented via a [RecyclerView](https://developer.android.com/guide/topics/ui/layout/recyclerview).  More importantly, I know all the items in the list ahead of time.  Every single blog and tutorial always uses the same methodology. This ends up being a lot of boilerplate code.

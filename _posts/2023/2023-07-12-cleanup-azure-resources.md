@@ -1,9 +1,10 @@
 ---
 title: "Deleting Azure resources the right way."
 categories:
-  - Azure
+  - Cloud
 tags:
-  - PowerShell
+  - azure
+  - powershell
 ---
 
 If you are an Azure developer, you likely spin up an application, do some work, then shut it down again.  However, shutting down resources and deleting them has an order to them.  If your service is network isolated (in a virtual network), then you can't delete the application until the private endpoints are shut down.  Budgets don't get deleted with the resource group.  Diagnostic settings can't be deleted if the resource no longer exists.  There is an order you should do things:

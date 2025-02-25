@@ -1,10 +1,10 @@
 ---
 title: "Add authentication to Azure Mobile Apps for ASP.NET Core"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - ASP.NET Core
-  - Azure Mobile Apps
+  - aspnetcore
+  - azure_mobile_apps
 ---
 
 In [my last article]({% post_url 2021/2021-11-08-azure-mobile-apps-intro %}), I introduced the new ASP.NET Core edition of Azure Mobile Apps, including how to set up Entity Framework Core and in-memory stores.  Today, we are going to introduce simple authentication.  What do you need to do to secure your entire API?  We'll cover more complex authentication schemes (such as protecting a single API, or doing DTO transforms based on the identity of the user) next time.

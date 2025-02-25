@@ -2,10 +2,12 @@
 title:  ".NET Aspire configuration patterns"
 date:   2024-09-09
 categories:
-    - "ASP.NET Core"
+  - Cloud
 tags:
-    - "ASP.NET Core"
-    - Aspire
+  - aspnetcore
+  - aspire
+  - azure_keyvault
+  - azure_appconfig
 ---
 
 If you recall my [last article]({% post_url 2024/2024-09-05-aspire-identity %}), I transitioned my working application to .NET Aspire.  This opinionated pattern allows me to run a complete microservice application within Docker Desktop, but then seamlessly deploy to Azure Container Apps and other platform services with the same code base. This is a great productivity boost for a developer.

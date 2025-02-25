@@ -3,7 +3,8 @@ title: "Early return from GraphQL Resolvers with AWS AppSync"
 categories:
   - Cloud
 tags:
-  - GraphQL
+  - aws_appsync
+  - graphql
 ---
 
 I am currently developing a "reviews" app, written in React Native and using a suite of services surrounding [AWS AppSync] for the data backend. Yesterday, I ran into a problem. This is how I solved that problem.

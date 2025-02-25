@@ -1,9 +1,9 @@
 ---
 title: "Reducing the deployment size of your JavaScript Azure Functions"
 categories:
-  - TypeScript
+  - Cloud
 tags:
-  - Azure Functions
+  - azure_functions
 ---
 
 I'm doing some Azure Functions development in JavaScript at the moment, using the new `azure-functions-core-tools`.  One of the features it has is command line publication, like this:

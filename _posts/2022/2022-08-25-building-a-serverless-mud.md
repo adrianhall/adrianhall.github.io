@@ -1,9 +1,9 @@
 ---
 title: "Building a serverless MUD infrastructure in Azure"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - Architecture
+  - azure
 ---
 
 If you went to college back in the 1980's or 90's and studied computer science, then it is likely you bumped into the MUD (multi-user dungeon) craze.  Back then, computer science was different.  The primary languages were the languages of the day - Pascal and C were big. We had access to UNIX systems and would write text-based multi-user games that users would telnet into to get access.  We didn't have the web back then.  I learned a lot from writing a MUD - from parser design to network communication. MUDs gave me a life-long passion for programming languages and coding.

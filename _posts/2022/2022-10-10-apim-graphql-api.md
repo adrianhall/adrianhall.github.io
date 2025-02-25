@@ -1,10 +1,11 @@
 ---
 title: "Build a GraphQL API on Azure API Management using Bicep"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - API Management
-  - Bicep
+  - azure_apim
+  - graphql
+  - bicep
 ---
 
 When I build a service in the cloud, I describe the infrastructure as a blob of code.  There are lots of solutions out there for this.  Azure has the Azure Resource Manager (or ARM), which has it's own JSON or YAML format, for example.  Terraform is cross-cloud capable, as is the Serverless Framework.  Since I mostly work in Azure, these days, I'be been working more and more with [Bicep](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview) for my Infrastructure as Code standard.  Bicep uses declarative syntax to deploy Azure resources (much like Terraform), but it's specific to Azure, so it understands things a little better.  There is a [Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-bicep) to help you write the required files.  The [Azure CLI](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install#azure-cli) and [Azure PowerShell](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install#azure-powershell) both understand Bicep, so there are no extra tools to install.  I tend to use the Azure CLI for most things since it is cross-platform and I work a lot on Macs as well.

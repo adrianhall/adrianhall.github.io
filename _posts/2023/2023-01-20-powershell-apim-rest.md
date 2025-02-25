@@ -1,9 +1,10 @@
 ---
 title: "Purge Azure API Management soft-deleted services with ease."
 categories:
-  - Azure
+  - Cloud
 tags:
-  - PowerShell
+  - azure
+  - powershell
 ---
 
 I work a lot with Azure API Management, which means I turn up and down services quite a few times a day.  Azure API Management has an awesome feature that prevents you from accidentally deleting a service, called soft-delete.  Instead of immediately deleting the service, it marks it as soft deleted and purges it later on.  Unfortunately, that means that you can't immediately reuse that service name.  In production, this is a great thing to have.  In development, it turns into a pain. That's because there is no Azure CLI, PowerShell, or Portal way to purge the soft-deleted service.

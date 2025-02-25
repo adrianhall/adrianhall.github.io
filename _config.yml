@@ -94,7 +94,7 @@ sass:
   verbose: true
   silence_deprecations: [ import, color-functions, global-builtin, mixed-decls, slash-div ]
 
-permalink: /:categories/:year/:year-:month-:day-:title:output_ext
+permalink: /posts/:year/:year-:month-:day-:title:output_ext
 timezone: "US/Pacific"
 
 # Pagination with jekyll-paginate-v2
@@ -196,14 +196,8 @@ defaults:
       related: false
 
 include:
-  - _data
-  - _includes
-  - _layouts
   - _pages
-  - _posts
-  - _sass
   - assets
-  - _config.yml
 exclude:
   - .devcontainer
   - .editorconfig

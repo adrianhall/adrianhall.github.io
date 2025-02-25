@@ -1,9 +1,10 @@
 ---
 title: "Integrating React Native, TypeScript, and MobX"
 categories:
-  - "React Native"
+  - Mobile
 tags:
-  - TypeScript
+  - react_native
+  - typescript
 ---
 
 In my last article, I psted about [getting TypeScript working with React Native]({% post_url 2017/2017-08-09-debugging-react-native-with-typescript-and-vscode %}). I’m building a flexible, best-practices, Notes App in React Native. This means I need a backing store, and it has to be local for offline capabilities. React has a definite way of building data into the UI and the manipulation of that data is an architecture known as [Flux](http://facebook.github.io/flux/). Flux isn’t a concrete implementation, however. Normally, I would use [Redux](http://redux.js.org/) as the concrete implementation. However, I have recently started working with [MobX](https://mobx.js.org/) and I prefer it. This article is about integrating MobX into my application for the storage of the Notes data.

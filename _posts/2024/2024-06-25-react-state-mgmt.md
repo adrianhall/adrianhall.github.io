@@ -2,10 +2,11 @@
 title:  "The State of React state management in 2024"
 date:   2024-06-25
 categories:
-  - React
+  - Web
 tags:
-  - JavaScript
-  - Comparison
+  - react
+  - javascript
+  - comparison
 ---
 
 I've been away from React development for a while.  I stupidly asked what the best way to create a React app was in 2024 on the [React subreddit](https://reddit.com/r/react), and found that reddit is not a friendly or welcoming community. For those wondering, there are three ways of creating a React app - [Vite](https://vitejs.dev), [Remix](https://remix.run), and [NextJS](https://nextjs.org) - but the community suggests Vite.

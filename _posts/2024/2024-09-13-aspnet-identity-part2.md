@@ -2,10 +2,10 @@
 title:  "ASP.NET Identity deep dive - Part 2 (Registration)"
 date:   2024-09-13
 categories:
-    - "ASP.NET Core"
+  - Web
 tags:
-    - "ASP.NET Core"
-    - "ASP.NET Identity"
+  - aspnetcore
+  - aspnet_identity
 mermaid: true
 ---
 

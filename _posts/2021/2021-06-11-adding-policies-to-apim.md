@@ -1,10 +1,10 @@
 ---
 title: "Enabling caching for Azure Mobile Apps with API Management"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - Azure API Management
-  - Azure Mobile Apps
+  - azure_apim
+  - azure_mobile_apps
 ---
 
 In [my last article]({% post_url 2021/2021-06-08-using-apim-with-zumo %}) I introduced API Management and showed how it can be used to provide a front door to the REST API that is exposed by Azure Mobile Apps. What I implemented was a simple pass-through.  It didn't support authentication, and if a link was returned (for example, the "next-page" link in a query result),it pointed right back at the original source.  It wasn't much of an improvement.  I'm going to change that today with a couple of improvements:

@@ -1,11 +1,12 @@
 ---
 title: "Create an App Registration for RBAC with PowerShell and Microsoft Graph."
 categories:
-  - Azure
-  - Entra
+  - Cloud
 tags:
-  - PowerShell
-  - "Microsoft Graph"
+  - powershell
+  - msgraph
+  - azure_active_directory
+  - microsoft_entra
 ---
 
 I'm currently working on some automation within Azure to deploy a hub-spoke web application.  This web application authenticates with Entra ID using an App Registration and Role-Based Access Controls (RBAS) using App Roles.  So, I need to create an app registration, enterprise app, and create the app roles.

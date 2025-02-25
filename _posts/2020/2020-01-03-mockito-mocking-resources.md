@@ -1,9 +1,10 @@
 ---
 title: "Mocking Android resources with Mockito and Kotlin"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 I bumped into an issue that was a little harder than I expected to solve, so this is the documentation.

@@ -2,10 +2,10 @@
 title:  "Centrally managing dependencies in your C# solutions"
 date:   2024-08-15
 categories:
-  - dotNET
-tags:
   - Tips
-  - C#
+tags:
+  - csharp
+  - dependencies
 ---
 
 Today, I'd like to talk about the best way to centrally manage dependencies in your dotNET solutions.  It's common for a single solution to comprise multiple projects.  The happy path for maintaining dependencies in Visual Studio involves right-clicking on the project and selecting "Manage NuGet packages...".  Once you have a set of packages, you can keep them in sync by right-clicking on the solution and doing the same thing.  By using "Manage NuGet packages" for the solution, you can update multiple projects at the same time.

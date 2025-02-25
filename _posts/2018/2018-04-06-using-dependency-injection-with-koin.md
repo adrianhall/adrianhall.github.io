@@ -1,9 +1,10 @@
 ---
-title: "Using dependency injection with Koin"
+title: "Using dependency injection with Kotlin"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 In a recent post, I described how I can do app analytics by using the AWS Mobile SDK and an AWS Mobile Hub project. This is a great way to get usage analytics for your app, but it requires a tight coupling between the provider (the AWS Provider and `AnalyticsClient`) and the app. You need to initialize the provider early on (preferably in the `Application` wrapper or the first activity). That causes a tight linkage between the activities where it is used and the client object.

@@ -3,7 +3,8 @@ title: "How developers can authenticate and authorize users with AWS AppSync"
 categories:
   - Cloud
 tags:
-  - GraphQL
+  - aws_appsync
+  - graphql
 ---
 
 > AWS AppSync provides four distinct methods of authorizing users to optimize and restrict data being transferred

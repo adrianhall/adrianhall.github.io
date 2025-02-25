@@ -1,10 +1,10 @@
 ---
 title: "Service Routing for Azure Mobile Apps with API Management"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - Azure API Management
-  - Azure Mobile Apps
+  - azure_apim
+  - azure_mobile_apps
 ---
 
 Todays topic is "how do I upgrade the service backend to support the new ASP.NET Core service without affecting my current customers?"  Let's assume, for a moment, that I have already [created an API Management service]({% post_url 2021/2021-06-08-using-apim-with-zumo %}), and [added caching]({% post_url 2021/2021-06-11-adding-policies-to-apim %}) to my API.  Finally, I've adjusted the client application so everything is routing through the API Management service instead of direct to the backend.

@@ -3,7 +3,8 @@ title: "Backend GraphQL: How to trigger an AWS AppSync mutation from AWS Lambda"
 categories:
   - Cloud
 tags:
-  - GraphQL
+  - aws_appsync
+  - graphql
 ---
 
 This blog will explore a technique that opens up a whole new world of possibilities for notifying clients of results within a serverless application.

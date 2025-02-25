@@ -2,10 +2,10 @@
 title:  "ASP.NET Identity deep dive - Part 1 (Project setup)"
 date:   2024-09-11
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - "ASP.NET Core"
-  - "ASP.NET Identity"
+  - aspnetcore
+  - aspnet_identity
 ---
 
 You may have noticed that I included ASP.NET Identity in a project [a couple of posts ago]({% post_url 2024/2024-09-05-aspire-identity %}).  I'm currently doing a deep dive into ASP.NET Identity with an eye towards an OIDC identity service based on [OpenIddict](https://documentation.openiddict.com/).

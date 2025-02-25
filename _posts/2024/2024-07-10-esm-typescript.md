@@ -4,8 +4,7 @@ date:   2024-07-10
 categories:
   - Devtools
 tags:
-  - TypeScript
-  - Tips
+  - typescript
 ---
 
 As you might have gathered from my [last article]({% post_url 2024/2024-07-06-commonjs-to-esm %}), I'm currently working in the [TypeScript](https://typescriptlang.org) world.  My experience with converting from CommonJS to ES Modules got me thinking - what is state of the art right now?  So I delved in.

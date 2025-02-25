@@ -1,10 +1,10 @@
 ---
 title: "Deploying an Azure Function App with Terraform"
 categories:
-  - TypeScript
+  - Cloud
 tags:
-  - Azure Functions
-  - Terraform
+  - azure_functions
+  - terraform
 ---
 
 You may have caught this from my previous blog posts, but I like automated deployments.  I like something where I can run one command and magic happens, resulting in my whole deployment changing to a new state.  I've recently been looking around at options for Azure, checking out [Serverless Framework](https://serverless.com), Azure Resource Manager (ARM), and others.  My favorite thus far has been [Terraform](https://terraform.io).  These are the instructions for deploying a basic Azure Function app with TypeScript code from start to finish.

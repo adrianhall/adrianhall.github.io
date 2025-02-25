@@ -1,9 +1,10 @@
 ---
 title: "Lessons in Kotlin: Toolbar Icons and Reflection"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 There are many tutorials online on how to produce an Android app bar with an options menu — so much so that it can be boiled down to a few steps, and I’ll reproduce them here:

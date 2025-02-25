@@ -1,9 +1,10 @@
 ---
 title: "Why I'm refactoring to Kotlin"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 One of the things that is really cool about software development is that we are continually learning and adjusting. I spent a day recently learning [Kotlin](https://kotlinlang.org/). I was so impressed with the language, I decided to refactor my entire Family Photos app. It did not take long.

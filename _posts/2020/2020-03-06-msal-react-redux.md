@@ -1,8 +1,12 @@
 ---
 title: "Integrating Microsoft Login and MSAL with React and Redux"
 categories:
-  - JavaScript
-  - React
+  - Web
+tags:
+  - react
+  - javascript
+  - azure_active_directory
+  - microsoft_entra
 ---
 
 I have a new app I am working on.  It's sort of a 1990's style text MUD, but I'm bringing it "up to this century" with a host of new features.  I'm writing the first front-end in [React](https://reactjs.org).  

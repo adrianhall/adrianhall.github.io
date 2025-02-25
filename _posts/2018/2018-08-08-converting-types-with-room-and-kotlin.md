@@ -1,10 +1,10 @@
 ---
 title: "Converting types with Room and Kotlin"
 categories:
-  - Android
+  - Mobile
 tags:
-  - "Android Architecture Components"
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 I’ve been working on a personal project, trying to get to grips with the various [Android Architecture Components](https://developer.android.com/topic/libraries/architecture/) and Kotlin. One of the things I came up with was the requirement to deal with type conversion when using a SQLite database and the [Room persistence library](https://developer.android.com/training/data-storage/room/). Room is a nice abstraction to the internal SQLite database that converts models to tables within SQLite. It’s nice because it works alongside LiveData and RxJava to provide observable objects — when the database changes, the observable changes as well.

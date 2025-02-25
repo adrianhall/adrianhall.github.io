@@ -4,8 +4,8 @@ date:   2024-06-04
 categories:
   - Devtools
 tags:
-  - Containers
-  - Jekyll
+  - containers
+  - jekyll
 ---
 
 If you've ever had to rebuild or significantly upgrade your machine in the middle of a project, then you will recognize the pain.  You find that some versions of your favorite tools have changed, or you don't remember the specific build command or tool download location for that one thing you rely on.  [Dev containers](https://containers.dev) was designed with this in mind.  It's the technology behind [Codespaces](https://github.com/features/codespaces) and supported in Visual Studio Code.  In this tutorial, I'll walk through the steps to create your own dev container specification so you can work on your project whenever and wherever you want.

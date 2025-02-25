@@ -1,10 +1,11 @@
 ---
 title: "Building Stylesheets for Blazor with SASS"
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - Blazor
-  - SCSS
+  - aspnetcore
+  - blazor
+  - scss
 ---
 
 As I mentioned in [my last article]({% post_url 2022/2022-08-25-building-a-serverless-mud %}), I'm building a cloud-based MUD using all the modern techniques that I have available to me.  One of the things I decided was that I was going to use an ASP.NET Core application hosting a single-page web application written in Blazor and I'm going to be running that inside a Docker image so I can deploy it onto Azure Container Apps.  Scaffolding the app out is easy:

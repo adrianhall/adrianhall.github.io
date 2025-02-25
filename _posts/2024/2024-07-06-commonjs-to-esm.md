@@ -2,10 +2,10 @@
 title:  "Converting a TypeScript project from CommonJS to ESM"
 date:   2024-07-06
 categories:
-  - TypeScript
+  - Web
 tags:
-  - TypeScript
-  - Tips
+  - javascript
+  - typescript
 ---
 
 I haven't made much progress on my own projects recently because of a project at work.  Specifically, I am currently maintaining a CLI tool written in TypeScript about five years ago.  It hasn't really been looked after on a consistent basis, but some of the libraries that it uses (specifically, [update-notifier](https://www.npmjs.com/package/update-notifier) and [wait-on](https://www.npmjs.com/package/wait-on)) have some security issues.  Now, this is a development CLI tool, so the actual vulnerabilities don't affect production code.  Still, many people don't like to use tools that are flagged for high risk vulnerabilities (and I can't say I blame them).  The CLI tool is transpiled into JavaScript using the [CommonJS](https://en.wikipedia.org/wiki/CommonJS) module system.
@@ -127,7 +127,7 @@ Jest is not compatible with ESM.
 
 Sure, they will tell you exactly how you can run Jest to be compatible, but it's jumping through hoops.  Jest is not compatible with ESM out of the box.  You have to do the work necessary to change it.  Throw in TypeScript tests (and the `ts-jest` module) and you quickly realise that it's not going to be a quick change.
 
-Fortunately [vitest](https://vitest.dev/) is compatible with jest (there is even a [migration guide](https://vitest.dev/guide/migration.html#migrating-from-jest)), and it supports ESM and TypeScript.  The migration from jest to vitest takes time.  The migration guide is not as step-by-step as you would want.
+Fortunately [vitest](https://vitest.dev/) is compatible with jest (there is even a [migration guide](https://vitest.dev/guide/migration.html#jest)), and it supports ESM and TypeScript.  The migration from jest to vitest takes time.  The migration guide is not as step-by-step as you would want.
 
 While testing, I used the VSCode Jest plugin to run tests manually.  I had to swap this plugin with [Vitest Explorer](https://marketplace.visualstudio.com/items?itemName=vitest.explorer).  The Vitest Explorer has some nice features that weren't available in the Jest plugin. For example, Vitest Explorer allows you to only run the tests that are open in the editor, allowing you to limit test runs to just the tests you are working on.
 
@@ -143,4 +143,4 @@ And hopefully, now I can get back to my projects!
 * [A history of JavaScript modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 * [A guide for converting to ESM](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c#how-can-i-make-my-typescript-project-output-esm)
 * [Vitest](https://vitest.dev)
-* [Jest to Vitest migration guide](https://vitest.dev/guide/migration.html#migrating-from-jest)
+* [Jest to Vitest migration guide](https://vitest.dev/guide/migration.html#jest)

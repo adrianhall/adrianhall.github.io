@@ -1,9 +1,10 @@
 ---
 title: "Implement Search-on-type in Android with RxJava"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 I’m working on a new sample which, as is typical, communicates with a backend service for data through a serverless API. In this particular example, it’s a search capability that I am developing and one of the features I want to implement is “search while you type”.

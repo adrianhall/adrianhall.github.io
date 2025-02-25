@@ -1,10 +1,10 @@
 ---
 title: "Bicep, loops, and defaults"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - API Management
-  - Bicep
+  - azure_apim
+  - bicep
 ---
 
 I've been playing around a lot with [bicep](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview) recently.  I like it because it is much more readable than ARM templates and lets me modularize my deployments easily.  Recently, I was writing a module for creating named values in Azure API Management.  Here is my `service.bicep`:

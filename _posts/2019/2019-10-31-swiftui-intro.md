@@ -1,9 +1,10 @@
 ---
 title: "Why SwiftUI might just convert me to an iOS developer"
 categories:
-  - Swift
+  - Mobile
 tags:
-  - SwiftUI
+  - swift
+  - swiftui
 ---
 
 Confession time.  I hated iOS development.  First, there was Objective-C (which was a nightmare of epic proportions for cryptic syntax), then there was the Storyboards.  Both of them forced you into using what is quite possibly the worst IDE on the market today (XCode), all so you could fit into the Apple ecosystem walled garden, where everything is controlled.  Then Swift came along, so I took another look.  I loved the direction that Swift was going, but Storyboards and the unintuitive IDE still killed in.

@@ -1,9 +1,10 @@
 ---
 title: "Bottom Bar Tabs for your Xamarin Forms app"
 categories:
-  - Xamarin
+  - Mobile
 tags:
-  - "Xamarin Forms"
+  - xamarin
+  - xamarin_forms
 ---
 
 Following on from [last weeks article]({% post_url 2021/2021-05-09-xamarin-forms-glyph-fonts %}), I am continuing on my UI journey for my contacts app.  My app design calls for a bottom app bar, with three sections - contacts, groups, and profile.  The contacts and groups will be lists, and the profile will be a detail page for your own details with an editor.

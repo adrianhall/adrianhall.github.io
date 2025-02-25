@@ -4,6 +4,8 @@ source "https://rubygems.org"
 gem "csv" 
 gem "ostruct"
 gem "logger"
+gem "rake"
+gem "html-proofer"
 
 # Jekyll requirements
 gem "jekyll", "~> 4.4.1"

@@ -1,9 +1,10 @@
 ---
 title: "Validating permissions on Android with Kotlin"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 I'm continuing my educational coding exercise, developing a new photo sharing app.  Recently, I completed my user authentication and registration process and I'm now quite happy with it, so I moved on to taking photographs.  I've got an activity with a toolbar and a floating action button:

@@ -1,9 +1,12 @@
 ---
 title: "Azure Active Directory Authentication for Blazor WASM (Part 2: The Client)"
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - Blazor
+  - aspnetcore
+  - blazor
+  - azure_active_directory
+  - microsoft_entra
 ---
 
 I'm in the middle of adding authentication to my Blazor WASM app.  In the [last article]({% post_url 2022/2022-09-01-blazor-wasm-aad-auth-part-1 %}), I introduced the service side of things to consider when integrating Azure Active Directory authentication.  It's now time to complete the work by considering the Blazor WASM client.  As there was last time, this is [well documented], but comes with some wrinkles when you consider bringing authentication into an app later.

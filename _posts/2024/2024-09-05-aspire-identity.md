@@ -2,10 +2,10 @@
 title:  "Local development for the cloud: Transitioning to .NET Aspire"
 date:   2024-09-05
 categories:
-    - "ASP.NET Core"
+  - Cloud
 tags:
-    - "ASP.NET Core"
-    - Aspire
+  - aspnetcore
+  - aspire
 ---
 
 I've been working on a new project recently.  It requires that I work with microservices and containers as it will eventually be runnable on either Kubernetes or (more likely) Azure Container Apps.  My latest task is to get [ASP.NET Identity](https://learn.microsoft.com/aspnet/core/security/authentication/identity?view=aspnetcore-9.0&tabs=visual-studio) working with PostgreSQL. In order to properly debug the code, I need the ASP.NET bits to be running locally.  But to integrate with PostgreSQL, I need to set up containers and docker compose.  This all feels like "too much work".
@@ -151,7 +151,7 @@ public static async Task InitializeDatabaseAsync(this WebApplication app)
 }
 {% endhighlight %}
 
-And doubly-finally - much later in the process, I found that the logic in the `Pages/Account/Login.cshtml.cs` for logging in a user wasn't quite right.  The page they provide asks for an email address but only supports a username.  It only works as written if the username is an email address.  I adjusted `OnPostAsync()` to allow either email or username.  You can see my changes [starting at line 102](https://github.com/adrianhall/samples/blob/main/identity/Samples.Identity/Pages/Account/Login.cshtml.cs#L102) of the code.
+And doubly-finally - much later in the process, I found that the logic in the `Pages/Account/Login.cshtml.cs` for logging in a user wasn't quite right.  The page they provide asks for an email address but only supports a username.  It only works as written if the username is an email address.  I adjusted `OnPostAsync()` to allow either email or username.  You can see my changes [starting at line 102](https://github.com/adrianhall/samples/blob/4cb37308cc04d15a6174a8b4816a2b2b9d005380/identity/Samples.Identity/Pages/Account/Login.cshtml.cs#L102) of the code.
 
 ## Adding Aspire to the project
 

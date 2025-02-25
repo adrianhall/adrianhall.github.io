@@ -1,9 +1,11 @@
 ---
 title: "Let your analytics drive engagement: Endpoint profiles with AWS Amplify and Android"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
+  - aws_amplify
 ---
 
 In [my last article]({% post_url 2018/2018-09-04-integrate-analytics-with-aws-amplify %}), I showed the current best way of integrating analytics into your Android app using Kotlin. The events are only half the story for engagement. You need to be able to segment your users so that you can send them appropriate signals to draw them back to your app. That means understanding your users — where they are, whether they have authenticated (and how), and what they are interested in.

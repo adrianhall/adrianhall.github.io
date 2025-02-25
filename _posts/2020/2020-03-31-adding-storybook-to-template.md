@@ -1,8 +1,11 @@
 ---
 title: "Add visual testing to your React app with Storybook"
 categories:
-  - JavaScript
-  - React
+  - Web
+tags:
+  - testing
+  - react
+  - javascript
 ---
 
 In my [last article]({% post_url 2020/2020-03-29-parcel-typescript-react %}), I started a React app from scratch, then integrated [Parcel](https://parceljs.org) as the bundler, [TypeScript](https://typescriptlang.org) for language support, [SASS](https://sass-lang.com), [ESLint](https://eslint.org) for linting the code, and [Stylelint](https://stylelint.io) for linting the style sheets.  I didn't include any testing capabilities, so that is next on my agenda.

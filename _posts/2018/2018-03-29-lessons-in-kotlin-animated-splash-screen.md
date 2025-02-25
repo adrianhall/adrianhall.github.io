@@ -1,9 +1,10 @@
 ---
 title: "Lessons in Kotlin Threading: An Animated Splash Screen"
 categories:
-  - Android
+  - Mobile
 tags:
-  - Kotlin
+  - android
+  - kotlin
 ---
 
 I find quite a lot of Android apps have splash screens. Some splash screens are for showing off the logo; others for hiding the extensive data load times. Whatever the reason, it’s a way for a little bit of creativity to shine through.

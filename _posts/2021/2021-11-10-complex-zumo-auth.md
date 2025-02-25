@@ -1,10 +1,10 @@
 ---
 title: "Controlled access for Azure Mobile Apps for ASP.NET Core"
 categories:
-  - Azure
+  - Cloud
 tags:
-  - ASP.NET Core
-  - Azure Mobile Apps
+  - aspnetcore
+  - azure_mobile_apps
 ---
 
 In the last two articles, I've gone over how you can [create a basic datasync service]({% post_url 2021/2021-11-08-azure-mobile-apps-intro %}) and [add authentication]({% post_url 2021/2021-11-09-adding-auth-to-zumo %}) to the service.  What if you want to do something more complex?  Authorization that is an on/off switch is reasonable as a first pass, but rarely allows you to handle the cases you actually need to implement.

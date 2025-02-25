@@ -2,9 +2,10 @@
 title:  "Making ASP.NET Core applications readable - the options patterns"
 date:   2024-09-03
 categories:
-  - "ASP.NET Core"
+  - Web
 tags:
-  - C#
+  - csharp
+  - aspnetcore
 ---
 
 Applications are read more often than they are written.  The normal situation when a developer comes onto a project is that anything from a couple of weeks to several months is requried to come "up to speed" on the code base. Making the efforts required for readability of the code is important, and I spend a ton of time up front to ensure my applications are understandable without needing an in-depth lesson from me on how it works.

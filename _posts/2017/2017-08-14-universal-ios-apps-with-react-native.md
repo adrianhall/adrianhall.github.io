@@ -1,8 +1,9 @@
 ---
 title: "Universal iOS Apps with React Native"
 categories:
-  - iOS
-  - "React Native"
+  - Mobile
+tags:
+  - react_native
 ---
 
 This is one of those short “tip” posts.
