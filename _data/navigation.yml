@@ -1,0 +1,6 @@
+# main links
+main:
+  - title: "Posts"
+    url: "/posts"
+  - title: "Tags"
+    url: "/tags"

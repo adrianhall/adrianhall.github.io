@@ -1,0 +1,6 @@
+* [Project setup]({% post_url 2024/2024-09-11-aspnet-identity-part1 %})
+* [Account registration]({% post_url 2024/2024-09-13-aspnet-identity-part2 %})
+* [Signing in and out with a username and password]({% post_url 2024/2024-09-14-aspnet-identity-part3 %})
+* [Password reset]({% post_url 2024/2024-09-16-aspnet-identity-part4 %})
+* [Email confirmations]({% post_url 2024/2024-09-18-aspnet-identity-part5 %})
+* [Social logins]({% post_url 2024/2024-09-20-aspnet-identity-part6 %})
