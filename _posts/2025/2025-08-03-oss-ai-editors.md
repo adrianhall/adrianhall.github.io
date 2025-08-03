@@ -130,7 +130,7 @@ This got me thinking on what an ideal "AI assitant" should be:
 * It should have a separate mode for pull request-like reviews - aka "review my changes" (No winner)
 * It should have automatic memory, so it learns my style and requirements as we work together (Winner: Cursor)
 
-As you can see, there is no "best candidate" that does everything - it's sort of a bit of all of them.  Who knows, the next hot new editor may just provide the AI assistant I need.
+As you can see, there is no "best candidate" that does everything - it's sort of a bit of all of them.  Who knows, the next hot new editor may just provide the AI assistant I need.  Do you have something you really want the next hot new editor to help you with?  Let me know in the comments.
 
 In the next (and final) article, I'm going to give my thoughts on using the models available through the subscription services. I'll also give you the model I most often use (and why).  It's not the latest Claude model.
 
