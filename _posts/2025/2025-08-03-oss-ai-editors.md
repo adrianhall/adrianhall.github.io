@@ -118,5 +118,20 @@ Using local models may be fine for simple tasks, but it's not worth the delays a
 
 Using OSS or non-core extensions all come with their own issues and annoyances.  For me, the benefits are not worth the frustration.
 
+This got me thinking on what an ideal "AI assitant" should be:
+
+* Be everywhere I am - not in a new application.  (Winner: GitHub Copilot)
+* Live in the secondary chat area to the right of the editor. (Winners: Copilot, Kiro, Cursor)
+* Transparently use the best model unless I want to specify it (Winner: Cursor)
+* Minimize the prompt engineering I need to do, allowing me to focus on the job (Winner: Kiro)
+* Allow the use of local models, OpenRouter, and direct API connections (Winner: Copilot)
+* Provide recommendations for MCP servers (No winner) from a marketplace (Winner: Cline)
+* It should allow me to auto-approve while working (Winner: Kiro)
+* It should have a separate mode for pull request-like reviews - aka "review my changes" (No winner)
+* It should have automatic memory, so it learns my style and requirements as we work together (Winner: Cursor)
+
+As you can see, there is no "best candidate" that does everything - it's sort of a bit of all of them.  Who knows, the next hot new editor may just provide the AI assistant I need.
+
 In the next (and final) article, I'm going to give my thoughts on using the models available through the subscription services. I'll also give you the model I most often use (and why).  It's not the latest Claude model.
+
 
