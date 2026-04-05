@@ -57,7 +57,7 @@
 ) {
   $x: _susy-svg-validate-units($x);
   $width: _susy-svg-validate-units($width);
-  $offset: if($offset == 0, null, $offset);
+  $offset: if(not sass(($offset == 0)): $offset);
 
   @if (type-of($offset) == 'number') and (type-of($x) == 'number') {
     @if comparable($x, $offset) {
