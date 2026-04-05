@@ -1,0 +1,64 @@
+Configuration file: /home/adrian/repos/adrianhall.github.io/_config.yml
+            Source: /home/adrian/repos/adrianhall.github.io
+       Destination: /home/adrian/repos/adrianhall.github.io/_site
+ Incremental build: disabled. Enable with --incremental
+      Generating... 
+       Jekyll Feed: Generating feed for posts
+       Jekyll Feed: Generating feed for posts tagged serverless
+       Jekyll Feed: Generating feed for posts tagged react_native
+       Jekyll Feed: Generating feed for posts tagged xamarin
+       Jekyll Feed: Generating feed for posts tagged comparisons
+       Jekyll Feed: Generating feed for posts tagged swift
+       Jekyll Feed: Generating feed for posts tagged debugging
+       Jekyll Feed: Generating feed for posts tagged typescript
+       Jekyll Feed: Generating feed for posts tagged async_programming
+       Jekyll Feed: Generating feed for posts tagged testing
+       Jekyll Feed: Generating feed for posts tagged android
+       Jekyll Feed: Generating feed for posts tagged kotlin
+       Jekyll Feed: Generating feed for posts tagged react
+       Jekyll Feed: Generating feed for posts tagged javascript
+       Jekyll Feed: Generating feed for posts tagged aws_appsync
+       Jekyll Feed: Generating feed for posts tagged graphql
+       Jekyll Feed: Generating feed for posts tagged aws_amplify
+       Jekyll Feed: Generating feed for posts tagged comparison
+       Jekyll Feed: Generating feed for posts tagged documentation
+       Jekyll Feed: Generating feed for posts tagged azure_appconfig
+       Jekyll Feed: Generating feed for posts tagged azure_functions
+       Jekyll Feed: Generating feed for posts tagged terraform
+       Jekyll Feed: Generating feed for posts tagged swiftui
+       Jekyll Feed: Generating feed for posts tagged flutter
+       Jekyll Feed: Generating feed for posts tagged vscode
+       Jekyll Feed: Generating feed for posts tagged azure_active_directory
+       Jekyll Feed: Generating feed for posts tagged microsoft_entra
+       Jekyll Feed: Generating feed for posts tagged azure_storage
+       Jekyll Feed: Generating feed for posts tagged azure_swa
+       Jekyll Feed: Generating feed for posts tagged azure_appservice
+       Jekyll Feed: Generating feed for posts tagged xamarin_forms
+       Jekyll Feed: Generating feed for posts tagged azure_apim
+       Jekyll Feed: Generating feed for posts tagged azure_mobile_apps
+       Jekyll Feed: Generating feed for posts tagged aspnetcore
+       Jekyll Feed: Generating feed for posts tagged azure
+       Jekyll Feed: Generating feed for posts tagged blazor
+       Jekyll Feed: Generating feed for posts tagged scss
+       Jekyll Feed: Generating feed for posts tagged signalr
+       Jekyll Feed: Generating feed for posts tagged bicep
+       Jekyll Feed: Generating feed for posts tagged powershell
+       Jekyll Feed: Generating feed for posts tagged msgraph
+       Jekyll Feed: Generating feed for posts tagged containers
+       Jekyll Feed: Generating feed for posts tagged jekyll
+       Jekyll Feed: Generating feed for posts tagged azd
+       Jekyll Feed: Generating feed for posts tagged azure_dns
+       Jekyll Feed: Generating feed for posts tagged minimal_apis
+       Jekyll Feed: Generating feed for posts tagged bootstrap
+       Jekyll Feed: Generating feed for posts tagged csharp
+       Jekyll Feed: Generating feed for posts tagged data_validation
+       Jekyll Feed: Generating feed for posts tagged dependencies
+       Jekyll Feed: Generating feed for posts tagged aspire
+       Jekyll Feed: Generating feed for posts tagged azure_keyvault
+       Jekyll Feed: Generating feed for posts tagged aspnet_identity
+       Jekyll Feed: Generating feed for posts tagged keycloak
+       Jekyll Feed: Generating feed for posts tagged ai
+         AutoPages: Disabled/Not configured in site.config.
+        Pagination: Complete, processed 3 pagination page(s)
+                    done in 11.835 seconds.
+ Auto-regeneration: disabled. Use --watch to enable.

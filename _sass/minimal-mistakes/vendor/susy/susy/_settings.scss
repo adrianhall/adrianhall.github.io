@@ -1,4 +1,5 @@
 @use "sass:list";
+@use "sass:map";
 
 /// Susy3 Configuration
 /// ===================
@@ -288,10 +289,10 @@ $_susy-defaults: (
 @function susy-settings(
   $overrides...
 ) {
-  $settings: map-merge($_susy-defaults, $susy);
+  $settings: map.merge($_susy-defaults, $susy);
 
   @each $config in $overrides {
-    $settings: map-merge($settings, $config);
+    $settings: map.merge($settings, $config);
   }
 
   @return $settings;

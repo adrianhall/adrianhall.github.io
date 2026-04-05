@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /* ==========================================================================
    SINGLE PAGE/POST
    ========================================================================== */
@@ -172,7 +174,7 @@ body {
   }
 
   /* vertical alignment for first content */
-  :first-child, 
+  :first-child,
   aside + :nth-child(2) {
     margin-top: 0em;
   }
@@ -344,7 +346,7 @@ body {
   margin-bottom: 8px;
   padding: 5px 10px;
   text-decoration: none;
-  border: 1px solid mix(#000, $border-color, 25%);
+  border: 1px solid color.mix(#000, $border-color, 25%);
   border-radius: $border-radius;
 
   &:hover {
