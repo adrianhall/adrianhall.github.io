@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # No longer bundled with ruby
-gem "csv" 
+gem "csv"
 gem "ostruct"
 gem "logger"
 gem "rake"
@@ -13,8 +13,8 @@ gem "classifier-reborn"
 gem "faraday-retry"
 gem "webrick"
 
-# The theme
-gem "minimal-mistakes-jekyll", "~> 4.26.1"
+# The theme - merged into the repository to allow for customisation and to avoid issues with GitHub Pages not supporting remote themes.
+# gem "minimal-mistakes-jekyll", "~> 4.26.1"
 
 # Jekyll plugins
 group :jekyll_plugins do
@@ -33,12 +33,12 @@ group :jekyll_plugins do
   gem "jemoji"
 end
 
-platforms :mingw, :x64_mingw, :mswin, :jruby do
+platforms :windows, :jruby do
     gem "tzinfo", ">= 1", "< 3"
     gem "tzinfo-data"
 end
 
-platforms :mingw, :x64_mingw, :mswin do
+platforms :windows do
   gem "wdm"
 end
 
