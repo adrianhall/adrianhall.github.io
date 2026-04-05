@@ -1,3 +1,5 @@
+@use "sass:list";
+
 /// Susy3 Configuration
 /// ===================
 /// Susy3 has 4 core settings, in a single settings map.
@@ -219,7 +221,7 @@ $susy: () !default;
   $return: ();
 
   @for $i from 1 through $count {
-    $return: join($return, $value);
+    $return: list.join($return, $value);
   }
 
   @return $return;
