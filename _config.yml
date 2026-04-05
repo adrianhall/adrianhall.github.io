@@ -93,7 +93,7 @@ sass:
   style: compressed
   sourcemap: development
   verbose: true
-  silence_deprecations: [ import, color-functions, global-builtin, mixed-decls, slash-div ]
+  silence_deprecations: [ import, color-functions, global-builtin, slash-div ]
 
 permalink: /posts/:year/:year-:month-:day-:title:output_ext
 timezone: "US/Pacific"
