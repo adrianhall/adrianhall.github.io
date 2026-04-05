@@ -1,4 +1,5 @@
-theme                    : "minimal-mistakes-jekyll"
+# Theme has been merged into the repository to allow for customisation and to avoid issues with GitHub Pages not supporting remote themes.
+# theme                    : "minimal-mistakes-jekyll"
 minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 
 # Site Settings
