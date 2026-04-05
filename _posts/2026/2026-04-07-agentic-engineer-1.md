@@ -22,7 +22,7 @@ The "vibe-coder" sends one massive prompt and hopes for a miracle.  The agentic 
 
 It doesn't matter if you are using [OpenSpec](https://openspec.dev/), [SpecKit](https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/), or [AWS Kiro](https://kiro.dev/) for your spec-driven design.  The concepts and the requirements are the same.
 
-The real insight here is that you have to be a cross between an architect and a product manager to be really good at this.  Technical Product Manager (and I have been one for many years) are great at this stuff.  I believe _Product Architect_ is the role that will be advertised for this specific skill set in the future.
+The real insight here is that you have to be a cross between an architect and a product manager to be really good at this.  Technical Product Managers (and I have been one for many years) are great at this stuff.  I believe _Product Architect_ is the role that will be advertised for this specific skill set in the future.
 
 ## Pillar 1: The Spec (The Intent)
 
