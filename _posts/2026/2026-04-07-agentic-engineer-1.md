@@ -15,7 +15,6 @@ The "vibe-coder" sends one massive prompt and hopes for a miracle.  The agentic 
 
 ![The three pillars of agentic engineering]({{site.baseurl}}/assets/images/2026/Apr07-agentic-engineer-1.png)
 
-
 * Without the Spec: The agent will build a "technically correct" feature that doesn't actually solve the user's problem.
 * Without the Constitution: The agent will suggest a library you hate or use an insecure pattern.
 * Without the Breakdown: The agent tries to write thousands of lines of code at once and hallucinates halfway through.
@@ -32,7 +31,7 @@ This is the "North Star" for the agent, defining the specific feature or product
 
 Before defining a single UI element, anchor the spec in the user's struggle.  Use a framework like **Jobs-to-be-Done** to explain the context: "When I am [X], I want to [Y], so I can [Z]".  When the agent understands the intent, it makes better autonomous decisions when it hits a logical fork in the road that the spec didn't explicitly cover.
 
-This is so important that I'm going to follow up on this topic in a future article.
+This is so important that I'm going to [follow up on this topic in a future article]({% post_url 2026/2026-04-09-agentic-engineer-2 %}).
 
 ### Rule 2: Explicit State Machine Mapping
 
