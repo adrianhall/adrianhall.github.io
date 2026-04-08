@@ -53,13 +53,13 @@ You constitution should define the data shapes before any logic is written.  By 
 
 ### Rule 5: Explicit Tech Stack and Dependency Declaration
 
-Specify your version (e.g. _Next.js 15, Drizzle ORM, CloudFlare D1_).  If the constitution is vague, the agent will default to its oldest training data.  Hard-coding your stack preferences ensures the agent doesn't introduce hallucinated libraries or outdated patterns that break your build.
+Specify your version (e.g. _Next.js 15, Drizzle ORM, Cloudflare D1_).  If the constitution is vague, the agent will default to its oldest training data.  Hard-coding your stack preferences ensures the agent doesn't introduce hallucinated libraries or outdated patterns that break your build.
 
 You should also provide coding style decisions - e.g. JSDoc requirements, one class per file, or whatever else your organization (or you) decides is important.
 
 ### Rule 6: The "Out of Scope" List.
 
-Telling an agent what **not** to do is often more important than telling it what to do.  Use the constitution to set "negative constraints" - such as _No external CSS libraries_ or _No Node.js built-ins (v8 isolates only)_ (which is great for my current focus in CloudFlare development).  This keeps the agent output lean and compatible with your tech stack.
+Telling an agent what **not** to do is often more important than telling it what to do.  Use the constitution to set "negative constraints" - such as _No external CSS libraries_ or _No Node.js built-ins (v8 isolates only)_ (which is great for my current focus in Cloudflare development).  This keeps the agent output lean and compatible with your tech stack.
 
 ## Pillar 3: The Work Breakdown
 

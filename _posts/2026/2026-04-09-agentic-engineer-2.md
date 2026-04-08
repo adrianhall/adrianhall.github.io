@@ -26,7 +26,7 @@ So, what **SHOULD** you use:
 
 These are the ones worth knowing while writing an agentic specification.  Frameworks like [MoSCoW](https://en.wikipedia.org/wiki/MoSCoW_method) and [GIST](https://www.productplan.com/glossary/gist-planning/) are better suited for the constitution and work breakdown, which I will tackle in future articles.
 
-Let's take a couple of examples.  I am currently building an AI-driven comment system for [EmDash - the CloudFlare Wordpress replacement](https://blog.cloudflare.com/emdash-wordpress/).
+Let's take a couple of examples.  I am currently building an AI-driven comment system for [EmDash - the Cloudflare Wordpress replacement](https://blog.cloudflare.com/emdash-wordpress/).
 
 ## Example 1: Submitting the comment
 
@@ -69,7 +69,7 @@ If you are looking for a better tool to represent state machines, use the [merma
 
 If you don't give the LLM some guidance in the spec, it will likely re-use other parts of the spec or previous projects (via memory) when building the comments entry box.  You might end up with a heavy weight markdown editor instead of a simple clean text box.  Using the "Evaluate Tradeoffs" from the CIRCLES framework is a great way to put some guard rails on this.
 
-* We priortize **Speed (Low Latency)** and **Data Integrity** over **Rich Text Features**.  The agent should focus on optimistic UI updates and instant CloudFlare D1 writes; markdown support is a 'Should-Have', not a 'Must-Have'.
+* We priortize **Speed (Low Latency)** and **Data Integrity** over **Rich Text Features**.  The agent should focus on optimistic UI updates and instant Cloudflare D1 writes; markdown support is a 'Should-Have', not a 'Must-Have'.
 
 The agent now knows that if it has to choose between a heavy library for emojis or a lightweight library for speed, it must choose speed.
 
