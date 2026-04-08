@@ -7,7 +7,7 @@ tags:
   - ai
 ---
 
-In [my last article]({% post_url 2026/2026-04-07-agentic-engineer-1 %}), I introduced ten rules to help you move from vibe-coder to AI Product Architect by building specs.  However, I glossed over a few of the details.  In this article, I'm going in depth into using product management techniques to write a spec that agents love.
+In [my last article]({% post_url 2026/2026-04-07-agentic-engineer-1 %}), I introduced ten rules to help you move from vibe-coder to AI Product Architect by building specs.  However, I glossed over a few of the details.  The basic problem is that most people write specs for themselves - a human.  You aren't writing for a human, so why do you think it would look the same? In this article, I'm going in depth into using product management techniques to write a spec that agents love.
 
 ![Transition to JTBD Image]({{site.baseurl}}/assets/images/2026/Apr09-banner.png)
 
