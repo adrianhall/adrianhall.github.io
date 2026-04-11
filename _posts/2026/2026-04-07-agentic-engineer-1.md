@@ -45,7 +45,7 @@ An agent building a tool for a "Senior devops engineer" should write different c
 
 These are the "global rules" that ensure the agent stays within your specific tech stack and architectural style.
 
-### Rule 4: The "Single Source of Truth" Schema.
+### Rule 4: The "Single Source of Truth" Schema
 
 My first spec forgot to define the data schema.  I ended up with one table with an auto-incrementing `user_id` and another with a `unique_user_id` that was a UUID.  Needless to say, things broke.  Including the Drizzle `schema.ts` directly would have solved this.
 
@@ -57,7 +57,7 @@ Specify your version (e.g. _Next.js 15, Drizzle ORM, Cloudflare D1_).  If the co
 
 You should also provide coding style decisions - e.g. JSDoc requirements, one class per file, or whatever else your organization (or you) decides is important.
 
-### Rule 6: The "Out of Scope" List.
+### Rule 6: The "Out of Scope" List
 
 Telling an agent what **not** to do is often more important than telling it what to do.  Use the constitution to set "negative constraints" - such as _No external CSS libraries_ or _No Node.js built-ins (v8 isolates only)_ (which is great for my current focus in Cloudflare development).  This keeps the agent output lean and compatible with your tech stack.
 
