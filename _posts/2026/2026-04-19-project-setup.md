@@ -9,6 +9,9 @@ tags:
 
 In my last three articles, I produced a set of recipes and [rules for doing AI-first development using Spec-Driven Design]({% post_url 2026/2026-04-07-agentic-engineer-1 %}).  These rules really get you started in how to think about development when the coding (the easy part) is done for you.  But how do you get started?
 
+![Project Scaffolding for Agentic Development]({{site.baseurl}}/assets/images/2026/Apr19-banner.png)
+
+
 When I am setting up a new project, my process has now changed.  It starts off the same, but the additional files I need to write before I can start coding have changed.  Here is what I do:
 
 ## 1. Scaffolding
