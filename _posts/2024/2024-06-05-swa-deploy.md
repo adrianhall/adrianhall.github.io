@@ -52,7 +52,7 @@ You will also want to [sign in to Azure](https://learn.microsoft.com/cli/azure/a
 
 First, I want to define some environment variables that define what I am going to name the resources.  This saves you from having to type the same names multiple times (with the inherent risk of mistypes).  I need two resources - a resource group (a container for related resources) and the static web app resource.  I also want to decide on a region:
 
-{% highlight back %}
+{% highlight bash %}
 export RG="my-blog-rg"
 export SWA="my-blog"
 export REGION="centralus"
