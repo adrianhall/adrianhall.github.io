@@ -11,7 +11,6 @@ I've been writing a lot of code with agents recently.  I've even written about a
 
 ![Testing in an agentic coding world]({{site.baseurl}}/assets/images/2026/Jun07-banner.png)
 
-
 But what am I really testing here?
 
 Agents write code to get to completion as quickly as possible.  It's built into their DNA - please the user as fast as possible.  So I get it to write tests, and the tests pass.  Agents write tests to validate their version of reality, not the user requirements.  The perform what I call "Confirmation-Driven Development".  Write the tests so that the code you have written gets exercised, but not validated.
