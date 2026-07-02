@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>This blog has moved · Because Developers are Awesome</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" id="canonical-link" href="https://blog.adrianhall.uk/">
+<meta http-equiv="refresh" content="0; url=https://blog.adrianhall.uk/" id="meta-refresh">
+<style>
+  body { font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+         max-width: 40rem; margin: 4rem auto; padding: 0 1.5rem; color: #1a1a1a; }
+  a { color: #2563eb; }
+</style>
+</head>
+<body>
+  <p>
+    This blog has moved to
+    <a id="fallback-link" href="https://blog.adrianhall.uk/">blog.adrianhall.uk</a>.
+    You should be redirected automatically — if not, follow the link above.
+  </p>
+  <script>
+  (function () {
+    var TARGET_ORIGIN = 'https://blog.adrianhall.uk';
+
+    // Known one-off path remaps: URLs whose shape differs between this
+    // repo and the new site (front-matter-date vs. filename-date
+    // mismatches, etc.). See M6_PLAN.md ("The one known URL exception")
+    // for why this exists and how it was verified. This is a safety net
+    // for KNOWN exceptions only -- it is not expected to grow, but if a
+    // future audit finds another mismatch, add it here.
+    var PATH_OVERRIDES = {
+      '/posts/2025/2025-08-01-oss-ai-editors.html': '/posts/2025/2025-08-03-oss-ai-editors.html'
+    };
+
+    var path = location.pathname;
+    var mapped = PATH_OVERRIDES[path] || path;
+    var target = TARGET_ORIGIN + mapped + location.search + location.hash;
+
+    var canonical = document.getElementById('canonical-link');
+    if (canonical) canonical.href = target;
+    var refresh = document.getElementById('meta-refresh');
+    if (refresh) refresh.setAttribute('content', '0; url=' + target);
+    var fallback = document.getElementById('fallback-link');
+    if (fallback) fallback.href = target;
+
+    location.replace(target);
+  })();
+  </script>
+</body>
+</html>
