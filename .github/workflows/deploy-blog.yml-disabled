@@ -1,4 +1,11 @@
-# Workflow for building and deploying a Jekyll site to GitHub Pages
+# DISABLED (M6 cutover) — renamed from deploy-blog.yml so GitHub Actions no
+# longer discovers it (Actions only scans .github/workflows/*.yml|*.yaml).
+# Kept here, unmodified otherwise, as a historical record of how this repo
+# used to build/deploy its Jekyll site. Pages now serves from the `site`
+# branch via the "Deploy from a branch" source setting — no Actions or
+# build step of any kind is needed anymore. See README.md and M6_PLAN.md.
+#
+# Original workflow for building and deploying a Jekyll site to GitHub Pages
 name: Deploy Jekyll site to GitHub Pages
 
 on:
